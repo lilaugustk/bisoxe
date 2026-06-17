@@ -11,10 +11,12 @@ class Province extends Model
     use HasFactory;
 
     protected $table = 'provinces';
-    
+
     // Khóa chính là chuỗi 'code'
     protected $primaryKey = 'code';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

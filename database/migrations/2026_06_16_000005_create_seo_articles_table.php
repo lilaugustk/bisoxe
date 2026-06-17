@@ -12,21 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('seo_articles', function (Blueprint $table) {
-            $table->comment('Nội dung AI sinh ra từ dữ liệu biển số');
+            $table->comment('Nội dung sinh tự động từ dữ liệu biển số');
             $table->id();
-            
+
             $table->unsignedBigInteger('plate_id');
             $table->string('slug', 255)->unique();
             $table->string('title', 500)->nullable();
             $table->string('meta_title', 500)->nullable();
             $table->text('meta_description')->nullable();
-            
-            $table->longText('content')->nullable()->comment('Bài viết SEO do AI tạo');
-            $table->longText('video_script')->nullable()->comment('Kịch bản video AI tạo');
-            
-            $table->string('ai_model', 100)->nullable();
+
+            $table->longText('content')->nullable()->comment('Bài viết SEO sinh tự động');
+            $table->longText('video_script')->nullable()->comment('Kịch bản video sinh tự động');
+
+            $table->string('generation_model', 100)->nullable();
             $table->dateTime('generated_at')->nullable();
-            
+
             $table->timestamps();
 
             // Foreign Keys

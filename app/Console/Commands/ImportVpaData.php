@@ -5,11 +5,11 @@ namespace App\Console\Commands;
 use App\Models\LicensePlate;
 use App\Models\PlateKind;
 use App\Models\Province;
-use Illuminate\Console\Command;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 #[Signature('app:import-vpa-data {--limit= : Giới hạn số lượng bản ghi trên mỗi file JSON để chạy thử}')]
 #[Description('Phân tích cơ sở dữ liệu và nạp dữ liệu VPA từ các tệp JSON')]
@@ -35,8 +35,9 @@ class ImportVpaData extends Command
         }
 
         $vpaDataPath = database_path('vpa_data');
-        if (!is_dir($vpaDataPath)) {
+        if (! is_dir($vpaDataPath)) {
             $this->error("Thư mục dữ liệu vpa_data không tồn tại tại: {$vpaDataPath}");
+
             return self::FAILURE;
         }
 
@@ -88,13 +89,14 @@ class ImportVpaData extends Command
         ];
 
         foreach ($filesToImport as $fileConfig) {
-            $filePath = $vpaDataPath . DIRECTORY_SEPARATOR . $fileConfig['filename'];
-            if (!file_exists($filePath)) {
+            $filePath = $vpaDataPath.DIRECTORY_SEPARATOR.$fileConfig['filename'];
+            if (! file_exists($filePath)) {
                 $this->warn("Tệp {$fileConfig['filename']} không tồn tại. Bỏ qua.");
+
                 continue;
             }
 
-            $this->info("------------------------------------------------------------");
+            $this->info('------------------------------------------------------------');
             $this->info("Đang xử lý tệp: {$fileConfig['filename']} ...");
 
             // Đọc toàn bộ nội dung JSON
@@ -102,8 +104,9 @@ class ImportVpaData extends Command
             $items = json_decode($jsonContent, true);
             unset($jsonContent); // Giải phóng bộ nhớ ngay lập tức
 
-            if (!is_array($items)) {
+            if (! is_array($items)) {
                 $this->error("Định dạng JSON trong tệp {$fileConfig['filename']} không hợp lệ.");
+
                 continue;
             }
 
@@ -127,7 +130,8 @@ class ImportVpaData extends Command
                     $localSymbol = $item['localSymbol'] ?? '';
                     $serialLetter = $item['serialLetter'] ?? '';
                     $serialNumber = $item['serialNumber'] ?? '';
-                    return $item['fullNumber'] ?? ($localSymbol . $serialLetter . $serialNumber);
+
+                    return $item['fullNumber'] ?? ($localSymbol.$serialLetter.$serialNumber);
                 }, $chunkItems);
                 $fullNumbers = array_filter($fullNumbers);
 
@@ -145,7 +149,7 @@ class ImportVpaData extends Command
                     $localSymbol = $item['localSymbol'] ?? '';
                     $serialLetter = $item['serialLetter'] ?? '';
                     $serialNumber = $item['serialNumber'] ?? '';
-                    $fullNumber = $item['fullNumber'] ?? ($localSymbol . $serialLetter . $serialNumber);
+                    $fullNumber = $item['fullNumber'] ?? ($localSymbol.$serialLetter.$serialNumber);
 
                     if (empty($fullNumber)) {
                         continue;
@@ -157,9 +161,9 @@ class ImportVpaData extends Command
 
                     if ($provinceCode) {
                         $provinceCode = (string) $provinceCode;
-                        if (!isset($provincesCache[$provinceCode])) {
+                        if (! isset($provincesCache[$provinceCode])) {
                             // Tạo mới Tỉnh thành nếu chưa có trong cache/database
-                            $name = $provinceName ?? ('Tỉnh/TP ' . $provinceCode);
+                            $name = $provinceName ?? ('Tỉnh/TP '.$provinceCode);
                             Province::updateOrCreate(['code' => $provinceCode], ['name' => $name]);
                             $provincesCache[$provinceCode] = $name;
                         }
@@ -172,7 +176,7 @@ class ImportVpaData extends Command
                     if (isset($item['kinds']) && is_array($item['kinds'])) {
                         foreach ($item['kinds'] as $k) {
                             $kId = $k['id'] ?? null;
-                            if ($kId && !$kindsCache->has($kId)) {
+                            if ($kId && ! $kindsCache->has($kId)) {
                                 $newKind = PlateKind::updateOrCreate(
                                     ['id' => $kId],
                                     [
@@ -180,8 +184,8 @@ class ImportVpaData extends Command
                                         'priority' => $k['priority'] ?? null,
                                         'regex' => $k['regex'] ?? null,
                                         'group_name' => $k['group'] ?? null,
-                                        'is_featured' => !empty($k['isFeatured']),
-                                        'is_omitted' => !empty($k['isOmitted']),
+                                        'is_featured' => ! empty($k['isFeatured']),
+                                        'is_omitted' => ! empty($k['isOmitted']),
                                     ]
                                 );
                                 $kindsCache->put($kId, $newKind);
@@ -190,19 +194,21 @@ class ImportVpaData extends Command
                     }
 
                     $displayNumber = $item['displayNumber'] ?? null;
-                    if (!$displayNumber && $serialNumber) {
+                    if (! $displayNumber && $serialNumber) {
                         $formattedNumber = $serialNumber;
                         if (strlen($serialNumber) === 5) {
-                            $formattedNumber = substr($serialNumber, 0, 3) . '.' . substr($serialNumber, 3, 2);
+                            $formattedNumber = substr($serialNumber, 0, 3).'.'.substr($serialNumber, 3, 2);
                         } elseif (strlen($serialNumber) === 4) {
-                            $formattedNumber = substr($serialNumber, 0, 2) . '.' . substr($serialNumber, 2, 2);
+                            $formattedNumber = substr($serialNumber, 0, 2).'.'.substr($serialNumber, 2, 2);
                         }
-                        $displayNumber = $localSymbol . $serialLetter . '-' . $formattedNumber;
+                        $displayNumber = $localSymbol.$serialLetter.'-'.$formattedNumber;
                     }
 
                     // Chuyển đổi thời gian về định dạng chuẩn database (UTC)
                     $parseDate = function ($dateStr) {
-                        if (empty($dateStr)) return null;
+                        if (empty($dateStr)) {
+                            return null;
+                        }
                         try {
                             return Carbon::parse($dateStr)->setTimezone('UTC')->toDateTimeString();
                         } catch (\Exception $e) {
@@ -273,7 +279,7 @@ class ImportVpaData extends Command
                     ];
                 }
 
-                if (!empty($platesToUpsert)) {
+                if (! empty($platesToUpsert)) {
                     // Thực hiện Upsert hàng loạt cho LicensePlates
                     LicensePlate::upsert($platesToUpsert, ['full_number'], [
                         'vehicle_type',
@@ -304,10 +310,10 @@ class ImportVpaData extends Command
                         $localSymbol = $item['localSymbol'] ?? '';
                         $serialLetter = $item['serialLetter'] ?? '';
                         $serialNumber = $item['serialNumber'] ?? '';
-                        $fullNumber = $item['fullNumber'] ?? ($localSymbol . $serialLetter . $serialNumber);
+                        $fullNumber = $item['fullNumber'] ?? ($localSymbol.$serialLetter.$serialNumber);
 
                         $plateId = $plateIdsMap[$fullNumber] ?? null;
-                        if (!$plateId) {
+                        if (! $plateId) {
                             continue;
                         }
 
@@ -323,13 +329,13 @@ class ImportVpaData extends Command
                         }
 
                         // 2. Nếu không có sẵn (ví dụ file results), tự động nhận diện theo Regex của kinds
-                        if (empty($kindIds) && !empty($item['serialNumber'])) {
+                        if (empty($kindIds) && ! empty($item['serialNumber'])) {
                             $serialNumber = $item['serialNumber'];
                             foreach ($kindsCache as $kind) {
                                 if ($kind->regex) {
                                     try {
                                         // Sử dụng dấu phân cách # để an toàn với regex
-                                        if (preg_match('#' . str_replace('#', '\#', $kind->regex) . '#', $serialNumber)) {
+                                        if (preg_match('#'.str_replace('#', '\#', $kind->regex).'#', $serialNumber)) {
                                             $kindIds[] = (int) $kind->id;
                                         }
                                     } catch (\Exception $e) {
@@ -350,7 +356,7 @@ class ImportVpaData extends Command
                     }
 
                     // Bulk insert pivot table dùng insertOrIgnore
-                    if (!empty($pivotRows)) {
+                    if (! empty($pivotRows)) {
                         DB::table('license_plate_kinds')->insertOrIgnore($pivotRows);
                     }
                 }
@@ -370,8 +376,9 @@ class ImportVpaData extends Command
             gc_collect_cycles();
         }
 
-        $this->info("============================================================");
-        $this->info("TẤT CẢ DỮ LIỆU ĐÃ ĐƯỢC NẠP THÀNH CÔNG!");
+        $this->info('============================================================');
+        $this->info('TẤT CẢ DỮ LIỆU ĐÃ ĐƯỢC NẠP THÀNH CÔNG!');
+
         return self::SUCCESS;
     }
 }

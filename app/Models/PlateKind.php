@@ -11,9 +11,10 @@ class PlateKind extends Model
     use HasFactory;
 
     protected $table = 'plate_kinds';
-    
+
     // Khóa chính là id do VPA định nghĩa sẵn
     protected $primaryKey = 'id';
+
     public $incrementing = false;
 
     protected $fillable = [

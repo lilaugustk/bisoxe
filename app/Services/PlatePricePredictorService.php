@@ -3,16 +3,14 @@
 namespace App\Services;
 
 use App\Models\LicensePlate;
-use App\Models\PlateKind;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PlatePricePredictorService
 {
     /**
      * Dự đoán khoảng giá trị của biển số xe.
      *
-     * @param LicensePlate $plate
      * @return array{min: int, expected: int, max: int, confidence: string, kind_name: string}
      */
     public function predict(LicensePlate $plate): array
@@ -24,15 +22,15 @@ class PlatePricePredictorService
 
         // Giá trung bình nền theo từng loại biển (dựa trên thống kê thực tế DB)
         $baseAverages = [
-            1  => 1160000000, // Ngũ quý
-            2  => 265000000,  // Sảnh tiến
-            3  => 145000000,  // Tứ quý
-            4  => 65000000,   // Tam hoa
-            5  => 39000000,   // Thần tài
-            6  => 55000000,   // Lộc phát
-            7  => 33000000,   // Ông địa
-            8  => 70000000,   // Lặp đôi
-            9  => 289000000,  // Số gánh
+            1 => 1160000000, // Ngũ quý
+            2 => 265000000,  // Sảnh tiến
+            3 => 145000000,  // Tứ quý
+            4 => 65000000,   // Tam hoa
+            5 => 39000000,   // Thần tài
+            6 => 55000000,   // Lộc phát
+            7 => 33000000,   // Ông địa
+            8 => 70000000,   // Lặp đôi
+            9 => 289000000,  // Số gánh
             10 => 40000000,   // Biển thường / Phong thủy
         ];
 
@@ -73,9 +71,9 @@ class PlatePricePredictorService
         }
 
         // Giới hạn giá trị tối thiểu không dưới sàn đấu giá 40.000.000đ
-        $expected = max(40000000, (int)$expected);
-        $min = max(40000000, (int)($expected * 0.8));
-        $max = max(45000000, (int)($expected * 1.3));
+        $expected = max(40000000, (int) $expected);
+        $min = max(40000000, (int) ($expected * 0.8));
+        $max = max(45000000, (int) ($expected * 1.3));
 
         // Mức độ tin cậy dựa trên lượng mẫu trong DB
         $confidence = 'Cao';
@@ -88,78 +86,46 @@ class PlatePricePredictorService
             'expected' => $expected,
             'max' => $max,
             'confidence' => $confidence,
-            'kind_name' => $kindName
+            'kind_name' => $kindName,
         ];
     }
 
     /**
-     * Lấy dữ liệu biến động giá trong 6 tháng qua của loại biển này so với thị trường chung.
-     *
-     * @param LicensePlate $plate
-     * @return array
+     * Lấy dữ liệu lịch sử giá trúng đấu giá thực tế của các biển số cùng số đuôi (serial_number) trên toàn quốc, nhóm theo tỉnh thành.
      */
     public function getTrendData(LicensePlate $plate): array
     {
-        $primaryKind = $plate->kinds->sortBy('id')->first();
-        $kindId = $primaryKind ? $primaryKind->id : 10;
+        if (empty($plate->serial_number)) {
+            return [];
+        }
 
-        $startDate = Carbon::now()->subMonths(5)->startOfMonth();
-
-        // 1. Truy vấn xu hướng giá của loại biển này
-        $categoryTrend = DB::table('license_plates')
-            ->join('license_plate_kinds', 'license_plates.id', '=', 'license_plate_kinds.plate_id')
-            ->where('license_plate_kinds.kind_id', $kindId)
-            ->where('license_plates.status', 'completed')
-            ->where('license_plates.auction_start_time', '>=', $startDate)
-            ->select(
-                DB::raw("DATE_FORMAT(license_plates.auction_start_time, '%m/%Y') as label_month"),
-                DB::raw("DATE_FORMAT(license_plates.auction_start_time, '%Y-%m') as sort_month"),
-                DB::raw("AVG(license_plates.winning_price) as avg_price")
-            )
-            ->groupBy('sort_month', 'label_month')
-            ->orderBy('sort_month', 'asc')
-            ->get()
-            ->keyBy('label_month');
-
-        // 2. Truy vấn xu hướng giá thị trường chung (Tất cả biển số)
-        $marketTrend = DB::table('license_plates')
+        $plates = LicensePlate::with('province')
+            ->where('serial_number', $plate->serial_number)
+            ->where('vehicle_type', $plate->vehicle_type)
             ->where('status', 'completed')
-            ->where('auction_start_time', '>=', $startDate)
-            ->select(
-                DB::raw("DATE_FORMAT(auction_start_time, '%m/%Y') as label_month"),
-                DB::raw("DATE_FORMAT(auction_start_time, '%Y-%m') as sort_month"),
-                DB::raw("AVG(winning_price) as avg_price")
-            )
-            ->groupBy('sort_month', 'label_month')
-            ->orderBy('sort_month', 'asc')
-            ->get()
-            ->keyBy('label_month');
+            ->where('winning_price', '>', 0)
+            ->orderBy('auction_start_time', 'asc')
+            ->get();
 
-        // 3. Kết hợp và bù dữ liệu cho đủ 6 tháng gần nhất
+        $grouped = $plates->groupBy('province_code');
+
         $trends = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $monthObj = Carbon::now()->subMonths($i);
-            $monthLabel = $monthObj->format('m/Y');
-
-            $catAvg = isset($categoryTrend[$monthLabel]) ? (int)$categoryTrend[$monthLabel]->avg_price : null;
-            $mktAvg = isset($marketTrend[$monthLabel]) ? (int)$marketTrend[$monthLabel]->avg_price : null;
-
-            // Nếu không có dữ liệu cho loại này, giả định giá trị trung bình dựa trên basePrice
-            if ($catAvg === null) {
-                // Seed chút dữ liệu giả lập hợp lý nếu DB thiếu dữ liệu tháng đó
-                $baseAverages = [1 => 1160000000, 2 => 265000000, 3 => 145000000, 4 => 65000000, 5 => 39000000, 6 => 55000000, 10 => 40000000];
-                $bp = $baseAverages[$kindId] ?? 40000000;
-                $catAvg = (int)($bp * (1 + (sin($monthObj->month) * 0.05))); // Tạo độ dao động nhẹ ±5%
+        foreach ($grouped as $provinceCode => $items) {
+            if (empty($provinceCode)) {
+                continue;
             }
-
-            if ($mktAvg === null) {
-                $mktAvg = 46000000;
+            $provinceName = $items->first()->province?->name ?? 'Tỉnh khác';
+            $plateTrends = [];
+            foreach ($items as $p) {
+                $plateTrends[] = [
+                    'plate_number' => $p->display_number ?? $p->full_number,
+                    'winning_price' => (int) $p->winning_price,
+                    'auction_date' => $p->auction_start_time ? $p->auction_start_time->format('d/m/Y') : 'Chưa rõ',
+                ];
             }
-
-            $trends[] = [
-                'month' => $monthLabel,
-                'category_avg' => $catAvg,
-                'market_avg' => $mktAvg,
+            $trends[$provinceCode] = [
+                'province_name' => $provinceName,
+                'plates' => $plateTrends,
             ];
         }
 

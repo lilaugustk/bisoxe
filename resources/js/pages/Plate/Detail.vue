@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
+import BackToTop from '../../components/BackToTop.vue';
 
 interface Plate {
     id: number;
@@ -30,8 +31,9 @@ interface Article {
     content: string | null;
     video_script: string | null;
     slug: string;
-    ai_model: string | null;
+    generation_model: string | null;
     generated_at: string | null;
+    image_url: string | null;
 }
 
 interface PricePrediction {
@@ -43,17 +45,22 @@ interface PricePrediction {
 }
 
 interface PriceTrendItem {
-    month: string;
-    category_avg: number;
-    market_avg: number;
+    plate_number: string;
+    winning_price: number;
+    auction_date: string;
+}
+
+interface ProvinceTrend {
+    province_name: string;
+    plates: PriceTrendItem[];
 }
 
 const props = defineProps<{
     article: Article;
     plate: Plate;
-    is_pending_ai: boolean;
+    is_pending: boolean;
     price_prediction: PricePrediction;
-    price_trend: PriceTrendItem[];
+    price_trend: Record<string, ProvinceTrend>;
 }>();
 
 const activeTab = ref<'content' | 'video' | 'price'>('content');
@@ -62,12 +69,12 @@ const plateStyle = ref<'long' | 'square'>('long');
 let pollInterval: any = null;
 
 onMounted(() => {
-    if (props.is_pending_ai) {
+    if (props.is_pending) {
         pollInterval = setInterval(() => {
             router.reload({
-                only: ['article', 'is_pending_ai'],
+                only: ['article', 'is_pending'],
                 onSuccess: (page) => {
-                    if (!page.props.is_pending_ai) {
+                    if (!page.props.is_pending) {
                         if (pollInterval) {
                             clearInterval(pollInterval);
                             pollInterval = null;
@@ -128,15 +135,47 @@ const statusColorClass = computed(() => {
 
 // --- PHẦN TÍNH TOÁN TỌA ĐỘ SVG CHO BIỂU ĐỒ NATIVE ---
 
-// Trục Y lớn nhất để vẽ tỉ lệ biểu đồ
-const maxTrendValue = computed(() => {
-    if (!props.price_trend || props.price_trend.length === 0) {
-return 100000000;
-}
+const hoveredIndex = ref<number | null>(null);
 
-    const values = props.price_trend.flatMap(d => [d.category_avg, d.market_avg]);
+// Tỉnh hiện tại
+const currentProvinceCode = props.plate.province?.code || '';
+const currentProvinceName = props.plate.province?.name || 'Tỉnh hiện tại';
 
-    return Math.max(...values) * 1.15; // Tăng 15% làm biên trên trục Y
+// Tỉnh đối chiếu (so sánh)
+const compareProvinceCode = ref('');
+
+const comparedProvinceName = computed<string>(() => {
+    if (!compareProvinceCode.value) {
+        return '';
+    }
+
+    return props.price_trend[compareProvinceCode.value]?.province_name || '';
+});
+// Danh sách biển số tỉnh hiện tại
+const currentPlates = computed<PriceTrendItem[]>(() => {
+    return props.price_trend[currentProvinceCode]?.plates || [];
+});
+
+// Danh sách biển số tỉnh đối chiếu
+const comparedPlates = computed<PriceTrendItem[]>(() => {
+    if (!compareProvinceCode.value) {
+        return [];
+    }
+
+    return props.price_trend[compareProvinceCode.value]?.plates || [];
+});
+
+// Trục Y lớn nhất cho Giá trị biển số (Lấy mức trúng cao nhất của cả 2 tỉnh để đồng bộ tỷ lệ)
+const maxCategoryValue = computed<number>(() => {
+    const currentPrices = currentPlates.value.map((d: PriceTrendItem) => d.winning_price);
+    const comparedPrices = comparedPlates.value.map((d: PriceTrendItem) => d.winning_price);
+    const allPrices = [...currentPrices, ...comparedPrices];
+
+    if (allPrices.length === 0) {
+        return 40000000;
+    }
+
+    return Math.max(...allPrices, 40000000) * 1.15;
 });
 
 // Định dạng rút gọn tiền trên trục Y (ví dụ: 100.000.000 -> 100 Tr)
@@ -152,50 +191,128 @@ const formatShortMoney = (value: number) => {
     return value.toLocaleString('vi-VN') + ' đ';
 };
 
-// Điểm vẽ cho Category Line
-const categoryLinePoints = computed(() => {
-    if (!props.price_trend) {
-return '';
-}
+// Tính toán tọa độ X phân bố đều các điểm trong khoảng từ 60px đến 460px
+const getXCoordinate = (index: number, total: number) => {
+    if (total <= 1) {
+        return 260; // Nằm ở giữa nếu chỉ có 1 điểm
+    }
 
-    return props.price_trend.map((d, i) => {
-        const x = 60 + (i * 80); // Trục X bắt đầu ở 60px, bước nhảy 80px
-        const y = 180 - ((d.category_avg / maxTrendValue.value) * 150); // Trục Y cao tối đa 150px trên 180px
+    const step = 400 / (total - 1);
 
-        return `${x},${y}`;
-    }).join(' ');
+    return 60 + (index * step);
+};
+
+// Hàm sinh đường dẫn Bezier mượt mà (smooth curve) đi qua các điểm
+const getSmoothPath = (points: { x: number; y: number }[]) => {
+    if (points.length === 0) {
+        return '';
+    }
+
+    if (points.length === 1) {
+        return `M ${points[0].x} ${points[0].y}`;
+    }
+
+    if (points.length === 2) {
+        return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+    }
+
+    let d = `M ${points[0].x} ${points[0].y}`;
+
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+
+        const cpX1 = p0.x + (p1.x - p0.x) / 3;
+        const cpY1 = p0.y;
+        const cpX2 = p0.x + (2 * (p1.x - p0.x)) / 3;
+        const cpY2 = p1.y;
+
+        d += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${p1.x} ${p1.y}`;
+    }
+
+    return d;
+};
+
+// Đường dẫn SVG cho tỉnh hiện tại (Đường đỏ)
+const categoryLinePath = computed<string>(() => {
+    const plates = currentPlates.value;
+
+    if (plates.length === 0) {
+        return '';
+    }
+
+    const points = plates.map((d: PriceTrendItem, i: number) => ({
+        x: getXCoordinate(i, plates.length),
+        y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
+    }));
+
+    return getSmoothPath(points);
 });
 
-// Điểm vẽ vùng màu Gradient (Area Fill) cho Category
-const categoryAreaPoints = computed(() => {
-    if (!props.price_trend || props.price_trend.length === 0) {
-return '';
-}
+// Đường dẫn SVG cho vùng màu Gradient tỉnh hiện tại
+const categoryAreaPath = computed<string>(() => {
+    const plates = currentPlates.value;
 
-    const points = props.price_trend.map((d, i) => {
-        const x = 60 + (i * 80);
-        const y = 180 - ((d.category_avg / maxTrendValue.value) * 150);
+    if (plates.length === 0) {
+        return '';
+    }
 
-        return `${x},${y}`;
-    });
-    const firstX = 60;
-    const lastX = 60 + ((props.price_trend.length - 1) * 80);
+    const points = plates.map((d: PriceTrendItem, i: number) => ({
+        x: getXCoordinate(i, plates.length),
+        y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
+    }));
 
-    return `${firstX},180 ${points.join(' ')} ${lastX},180`;
+    const firstX = getXCoordinate(0, plates.length);
+    const lastX = getXCoordinate(plates.length - 1, plates.length);
+
+    if (points.length === 1) {
+        return `M ${firstX} 180 L ${points[0].x} ${points[0].y} L ${firstX} 180 Z`;
+    }
+
+    const smoothPath = getSmoothPath(points);
+
+    return `${smoothPath} L ${lastX} 180 L ${firstX} 180 Z`;
 });
 
-// Điểm vẽ cho Market Line
-const marketLinePoints = computed(() => {
-    if (!props.price_trend) {
-return '';
-}
+// Đường dẫn SVG cho tỉnh đối chiếu (Đường xanh)
+const compareLinePath = computed<string>(() => {
+    const plates = comparedPlates.value;
 
-    return props.price_trend.map((d, i) => {
-        const x = 60 + (i * 80);
-        const y = 180 - ((d.market_avg / maxTrendValue.value) * 150);
+    if (plates.length === 0) {
+        return '';
+    }
 
-        return `${x},${y}`;
-    }).join(' ');
+    const points = plates.map((d: PriceTrendItem, i: number) => ({
+        x: getXCoordinate(i, plates.length),
+        y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
+    }));
+
+    return getSmoothPath(points);
+});
+
+// Đường dẫn SVG cho vùng màu Gradient tỉnh đối chiếu
+const compareAreaPath = computed<string>(() => {
+    const plates = comparedPlates.value;
+
+    if (plates.length === 0) {
+        return '';
+    }
+
+    const points = plates.map((d: PriceTrendItem, i: number) => ({
+        x: getXCoordinate(i, plates.length),
+        y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
+    }));
+
+    const firstX = getXCoordinate(0, plates.length);
+    const lastX = getXCoordinate(plates.length - 1, plates.length);
+
+    if (points.length === 1) {
+        return `M ${firstX} 180 L ${points[0].x} ${points[0].y} L ${firstX} 180 Z`;
+    }
+
+    const smoothPath = getSmoothPath(points);
+
+    return `${smoothPath} L ${lastX} 180 L ${firstX} 180 Z`;
 });
 </script>
 
@@ -207,26 +324,17 @@ return '';
         <meta property="og:description" :content="article.meta_description" />
         <meta property="og:type" content="article" />
         <meta property="og:url" :content="`/bien-so/${article.slug}`" />
+        <meta v-if="article.image_url" property="og:image" :content="article.image_url" />
+        <meta v-if="article.image_url" property="og:image:width" content="1200" />
+        <meta v-if="article.image_url" property="og:image:height" content="630" />
+        <meta v-if="article.image_url" name="twitter:card" content="summary_large_image" />
+        <meta v-if="article.image_url" name="twitter:image" :content="article.image_url" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     </Head>
 
     <div class="min-h-screen bg-[#F9FAFB] text-[#111827] font-sans antialiased">
-        <!-- 1. Ticker Header -->
-        <div class="bg-[#8C1E1E] text-white text-xs py-2 overflow-hidden border-b border-red-900/10">
-            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-5">
-                <div class="flex items-center gap-2 overflow-hidden w-2/3 md:w-3/4">
-                    <span class="font-bold shrink-0 bg-red-950 px-2 py-0.5 rounded text-[10px]">TIN MỚI</span>
-                    <marquee class="text-white font-medium" scrollamount="4">
-                        Hệ thống tự động cập nhật danh sách biển số xe đẹp mới nhất: 30K-999.99, 15K-777.77, 51K-888.88, 99A-999.99 ...
-                    </marquee>
-                </div>
-                <div class="flex items-center gap-4 shrink-0 text-white font-semibold text-xs">
-                    <span>Hotline: 0996.912.345</span>
-                </div>
-            </div>
-        </div>
 
         <!-- 2. Main Header -->
         <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
@@ -234,11 +342,37 @@ return '';
                 <div class="flex items-center gap-8">
                     <!-- Logo -->
                     <Link href="/" class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-[#8C1E1E] rounded-lg flex items-center justify-center text-white font-extrabold text-xl shadow-md">
-                            B
-                        </div>
+                        <svg class="w-10 h-10 shadow-md rounded-lg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="logoBgGrad" x1="0" y1="0" x2="100" y2="100">
+                                    <stop offset="0%" stop-color="#8C1E1E"/>
+                                    <stop offset="100%" stop-color="#5A1212"/>
+                                </linearGradient>
+                                <linearGradient id="plateGrad" x1="0" y1="0" x2="100" y2="100">
+                                    <stop offset="0%" stop-color="#FFFFFF"/>
+                                    <stop offset="100%" stop-color="#F3F4F6"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Background -->
+                            <rect width="100" height="100" rx="22" fill="url(#logoBgGrad)"/>
+                            
+                            <!-- License Plate Shape -->
+                            <rect x="16" y="32" width="68" height="38" rx="6" fill="url(#plateGrad)" stroke="#F5B800" stroke-width="2.5"/>
+                            <rect x="20" y="36" width="60" height="30" rx="4" fill="none" stroke="#9CA3AF" stroke-width="1" opacity="0.4"/>
+                            
+                            <!-- Screws -->
+                            <circle cx="21" cy="37" r="1.5" fill="#9CA3AF"/>
+                            <circle cx="79" cy="37" r="1.5" fill="#9CA3AF"/>
+                            
+                            <!-- The B Character -->
+                            <text x="50" y="57" text-anchor="middle" font-family="'Inter', sans-serif" font-size="24" font-weight="900" fill="#111827">B</text>
+                            
+                            <!-- Speed lines below / Swoosh -->
+                            <path d="M12 78 C 30 70, 70 70, 88 78" stroke="#F5B800" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M22 84 C 38 78, 62 78, 78 84" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                        </svg>
                         <div class="flex flex-col">
-                            <span class="text-lg font-black text-[#8C1E1E] leading-none">BIENSO.AI</span>
+                            <span class="text-lg font-black text-[#8C1E1E] leading-none">BISOXE.COM</span>
                             <span class="text-[10px] text-gray-500 font-bold tracking-widest mt-0.5">GIẢI MÃ PHONG THỦY</span>
                         </div>
                     </Link>
@@ -246,7 +380,8 @@ return '';
                     <!-- Navigation Menu -->
                     <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600">
                         <Link href="/" class="hover:text-[#8C1E1E] transition">Trang chủ</Link>
-                        <Link href="/#table-section" class="hover:text-[#8C1E1E] transition">Tra cứu biển số</Link>
+                        <Link href="/bien-so-xe-o-to" :class="plate.vehicle_type === 'car' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe ô tô</Link>
+                        <Link href="/bien-so-xe-may" :class="plate.vehicle_type === 'motorcycle' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe máy, mô tô</Link>
                         <Link href="/#meanings-section" class="hover:text-[#8C1E1E] transition">Ý nghĩa phong thủy</Link>
                         <Link href="/#faq-section" class="hover:text-[#8C1E1E] transition">Hỏi đáp</Link>
                     </nav>
@@ -450,8 +585,8 @@ return '';
                 </div>
             </div>
 
-            <!-- Content Area: AI generated articles & scripts -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <!-- Content Area: generated articles & scripts -->
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <!-- Navigation Tabs -->
                 <div class="flex border-b border-gray-200 bg-gray-50/50">
                     <button 
@@ -466,30 +601,30 @@ return '';
                         class="px-6 py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all duration-200"
                         :class="activeTab === 'price' ? 'border-[#8C1E1E] text-[#8C1E1E] bg-white' : 'border-transparent text-gray-500 hover:text-gray-900'"
                     >
-                        Định giá & Biến động thị trường
+                        Biểu đồ biến động giá
                     </button>
                     <button 
                         @click="activeTab = 'video'"
                         class="px-6 py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all duration-200"
                         :class="activeTab === 'video' ? 'border-[#8C1E1E] text-[#8C1E1E] bg-white' : 'border-transparent text-gray-500 hover:text-gray-900'"
                     >
-                        Kịch bản Video AI (Tiktok/Shorts)
+                        Kịch bản Video ngắn (Tiktok/Shorts)
                     </button>
                 </div>
 
                 <!-- Tab Panels -->
                 <div class="p-6 lg:p-10">
                     
-                    <!-- Loading state: If AI content is still generating -->
-                    <div v-if="is_pending_ai" class="flex flex-col items-center justify-center py-16 text-center">
+                    <!-- Loading state: If content is still generating -->
+                    <div v-if="is_pending" class="flex flex-col items-center justify-center py-16 text-center">
                         <div class="relative w-16 h-16 mb-6">
                             <!-- Pulse spinner -->
                             <div class="absolute inset-0 rounded-full border-4 border-[#8C1E1E]/20 animate-ping"></div>
                             <div class="absolute inset-0 rounded-full border-4 border-t-[#8C1E1E] border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Trí Tuệ Nhân Tạo (AI) Đang Phân Tích...</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Hệ Thống Đang Phân Tích...</h3>
                         <p class="text-gray-500 max-w-md text-sm">
-                            Hệ thống AI đang giải mã chi tiết các số phong thủy, ngũ hành hợp mệnh và soạn thảo bài viết tối ưu cho biển số này. Vui lòng tải lại trang sau 1 phút!
+                            Hệ thống đang giải mã chi tiết các số phong thủy, ngũ hành hợp mệnh và soạn thảo bài viết tối ưu cho biển số này. Vui lòng tải lại trang sau 1 phút!
                         </p>
                     </div>
 
@@ -498,154 +633,221 @@ return '';
                         <h1 class="text-2xl lg:text-3xl font-extrabold text-gray-900 mb-6 tracking-tight border-b border-gray-100 pb-4 font-sans">
                             {{ article.title }}
                         </h1>
-                        <!-- Render AI HTML content safely -->
+                        <!-- Featured image (WebP) -->
+                        <div v-if="article.image_url" class="mb-6 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                            <img
+                                :src="article.image_url"
+                                :alt="`Biển số ${plate.display_number} - ${plate.province?.name ?? ''}`"
+                                class="w-full h-auto object-cover"
+                                loading="lazy"
+                                width="1200"
+                                height="630"
+                            />
+                        </div>
+                        <!-- Render HTML content safely -->
                         <div v-if="article.content" class="ai-content-body space-y-6 text-gray-700 leading-relaxed text-base" v-html="article.content"></div>
                         <div v-else class="text-gray-500 text-sm">Nội dung bài viết chưa được cập nhật.</div>
                         
                         <!-- Article footer indexing badge -->
                         <div class="mt-12 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-                            <span>Mô hình AI: {{ article.ai_model || 'Llama-3.3-70b-versatile' }}</span>
+                            <span>Mô hình phân tích: {{ article.generation_model || 'Llama-3.3-70b-versatile' }}</span>
                             <span v-if="article.generated_at">Ngày khởi tạo nội dung: {{ formatDate(article.generated_at) }}</span>
                         </div>
                     </div>
 
                     <!-- Price Prediction Tab -->
                     <div v-else-if="activeTab === 'price'" class="space-y-8">
-                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                            
-                            <!-- Left: Prediction Slider & Value -->
-                            <div class="lg:col-span-5 bg-gray-50 p-6 rounded-2xl border border-gray-200/80 flex flex-col justify-between">
+                        <!-- Empty State if no data -->
+                        <div v-if="!price_trend || Object.keys(price_trend).length === 0" class="flex flex-col items-center justify-center py-16 text-center max-w-4xl mx-auto w-full">
+                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.008 1.24l.885 1.77a2.25 2.25 0 0 0 2.007 1.24h1.98a2.25 2.25 0 0 0 2.007-1.24l.885-1.77a2.25 2.25 0 0 1 2.007-1.24h3.86m-18 0h18" />
+                                </svg>
+                            </div>
+                            <h3 class="text-base font-bold text-gray-800 mb-1">Chưa có dữ liệu lịch sử đấu giá</h3>
+                            <p class="text-xs text-gray-500 max-w-md">
+                                Không tìm thấy biển số {{ plate.vehicle_type === 'car' ? 'ô tô' : 'xe máy' }} nào có cùng sê-ri số đuôi "{{ plate.serial_number }}" đã hoàn thành đấu giá tại tỉnh thành {{ plate.province?.name || 'này' }}.
+                            </p>
+                        </div>
+
+                        <!-- Historical Trend SVG Chart with Tooltips -->
+                        <div v-else class="relative max-w-4xl mx-auto w-full">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 border-b border-gray-100 pb-4">
                                 <div>
-                                    <div class="flex justify-between items-center mb-4">
-                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Mô hình định giá AI</span>
-                                        <span class="px-2.5 py-0.5 text-[10px] font-bold rounded bg-green-50 text-green-700 border border-green-200">
-                                            Độ tin cậy: {{ price_prediction.confidence }}
-                                        </span>
+                                    <h3 class="text-sm sm:text-base font-semibold text-gray-700 font-sans">
+                                        Lịch sử giá trúng đấu giá sê-ri số đuôi "{{ plate.serial_number }}" tại {{ plate.province?.name }}
+                                    </h3>
+                                    <p class="text-[11px] text-gray-400 mt-1">Đơn vị: VND. So sánh trực quan xu hướng giá giữa các địa phương.</p>
+                                </div>
+                            </div>
+                        
+                            <!-- Floating Tooltip Overlay (Side-by-side comparison) -->
+                            <div 
+                                v-if="hoveredIndex !== null" 
+                                class="absolute z-25 bg-slate-900/95 text-white text-[11px] p-3.5 rounded-xl shadow-xl border border-slate-800 pointer-events-none transition-all duration-150 space-y-3 min-w-[160px]"
+                                :style="{
+                                    left: `${(getXCoordinate(hoveredIndex, currentPlates.length) / 500) * 100}%`,
+                                    top: '120px',
+                                    transform: hoveredIndex >= currentPlates.length / 2 ? 'translateX(-105%)' : 'translateX(5%)'
+                                }"
+                            >
+                                <!-- Tỉnh hiện tại -->
+                                <div v-if="currentPlates[hoveredIndex]" class="space-y-1">
+                                    <div class="font-bold text-[#FCA5A5] border-b border-slate-700/50 pb-1 mb-1.5 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#8C1E1E]"></span>
+                                        {{ currentProvinceName }}
                                     </div>
-                                    
-                                    <div class="mb-1 text-gray-400 text-xs font-semibold">Phân khúc nhận diện:</div>
-                                    <h4 class="text-lg font-bold text-gray-800 mb-6">{{ price_prediction.kind_name }}</h4>
-
-                                    <div class="text-center bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6">
-                                        <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Giá trị kỳ vọng dự toán</div>
-                                        <div class="text-3xl font-black text-[#8C1E1E] mt-1.5">{{ formatMoney(price_prediction.expected) }}</div>
-                                        <p class="text-[10px] text-gray-400 mt-2">Tính toán dựa trên cơ sở mẫu dữ liệu 276k biển số đã đấu giá thành công.</p>
+                                    <div>Biển: <span class="font-bold text-gray-200">{{ currentPlates[hoveredIndex].plate_number }}</span></div>
+                                    <div>Giá trúng: <span class="font-bold text-red-400">{{ formatMoney(currentPlates[hoveredIndex].winning_price) }}</span></div>
+                                    <div class="text-[10px] text-slate-400">Ngày đấu: {{ currentPlates[hoveredIndex].auction_date }}</div>
+                                </div>
+                                
+                                <!-- Tỉnh đối chiếu -->
+                                <div v-if="compareProvinceCode && comparedPlates[hoveredIndex]" class="space-y-1 pt-2 border-t border-slate-800">
+                                    <div class="font-bold text-[#93C5FD] border-b border-slate-700/50 pb-1 mb-1.5 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#3B82F6]"></span>
+                                        {{ comparedProvinceName }}
                                     </div>
-
-                                    <!-- Range bar representation -->
-                                    <div class="space-y-2">
-                                        <div class="flex justify-between text-xs text-gray-500 font-semibold">
-                                            <span>Min: {{ formatShortMoney(price_prediction.min) }}</span>
-                                            <span>Max: {{ formatShortMoney(price_prediction.max) }}</span>
-                                        </div>
-                                        <div class="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                                            <!-- Colored range bar -->
-                                            <div class="absolute left-[10%] right-[10%] h-full bg-gradient-to-r from-amber-400 via-[#8C1E1E] to-red-600 rounded-full"></div>
-                                            <!-- Expected value pin indicator -->
-                                            <div class="absolute left-[50%] -translate-x-1/2 top-0 w-3 h-full bg-white border-2 border-[#8C1E1E] shadow-sm"></div>
-                                        </div>
-                                        <p class="text-[10px] text-gray-400 text-center leading-relaxed mt-1">
-                                            Biên dao động giao dịch ước tính trong khoảng 80% - 130% tùy độ máu của các đại gia đấu giá.
-                                        </p>
-                                    </div>
+                                    <div>Biển: <span class="font-bold text-gray-200">{{ comparedPlates[hoveredIndex].plate_number }}</span></div>
+                                    <div>Giá trúng: <span class="font-bold text-blue-400">{{ formatMoney(comparedPlates[hoveredIndex].winning_price) }}</span></div>
+                                    <div class="text-[10px] text-slate-400">Ngày đấu: {{ comparedPlates[hoveredIndex].auction_date }}</div>
                                 </div>
                             </div>
 
-                            <!-- Right: Historical Trend SVG Chart -->
-                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200/80">
-                                <h3 class="text-sm font-bold text-gray-900 mb-6 flex items-center justify-between">
-                                    <span>Biến động giá trị phân khúc 6 tháng gần nhất</span>
-                                    <span class="text-xs font-semibold text-gray-500">Đơn vị: VND</span>
-                                </h3>
+                            <!-- SVG Price Chart -->
+                            <div class="bg-gray-50 border border-gray-150 rounded-2xl p-4 md:p-6 shadow-inner relative overflow-hidden">
+                                <svg viewBox="0 0 500 230" class="w-full h-auto overflow-visible" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <!-- Gradient definition for current province area fill -->
+                                        <linearGradient id="currentAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#8C1E1E" stop-opacity="0.25" />
+                                            <stop offset="100%" stop-color="#8C1E1E" stop-opacity="0.0" />
+                                        </linearGradient>
+                                        <!-- Gradient definition for compared province area fill -->
+                                        <linearGradient id="compareAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25" />
+                                            <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.0" />
+                                        </linearGradient>
+                                    </defs>
 
-                                <!-- SVG Line Chart -->
-                                <div class="relative w-full">
-                                    <svg viewBox="0 0 500 230" class="w-full h-auto overflow-visible">
-                                        <!-- Grid lines -->
-                                        <line x1="60" y1="30" x2="460" y2="30" stroke="#E5E7EB" stroke-dasharray="3,3" />
-                                        <text x="50" y="34" class="text-[9px] font-bold text-gray-400 text-right" text-anchor="end">
-                                            {{ formatShortMoney(maxTrendValue) }}
-                                        </text>
+                                    <!-- Grid lines & Y Axis values -->
+                                    <line x1="60" y1="30" x2="460" y2="30" stroke="#F3F4F6" stroke-width="1.5" />
+                                    <line x1="60" y1="30" x2="460" y2="30" stroke="#E5E7EB" stroke-dasharray="3,3" />
+                                    <text x="50" y="34" class="text-[9px] font-bold text-gray-400 font-sans text-right" text-anchor="end">
+                                        {{ formatShortMoney(maxCategoryValue) }}
+                                    </text>
 
-                                        <line x1="60" y1="80" x2="460" y2="80" stroke="#E5E7EB" stroke-dasharray="3,3" />
-                                        <text x="50" y="84" class="text-[9px] font-bold text-gray-400 text-right" text-anchor="end">
-                                            {{ formatShortMoney(maxTrendValue * 0.66) }}
-                                        </text>
+                                    <line x1="60" y1="80" x2="460" y2="80" stroke="#F3F4F6" stroke-width="1.5" />
+                                    <line x1="60" y1="80" x2="460" y2="80" stroke="#E5E7EB" stroke-dasharray="3,3" />
+                                    <text x="50" y="84" class="text-[9px] font-bold text-gray-400 font-sans text-right" text-anchor="end">
+                                        {{ formatShortMoney(maxCategoryValue * 0.66) }}
+                                    </text>
 
-                                        <line x1="60" y1="130" x2="460" y2="130" stroke="#E5E7EB" stroke-dasharray="3,3" />
-                                        <text x="50" y="134" class="text-[9px] font-bold text-gray-400 text-right" text-anchor="end">
-                                            {{ formatShortMoney(maxTrendValue * 0.33) }}
-                                        </text>
+                                    <line x1="60" y1="130" x2="460" y2="130" stroke="#F3F4F6" stroke-width="1.5" />
+                                    <line x1="60" y1="130" x2="460" y2="130" stroke="#E5E7EB" stroke-dasharray="3,3" />
+                                    <text x="50" y="134" class="text-[9px] font-bold text-gray-400 font-sans text-right" text-anchor="end">
+                                        {{ formatShortMoney(maxCategoryValue * 0.33) }}
+                                    </text>
 
-                                        <!-- X Axis Line -->
-                                        <line x1="60" y1="180" x2="460" y2="180" stroke="#D1D5DB" stroke-width="1.5" />
-                                        <text x="50" y="184" class="text-[9px] font-bold text-gray-400 text-right" text-anchor="end">0</text>
+                                    <!-- X Axis Line -->
+                                    <line x1="60" y1="180" x2="460" y2="180" stroke="#D1D5DB" stroke-width="1.5" />
+                                    <text x="50" y="184" class="text-[9px] font-bold text-gray-400 font-sans text-right" text-anchor="end">0</text>
 
-                                        <!-- Area Fill under Category Line -->
-                                        <polygon :points="categoryAreaPoints" fill="url(#catAreaGrad)" opacity="0.15" />
+                                    <!-- Area Fill (Current Province) -->
+                                    <path v-if="categoryAreaPath" :d="categoryAreaPath" fill="url(#currentAreaGrad)" />
 
-                                        <!-- Line 1: Category Average (Solid Red) -->
-                                        <polyline :points="categoryLinePoints" fill="none" stroke="#8C1E1E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- Curve Line (Current Province) -->
+                                    <path v-if="categoryLinePath" :d="categoryLinePath" fill="none" stroke="#8C1E1E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
 
-                                        <!-- Line 2: Market Average (Dashed Gray) -->
-                                        <polyline :points="marketLinePoints" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-dasharray="5,5" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- Area Fill (Compared Province) -->
+                                    <path v-if="compareProvinceCode && compareAreaPath" :d="compareAreaPath" fill="url(#compareAreaGrad)" />
 
-                                        <!-- Circle points for Category Line -->
+                                    <!-- Curve Line (Compared Province) -->
+                                    <path v-if="compareProvinceCode && compareLinePath" :d="compareLinePath" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+                                    <!-- Highlight hovered vertical guide line -->
+                                    <line 
+                                        v-if="hoveredIndex !== null" 
+                                        :x1="getXCoordinate(hoveredIndex, currentPlates.length)" 
+                                        y1="30" 
+                                        :x2="getXCoordinate(hoveredIndex, currentPlates.length)" 
+                                        y2="180" 
+                                        stroke="#D1D5DB" 
+                                        stroke-width="1" 
+                                        stroke-dasharray="3,3" 
+                                    />
+
+                                    <!-- Dots / Circles (Current Province) -->
+                                    <g v-for="(item, i) in currentPlates" :key="'curr-circle-' + i">
                                         <circle 
-                                            v-for="(item, i) in price_trend" 
-                                            :key="'cat-pt-' + i"
-                                            :cx="60 + (i * 80)"
-                                            :cy="180 - ((item.category_avg / maxTrendValue) * 150)"
-                                            r="4" 
+                                            :cx="getXCoordinate(i, currentPlates.length)" 
+                                            :cy="180 - ((item.winning_price / maxCategoryValue) * 150)" 
+                                            :r="hoveredIndex === i ? 7 : 5" 
                                             fill="#8C1E1E" 
                                             stroke="#FFFFFF" 
-                                            stroke-width="1.5"
-                                            class="shadow-sm cursor-pointer hover:r-6 transition-all"
+                                            :stroke-width="hoveredIndex === i ? 2.5 : 1.5" 
+                                            class="transition-all duration-150"
                                         />
+                                    </g>
 
-                                        <!-- X Axis Labels (Months) -->
-                                        <text 
-                                            v-for="(item, i) in price_trend" 
-                                            :key="'lbl-x-' + i"
-                                            :x="60 + (i * 80)" 
-                                            y="200" 
-                                            class="text-[9px] font-bold text-gray-400 text-center"
-                                            text-anchor="middle"
-                                        >
-                                            {{ item.month }}
-                                        </text>
+                                    <!-- X Axis Labels (License Plate Number) -->
+                                    <text 
+                                        v-for="(item, i) in currentPlates" 
+                                        :key="'lbl-x-' + i"
+                                        :x="getXCoordinate(i, currentPlates.length)" 
+                                        y="200" 
+                                        class="text-[9px] font-bold text-gray-500 font-sans"
+                                        text-anchor="middle"
+                                    >
+                                        {{ item.plate_number }}
+                                    </text>
 
-                                        <!-- Gradient definition -->
-                                        <defs>
-                                            <linearGradient id="catAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stop-color="#8C1E1E" />
-                                                <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
-                                            </linearGradient>
-                                        </defs>
-                                    </svg>
-                                </div>
+                                    <!-- X Axis Labels (Auction Date) -->
+                                    <text 
+                                        v-for="(item, i) in currentPlates" 
+                                        :key="'lbl-date-' + i"
+                                        :x="getXCoordinate(i, currentPlates.length)" 
+                                        y="214" 
+                                        class="text-[8px] text-gray-400 font-medium font-sans"
+                                        text-anchor="middle"
+                                    >
+                                        {{ item.auction_date }}
+                                    </text>
 
-                                <!-- Legends -->
-                                <div class="mt-4 flex justify-center gap-6 text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-3.5 h-0.5 bg-[#8C1E1E] inline-block"></span>
-                                        <span>Phân khúc: {{ price_prediction.kind_name }}</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-3.5 h-0.5 border-t-2 border-dashed border-gray-400 inline-block"></span>
-                                        <span>Thị trường chung</span>
-                                    </div>
-                                </div>
+                                    <!-- Vertical Hover Hit Zones -->
+                                    <rect
+                                        v-for="(item, i) in currentPlates"
+                                        :key="'hover-zone-' + i"
+                                        :x="getXCoordinate(i, currentPlates.length) - (currentPlates.length > 1 ? 200 / (currentPlates.length - 1) : 200)"
+                                        y="10"
+                                        :width="currentPlates.length > 1 ? 400 / (currentPlates.length - 1) : 400"
+                                        height="180"
+                                        fill="transparent"
+                                        class="cursor-pointer"
+                                        @mouseenter="hoveredIndex = i"
+                                        @mouseleave="hoveredIndex = null"
+                                    />
+                                </svg>
                             </div>
 
+                            <!-- Legends -->
+                            <div class="mt-8 flex justify-center flex-wrap gap-6 text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-3.5 h-0.5 bg-[#8C1E1E] inline-block"></span>
+                                    <span>Giá trúng {{ currentProvinceName }}</span>
+                                </div>
+                                <div v-if="compareProvinceCode" class="flex items-center gap-1.5">
+                                    <span class="w-3.5 h-0.5 bg-[#3B82F6] inline-block"></span>
+                                    <span>Giá trúng {{ comparedProvinceName }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
                     <!-- Video Script Tab -->
                     <div v-else-if="activeTab === 'video'" class="space-y-6">
                         <div class="bg-red-50/50 border border-red-100/50 p-5 rounded-xl text-sm text-gray-600 mb-6 flex items-start gap-3">
                             <p>
-                                <strong>Kịch bản video ngắn (TikTok/Reels/Shorts)</strong> được tự động soạn thảo bởi AI. Bạn có thể sử dụng trực tiếp kịch bản này để làm voiceover bằng các công cụ AI (như ElevenLabs, Vbee...) và dựng video ngắn để kéo lượt tìm kiếm về bài viết này.
+                                <strong>Kịch bản video ngắn (TikTok/Reels/Shorts)</strong> được tự động soạn thảo. Bạn có thể sử dụng trực tiếp kịch bản này để làm voiceover bằng các công cụ đọc giọng nói tự động (như ElevenLabs, Vbee...) và dựng video ngắn để kéo lượt tìm kiếm về bài viết này.
                             </p>
                         </div>
 
@@ -662,10 +864,12 @@ return '';
         <!-- Footer -->
         <footer class="border-t border-gray-200 bg-white py-12 mt-16 text-center text-gray-400 text-xs font-medium">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <p class="mb-2 text-gray-500">© 2026 BIENSO.AI. Nền tảng phân tích phong thủy biển số xe tự động.</p>
-                <p class="text-gray-400 font-light">Nội dung giải luận mang tính chất tham khảo khoa học phong thủy số học, được hỗ trợ tổng hợp bởi công nghệ AI.</p>
+                <p class="mb-2 text-gray-500">© 2026 BISOXE.COM. Nền tảng phân tích phong thủy biển số xe tự động.</p>
+                <p class="text-gray-400 font-light">Nội dung giải luận mang tính chất tham khảo khoa học phong thủy số học, được hỗ trợ tổng hợp và tính toán tự động.</p>
             </div>
         </footer>
+
+        <BackToTop />
     </div>
 </template>
 
@@ -674,7 +878,7 @@ body, .font-sans, .font-serif, .ai-content-body h2, .ai-content-body h3 {
     font-family: 'Inter', sans-serif !important;
 }
 
-/* Custom style for rendering AI html articles dynamically */
+/* Custom style for rendering html articles dynamically */
 .ai-content-body h2 {
     font-size: 1.5rem;
     font-weight: 800;
@@ -713,6 +917,118 @@ body, .font-sans, .font-serif, .ai-content-body h2, .ai-content-body h3 {
 .ai-content-body strong {
     color: #8C1E1E;
     font-weight: 700;
+}
+
+/* Table styles for AI-generated content */
+.ai-content-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0 2rem 0;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #E5E7EB;
+}
+
+/* Bọc wrapper overflow để table responsive trên mobile */
+.ai-content-body table {
+    display: table;
+}
+
+.ai-content-body div:has(> table),
+.ai-content-body p:has(> table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Header row - hỗ trợ cả <thead><th> và <tr><td> đầu tiên */
+.ai-content-body thead {
+    background: #8C1E1E;
+    color: white;
+}
+
+.ai-content-body thead th,
+.ai-content-body thead td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: white;
+    border-right: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Fallback: hàng đầu tiên trong tbody nếu không có thead */
+.ai-content-body tbody tr:first-child td:not([class]) {
+    background: #8C1E1E;
+    color: white;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Khi toàn bộ bảng không có thead — target tr đầu tiên của table */
+.ai-content-body table > tbody > tr:first-child > td,
+.ai-content-body table > tr:first-child > td {
+    background: #8C1E1E !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 0.83rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.8rem 1rem !important;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255,255,255,0.2) !important;
+    border-bottom: none !important;
+    text-align: center;
+}
+
+.ai-content-body tbody tr {
+    border-bottom: 1px solid #E5E7EB;
+    transition: background 0.15s;
+}
+
+.ai-content-body tbody tr:nth-child(even) {
+    background-color: #FDF9F9;
+}
+
+.ai-content-body tbody tr:nth-child(odd) {
+    background-color: #FFFFFF;
+}
+
+.ai-content-body tbody tr:hover {
+    background-color: #FEF2F2;
+}
+
+.ai-content-body tbody td,
+.ai-content-body tbody th {
+    padding: 0.65rem 1rem;
+    color: #374151;
+    vertical-align: top;
+    line-height: 1.6;
+    border-right: 1px solid #E5E7EB;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.ai-content-body tbody td:last-child,
+.ai-content-body tbody th:last-child {
+    border-right: none;
+}
+
+.ai-content-body tbody td strong {
+    color: #8C1E1E;
+}
+
+.ai-content-body tbody td:first-child {
+    font-weight: 700;
+    color: #111827;
+    background-color: #F9FAFB;
+    white-space: nowrap;
+    border-right: 2px solid #E5E7EB;
 }
 
 /* Perspective utilities for 3D card tilt */

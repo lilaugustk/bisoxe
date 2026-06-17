@@ -2,24 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LicensePlate;
-use App\Models\SeoArticle;
-use App\Models\Province;
-use App\Models\PlateKind;
 use App\Jobs\GenerateSeoArticleJob;
+use App\Models\LicensePlate;
+use App\Models\PlateKind;
+use App\Models\Province;
+use App\Models\SeoArticle;
 use App\Services\PlatePricePredictorService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class LicensePlateController extends Controller
 {
     /**
+     * Hiển thị danh sách biển số xe ô tô.
+     */
+    public function carIndex(Request $request): Response
+    {
+        $request->merge(['vehicle' => 'car']);
+        return $this->index($request);
+    }
+
+    /**
+     * Hiển thị danh sách biển số xe máy.
+     */
+    public function motorcycleIndex(Request $request): Response
+    {
+        $request->merge(['vehicle' => 'motorcycle']);
+        return $this->index($request);
+    }
+
+    /**
      * Hiển thị danh sách biển số xe trên trang chủ.
-     *
-     * @param Request $request
-     * @return Response
      */
     public function index(Request $request): Response
     {
@@ -29,6 +44,10 @@ class LicensePlateController extends Controller
         $province = $request->input('province');
         $kind = $request->input('kind');
         $vehicle = $request->input('vehicle', 'car');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $birthYears = $request->input('birth_years');
+        $avoidNumbers = $request->input('avoid_numbers');
 
         $query = LicensePlate::query()->with(['province', 'kinds', 'seoArticle']);
 
@@ -45,7 +64,7 @@ class LicensePlateController extends Controller
         $query->where('status', $status);
 
         // 3. Lọc theo tìm kiếm
-        if (!empty($search)) {
+        if (! empty($search)) {
             $cleanSearch = strtoupper(str_replace(['-', '.'], '', $search));
             $query->where('full_number', 'like', "%{$cleanSearch}%");
         }
@@ -56,17 +75,48 @@ class LicensePlateController extends Controller
         }
 
         // 5. Lọc theo tỉnh thành
-        if (!empty($province)) {
+        if (! empty($province)) {
             $query->where('province_code', $province);
         }
 
         // 6. Lọc theo loại biển (hỗ trợ nhiều loại, phân tách bằng dấu phẩy)
-        if (!empty($kind)) {
+        if (! empty($kind)) {
             $kindIds = array_filter(array_map('intval', explode(',', $kind)));
-            if (!empty($kindIds)) {
+            if (! empty($kindIds)) {
                 $query->whereHas('kinds', function ($q) use ($kindIds) {
                     $q->whereIn('plate_kinds.id', $kindIds);
                 });
+            }
+        }
+
+        // 7. Lọc theo ngày đấu giá (start_date và end_date)
+        if (! empty($startDate)) {
+            $query->whereDate('auction_start_time', '>=', $startDate);
+        }
+        if (! empty($endDate)) {
+            $query->whereDate('auction_start_time', '<=', $endDate);
+        }
+
+        // 8. Lọc theo năm sinh (decade pattern, ví dụ: 196x -> 1960 - 1969)
+        if (! empty($birthYears)) {
+            $yearsArray = array_filter(explode(',', $birthYears));
+            if (! empty($yearsArray)) {
+                $query->where(function ($q) use ($yearsArray) {
+                    foreach ($yearsArray as $by) {
+                        $prefix = substr($by, 0, 3);
+                        $q->orWhere('serial_number', 'like', "%{$prefix}_%");
+                    }
+                });
+            }
+        }
+
+        // 9. Lọc tránh số
+        if (! empty($avoidNumbers)) {
+            $avoidsArray = array_filter(explode(',', $avoidNumbers));
+            foreach ($avoidsArray as $num) {
+                if (in_array($num, ['4', '7', '49', '53', '13'])) {
+                    $query->where('serial_number', 'not like', "%{$num}%");
+                }
             }
         }
 
@@ -77,10 +127,15 @@ class LicensePlateController extends Controller
             $query->latest();
         }
 
-        $paginated = $query->paginate(50)->withQueryString();
+        $limit = (int) $request->input('limit', 10);
+        if (! in_array($limit, [10, 20, 50, 100])) {
+            $limit = 10;
+        }
+
+        $paginated = $query->paginate($limit)->onEachSide(1)->withQueryString();
 
         // Chuyển đổi dữ liệu cho từng item
-        $transformedData = collect($paginated->items())->map(fn($p) => $this->transformPlate($p))->toArray();
+        $transformedData = collect($paginated->items())->map(fn ($p) => $this->transformPlate($p))->toArray();
 
         // Tạo paginator với dữ liệu đã transform
         $plates = [
@@ -103,15 +158,17 @@ class LicensePlateController extends Controller
                 'province' => $province,
                 'kind' => $kind,
                 'vehicle' => $vehicle,
-            ]
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'birth_years' => $birthYears,
+                'avoid_numbers' => $avoidNumbers,
+                'limit' => $limit,
+            ],
         ]);
     }
 
     /**
-     * Hiển thị trang chi tiết biển số xe và bài viết phong thủy từ AI.
-     *
-     * @param string $slug
-     * @return Response|RedirectResponse
+     * Hiển thị trang chi tiết biển số xe và bài viết phong thủy tự động.
      */
     public function show(string $slug, PlatePricePredictorService $predictorService): Response|RedirectResponse
     {
@@ -133,10 +190,12 @@ class LicensePlateController extends Controller
                     'content' => $article->content,
                     'video_script' => $article->video_script,
                     'slug' => $article->slug,
+                    'generation_model' => $article->generation_model,
                     'generated_at' => $article->generated_at ? $article->generated_at->toISOString() : null,
+                    'image_url' => $article->image_path ? asset($article->image_path) : null,
                 ],
                 'plate' => $this->transformPlate($plate),
-                'is_pending_ai' => false,
+                'is_pending' => false,
                 'price_prediction' => $prediction,
                 'price_trend' => $trend,
             ]);
@@ -170,9 +229,10 @@ class LicensePlateController extends Controller
                     'content' => null,
                     'video_script' => null,
                     'slug' => $slug,
+                    'image_url' => null,
                 ],
                 'plate' => $this->transformPlate($plate),
-                'is_pending_ai' => true, // Báo cho frontend hiển thị trạng thái "AI đang phân tích..."
+                'is_pending' => true, // Báo cho frontend hiển thị trạng thái đang phân tích
                 'price_prediction' => $prediction,
                 'price_trend' => $trend,
             ]);
@@ -202,11 +262,11 @@ class LicensePlateController extends Controller
             'winning_price' => $plate->winning_price,
             'province' => $plate->province ? [
                 'code' => $plate->province->code,
-                'name' => $plate->province->name
+                'name' => $plate->province->name,
             ] : null,
-            'kinds' => $plate->kinds->map(fn($k) => [
+            'kinds' => $plate->kinds->map(fn ($k) => [
                 'id' => $k->id,
-                'name' => $k->name
+                'name' => $k->name,
             ])->toArray(),
             'auction_start_time' => $plate->auction_start_time ? $plate->auction_start_time->toISOString() : null,
             'auction_end_time' => $plate->auction_end_time ? $plate->auction_end_time->toISOString() : null,

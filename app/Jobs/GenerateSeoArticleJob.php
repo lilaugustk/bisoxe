@@ -4,14 +4,16 @@ namespace App\Jobs;
 
 use App\Models\LicensePlate;
 use App\Models\SeoArticle;
+use App\Services\GeminiApiService;
 use App\Services\GroqApiService;
+use App\Services\PlateImageService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class GenerateSeoArticleJob implements ShouldQueue
 {
@@ -36,28 +38,51 @@ class GenerateSeoArticleJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(GroqApiService $groqService): void
+    public function handle(GeminiApiService $geminiService, PlateImageService $imageService): void
     {
         // Kiểm tra xem bài viết đã tồn tại chưa để tránh ghi đè trùng lặp
-        if ($this->plate->seoArticle()->exists()) {
-            Log::info("SEO Article already exists for license plate: " . $this->plate->full_number);
+        $existingArticle = $this->plate->seoArticle;
+        if ($existingArticle) {
+            // Nếu bài viết đã có nhưng chưa có ảnh (ví dụ: job bị rate limit và retry),
+            // thì vẫn sinh ảnh để đảm bảo đầy đủ
+            if (! $existingArticle->image_path) {
+                Log::info('SEO Article exists but has no image, generating image for: '.$this->plate->full_number);
+                $this->plate->load('kinds', 'province');
+                $imagePath = $imageService->generate($this->plate, $existingArticle->slug);
+                if ($imagePath) {
+                    $existingArticle->update(['image_path' => $imagePath]);
+                }
+            } else {
+                Log::info('SEO Article already exists for license plate: '.$this->plate->full_number);
+            }
+
             return;
         }
 
         try {
-            // Gọi AI sinh nội dung bài viết
-            $data = $groqService->generateForLicensePlate($this->plate);
+            // Dùng Gemini làm AI chính để sinh nội dung, tự động fallback sang Groq nếu lỗi
+            $generationModel = env('GEMINI_MODEL', 'gemini-2.5-flash');
+            try {
+                $data = $geminiService->generateForLicensePlate($this->plate);
+            } catch (\Exception $e) {
+                Log::warning('Gemini API failed, falling back to Groq API for plate: '.$this->plate->full_number, [
+                    'error' => $e->getMessage()
+                ]);
+                $groqService = app(GroqApiService::class);
+                $data = $groqService->generateForLicensePlate($this->plate);
+                $generationModel = env('GROQ_MODEL', 'groq/compound-mini');
+            }
 
             // Tạo slug chuẩn SEO cho trang chi tiết biển số
             // Ví dụ: 30K-999.99 -> bien-so-30k-99999
             $cleanNumber = str_replace(['-', '.'], '', $this->plate->full_number);
-            $slug = Str::slug('bien-so-' . $this->plate->local_symbol . $this->plate->serial_letter . '-' . $this->plate->serial_number);
+            $slug = Str::slug('bien-so-'.$this->plate->local_symbol.$this->plate->serial_letter.'-'.$this->plate->serial_number);
 
             // Đảm bảo slug là duy nhất
             $originalSlug = $slug;
             $counter = 1;
             while (SeoArticle::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $counter;
+                $slug = $originalSlug.'-'.$counter;
                 $counter++;
             }
 
@@ -69,18 +94,25 @@ class GenerateSeoArticleJob implements ShouldQueue
                 'meta_description' => $data['meta_description'],
                 'content' => $data['content'],
                 'video_script' => $data['video_script'],
-                'ai_model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+                'generation_model' => $generationModel,
                 'generated_at' => now(),
             ]);
 
-            Log::info("Successfully generated SEO Article for license plate: " . $this->plate->full_number);
+            Log::info('Successfully generated SEO Article for license plate: '.$this->plate->full_number);
+
+            // Sinh ảnh WebP cho bài viết (chạy sau khi article đã được tạo)
+            $this->plate->load('kinds', 'province');
+            $imagePath = $imageService->generate($this->plate, $slug);
+            if ($imagePath) {
+                $article->update(['image_path' => $imagePath]);
+            }
 
             // Tạm thời bỏ qua việc gửi index lên Google
             // SubmitToGoogleIndexingJob::dispatch($article);
 
         } catch (\Exception $e) {
-            Log::error("Failed to execute GenerateSeoArticleJob for plate: " . $this->plate->full_number, [
-                'message' => $e->getMessage()
+            Log::error('Failed to execute GenerateSeoArticleJob for plate: '.$this->plate->full_number, [
+                'message' => $e->getMessage(),
             ]);
             throw $e;
         }

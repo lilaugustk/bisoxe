@@ -3,11 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Province;
-use App\Models\PlateKind;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,5 +21,5 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => bcrypt('password'),
         ]);
-}
+    }
 }

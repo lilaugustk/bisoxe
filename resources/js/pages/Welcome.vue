@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import BackToTop from '../components/BackToTop.vue';
 
 interface Plate {
     id: number;
@@ -41,6 +42,11 @@ const props = defineProps<{
         kind?: string;
         tab?: string;
         vehicle?: string;
+        start_date?: string;
+        end_date?: string;
+        birth_years?: string;
+        avoid_numbers?: string;
+        limit?: number | string;
     };
 }>();
 
@@ -53,34 +59,175 @@ const selectedKind = ref<string[]>(
         ? props.filters.kind.split(',')
         : []
 );
-const kindDropdownOpen = ref(false);
 
-// Đóng dropdown khi click ra ngoài
-const closeKindDropdown = (e: MouseEvent) => {
-    const el = document.getElementById('kind-dropdown-wrapper');
-
-    if (el && !el.contains(e.target as Node)) {
-        kindDropdownOpen.value = false;
-    }
-};
-onMounted(() => {
-    document.addEventListener('mousedown', closeKindDropdown);
-});
-onUnmounted(() => {
-    document.removeEventListener('mousedown', closeKindDropdown);
-});
 const activeTab = ref(props.filters.tab || 'announce'); // 'announce' | 'official' | 'result'
 const activeVehicle = ref(props.filters.vehicle || 'car'); // 'car' | 'motorcycle'
+
+const startDate = ref(props.filters.start_date || '');
+const endDate = ref(props.filters.end_date || '');
+const startDateFocused = ref(false);
+const endDateFocused = ref(false);
+const selectedBirthYears = ref<string[]>(
+    props.filters.birth_years
+        ? props.filters.birth_years.split(',')
+        : []
+);
+const selectedAvoidNumbers = ref<string[]>(
+    props.filters.avoid_numbers
+        ? props.filters.avoid_numbers.split(',')
+        : []
+);
+
+const selectedLimit = ref(props.filters.limit ? Number(props.filters.limit) : 10);
+const isLimitDropdownOpen = ref(false);
+const limitOptions = [10, 20, 50, 100];
+const selectLimit = (val: number) => {
+    selectedLimit.value = val;
+    isLimitDropdownOpen.value = false;
+};
+
+const kindsOpen = ref(true);
+const birthYearsOpen = ref(true);
+const avoidNumbersOpen = ref(true);
+
+const birthYearOptions = [
+    { label: 'Năm sinh 196x', value: '196x' },
+    { label: 'Năm sinh 197x', value: '197x' },
+    { label: 'Năm sinh 198x', value: '198x' },
+    { label: 'Năm sinh 199x', value: '199x' },
+    { label: 'Năm sinh 200x', value: '200x' }
+];
+
+const avoidNumberOptions = [
+    { label: 'Tránh 4', value: '4' },
+    { label: 'Tránh 7', value: '7' },
+    { label: 'Tránh 49', value: '49' },
+    { label: 'Tránh 53', value: '53' },
+    { label: 'Tránh 13', value: '13' }
+];
+
+const clearAllFilters = () => {
+    searchQuery.value = '';
+    selectedColor.value = '';
+    selectedProvince.value = '';
+    selectedKind.value = [];
+    startDate.value = '';
+    endDate.value = '';
+    selectedBirthYears.value = [];
+    selectedAvoidNumbers.value = [];
+    selectedLimit.value = 10;
+    reload();
+};
+
+const page = usePage();
+const currentPath = computed(() => page.url.split('?')[0]);
+const isHomePath = computed(() => currentPath.value === '/');
+
+const pageTitle = computed(() => {
+
+    if (isHomePath.value) {
+        return 'BISOXE.COM - Tra cứu Phong thủy Biển số xe & Kết quả Đấu giá';
+    }
+
+    if (activeVehicle.value === 'motorcycle') {
+        return 'BISOXE.COM - Tra cứu Phong thủy Biển số xe máy, mô tô & Kết quả Đấu giá';
+    }
+    
+    return 'BISOXE.COM - Tra cứu Phong thủy Biển số xe ô tô & Kết quả Đấu giá';
+});
+
+const pageDescription = computed(() => {
+    if (isHomePath.value) {
+        return 'Xem ý nghĩa phong thủy biển số xe ô tô, xe máy chính xác nhất. Cập nhật danh sách biển số xe đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
+    }
+    
+    if (activeVehicle.value === 'motorcycle') {
+        return 'Xem ý nghĩa phong thủy biển số xe máy, mô tô chính xác nhất. Cập nhật danh sách biển số xe máy đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
+    }
+
+    return 'Xem ý nghĩa phong thủy biển số xe ô tô chính xác nhất. Cập nhật danh sách biển số xe ô tô đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
+});
+
+const heroH1Html = computed(() => {
+    if (isHomePath.value) {
+        return 'Tra Cứu Ý Nghĩa Phong Thủy <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô & Xe Máy</span>';
+    }
+
+    if (activeVehicle.value === 'motorcycle') {
+        return 'Tra Cứu Ý Nghĩa Phong Thủy <br /> <span class="text-[#8C1E1E]">Biển Số Xe Máy & Mô Tô</span>';
+    }
+
+    return 'Tra Cứu Ý Nghĩa Phong Thủy <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô</span>';
+});
+
+const heroDescription = computed(() => {
+    if (isHomePath.value) {
+        return 'Hệ thống phân tích tự động giúp bạn luận giải ngũ hành cát hung, dịch nghĩa các cặp số phong thủy tài lộc cho mọi biển số xe ô tô, xe máy trên cả nước.';
+    }
+
+    if (activeVehicle.value === 'motorcycle') {
+        return 'Hệ thống phân tích tự động giúp bạn luận giải ngũ hành cát hung, dịch nghĩa các cặp số phong thủy tài lộc cho mọi biển số xe máy, mô tô trên cả nước.';
+    }
+
+    return 'Hệ thống phân tích tự động giúp bạn luận giải ngũ hành cát hung, dịch nghĩa các cặp số phong thủy tài lộc cho mọi biển số xe ô tô trên cả nước.';
+});
+
+const tableTitle = computed(() => {
+    if (isHomePath.value) {
+        return 'Tra cứu danh sách biển số xe';
+    }
+
+    if (activeVehicle.value === 'motorcycle') {
+        return 'Tra cứu danh sách biển số xe máy';
+    }
+
+    return 'Tra cứu danh sách biển số xe ô tô';
+});
+
+const tableDescription = computed(() => {
+    if (isHomePath.value) {
+        return 'Lọc nhanh hoặc nhập số xe cần tra ý nghĩa phong thủy';
+    }
+
+    if (activeVehicle.value === 'motorcycle') {
+        return 'Lọc nhanh hoặc nhập số xe máy cần tra ý nghĩa phong thủy';
+    }
+    
+    return 'Lọc nhanh hoặc nhập số xe ô tô cần tra ý nghĩa phong thủy';
+});
 
 // Định dạng tiền tệ VND
 const formatMoney = (value: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value);
 };
 
+// Định dạng ngày tháng
+const formatDate = (dateStr: string | null) => {
+    if (!dateStr) {
+        return 'Chưa công bố';
+    }
+
+    const date = new Date(dateStr);
+    
+    if (isNaN(date.getTime())) {
+        return 'Chưa công bố';
+    }
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
 // Đọc trực tiếp từ props đã truy vấn trên server thay vì tính toán trên client
 const uniqueProvinces = computed(() => props.provinces);
 const uniqueKinds = computed(() => 
-    props.kinds.filter(k => ['Ngũ quý', 'Sảnh tiến', 'Tứ quý'].includes(k.name))
+    props.kinds.filter(k => [
+        'Ngũ quý', 'Sảnh tiến', 'Tứ quý', 'Tam hoa', 'Thần tài', 'Lộc phát', 'Ông địa', 'Số gánh', 'Lặp đôi'
+    ].includes(k.name))
 );
 
 // Dữ liệu đã được lọc và phân trang từ phía server
@@ -88,13 +235,26 @@ const filteredPlates = computed(() => props.plates.data);
 
 // Hàm reload lại trang qua Inertia với các bộ lọc
 const reload = () => {
-    router.get('/', {
+    let targetPath = currentPath.value;
+    
+    // Nếu chuyển tab loại xe, đổi sang URL tương ứng
+    if (activeVehicle.value === 'car' && currentPath.value === '/bien-so-xe-may') {
+        targetPath = '/bien-so-xe-o-to';
+    } else if (activeVehicle.value === 'motorcycle' && (currentPath.value === '/' || currentPath.value === '/bien-so-xe-o-to')) {
+        targetPath = '/bien-so-xe-may';
+    }
+
+    router.get(targetPath, {
         search: searchQuery.value,
         color: selectedColor.value,
         province: selectedProvince.value,
         kind: selectedKind.value.join(','),
         tab: activeTab.value,
-        vehicle: activeVehicle.value,
+        start_date: startDate.value,
+        end_date: endDate.value,
+        birth_years: selectedBirthYears.value.join(','),
+        avoid_numbers: selectedAvoidNumbers.value.join(','),
+        limit: selectedLimit.value,
     }, {
         preserveState: true,
         replace: true,
@@ -103,44 +263,30 @@ const reload = () => {
 };
 
 // Theo dõi thay đổi của các bộ lọc dạng dropdown, tab và loại xe để tải lại dữ liệu ngay lập tức
-watch([selectedColor, selectedProvince, activeTab, activeVehicle], () => {
+watch([selectedColor, selectedProvince, activeTab, activeVehicle, startDate, endDate, selectedLimit], () => {
     reload();
 });
 
-// Watch riêng selectedKind với deep:true để detect push/splice trên mảng
-watch(selectedKind, () => {
+// Watch các mảng checkbox bằng deep:true
+watch([selectedKind, selectedBirthYears, selectedAvoidNumbers], () => {
     reload();
 }, { deep: true });
 
-// Toggle chọn/bỏ chọn 1 loại biển
-const toggleKind = (id: string) => {
-    const idx = selectedKind.value.indexOf(id);
 
-    if (idx === -1) {
-        selectedKind.value = [...selectedKind.value, id];
-    } else {
-        selectedKind.value = selectedKind.value.filter(k => k !== id);
-    }
-};
-
-const clearKinds = () => {
-    selectedKind.value = [];
-    kindDropdownOpen.value = false;
-};
 
 // Dữ liệu Schema Structured Data (JSON-LD) cho Google Bot đọc cấu hình website
 const schemaStructuredData = computed(() => {
     return {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "BIENSO.AI",
-        "url": "http://localhost", // Nên đổi thành domain thực tế khi deploy
+        "name": "BISOXE.COM",
+        "url": "https://bisoxe.com", // Nên đổi thành domain thực tế khi deploy
         "potentialAction": {
             "@type": "SearchAction",
-            "target": "http://localhost/?search={search_term_string}",
+            "target": "https://bisoxe.com/?search={search_term_string}",
             "query-input": "required name=search_term_string"
         },
-        "description": "Cổng tra cứu kết quả danh sách biển số xe và công cụ giải mã phong thủy biển số bằng AI chính xác nhất."
+        "description": "Cổng tra cứu kết quả danh sách biển số xe và công cụ giải mã phong thủy biển số xe tự động chính xác nhất."
     };
 });
 
@@ -163,28 +309,14 @@ onUnmounted(() => {
 
 <template>
     <Head>
-        <title>BIENSO.AI - Tra cứu Phong thủy Biển số xe & Kết quả Đấu giá</title>
-        <meta name="description" content="Xem ý nghĩa phong thủy biển số xe ô tô, xe máy chính xác nhất. Cập nhật danh sách biển số xe đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay." />
+        <title>{{ pageTitle }}</title>
+        <meta name="description" :content="pageDescription" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     </Head>
 
     <div class="min-h-screen bg-[#F9FAFB] text-[#111827] font-sans antialiased">
-        <!-- 1. Ticker Header -->
-        <div class="bg-[#8C1E1E] text-white text-xs py-2 overflow-hidden border-b border-red-900/10">
-            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-5">
-                <div class="flex items-center gap-2 overflow-hidden w-2/3 md:w-3/4">
-                    <span class="font-bold shrink-0 bg-red-950 px-2 py-0.5 rounded text-[10px]">TIN MỚI</span>
-                    <marquee class="text-white font-medium" scrollamount="4">
-                        Hệ thống tự động cập nhật danh sách biển số xe đẹp mới nhất: 30K-999.99, 15K-777.77, 51K-888.88, 99A-999.99 ...
-                    </marquee>
-                </div>
-                <div class="flex items-center gap-4 shrink-0 text-white font-semibold text-xs">
-                    <span>Hotline: 0996.912.345</span>
-                </div>
-            </div>
-        </div>
 
         <!-- 2. Main Header -->
         <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
@@ -192,19 +324,46 @@ onUnmounted(() => {
                 <div class="flex items-center gap-8">
                     <!-- Logo -->
                     <Link href="/" class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-[#8C1E1E] rounded-lg flex items-center justify-center text-white font-extrabold text-xl shadow-md">
-                            B
-                        </div>
+                        <svg class="w-10 h-10 shadow-md rounded-lg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="logoBgGrad" x1="0" y1="0" x2="100" y2="100">
+                                    <stop offset="0%" stop-color="#8C1E1E"/>
+                                    <stop offset="100%" stop-color="#5A1212"/>
+                                </linearGradient>
+                                <linearGradient id="plateGrad" x1="0" y1="0" x2="100" y2="100">
+                                    <stop offset="0%" stop-color="#FFFFFF"/>
+                                    <stop offset="100%" stop-color="#F3F4F6"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Background -->
+                            <rect width="100" height="100" rx="22" fill="url(#logoBgGrad)"/>
+                            
+                            <!-- License Plate Shape -->
+                            <rect x="16" y="32" width="68" height="38" rx="6" fill="url(#plateGrad)" stroke="#F5B800" stroke-width="2.5"/>
+                            <rect x="20" y="36" width="60" height="30" rx="4" fill="none" stroke="#9CA3AF" stroke-width="1" opacity="0.4"/>
+                            
+                            <!-- Screws -->
+                            <circle cx="21" cy="37" r="1.5" fill="#9CA3AF"/>
+                            <circle cx="79" cy="37" r="1.5" fill="#9CA3AF"/>
+                            
+                            <!-- The B Character -->
+                            <text x="50" y="57" text-anchor="middle" font-family="'Inter', sans-serif" font-size="24" font-weight="900" fill="#111827">B</text>
+                            
+                            <!-- Speed lines below / Swoosh -->
+                            <path d="M12 78 C 30 70, 70 70, 88 78" stroke="#F5B800" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M22 84 C 38 78, 62 78, 78 84" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                        </svg>
                         <div class="flex flex-col">
-                            <span class="text-lg font-black text-[#8C1E1E] leading-none">BIENSO.AI</span>
+                            <span class="text-lg font-black text-[#8C1E1E] leading-none">BISOXE.COM</span>
                             <span class="text-[10px] text-gray-500 font-bold tracking-widest mt-0.5">GIẢI MÃ PHONG THỦY</span>
                         </div>
                     </Link>
 
                     <!-- Navigation Menu -->
                     <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600">
-                        <Link href="/" class="text-[#8C1E1E]">Trang chủ</Link>
-                        <a href="#table-section" class="hover:text-[#8C1E1E] transition">Tra cứu biển số</a>
+                        <Link href="/" :class="currentPath === '/' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Trang chủ</Link>
+                        <Link href="/bien-so-xe-o-to" :class="currentPath === '/bien-so-xe-o-to' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe ô tô</Link>
+                        <Link href="/bien-so-xe-may" :class="currentPath === '/bien-so-xe-may' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe máy, mô tô</Link>
                         <a href="#meanings-section" class="hover:text-[#8C1E1E] transition">Ý nghĩa phong thủy</a>
                         <a href="#faq-section" class="hover:text-[#8C1E1E] transition">Hỏi đáp</a>
                     </nav>
@@ -225,13 +384,10 @@ onUnmounted(() => {
             </div>
 
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 tracking-tight mb-6">
-                    Tra Cứu Ý Nghĩa Phong Thủy <br />
-                    <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô & Xe Máy</span>
-                </h1>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 tracking-tight mb-6" v-html="heroH1Html"></h1>
                 
                 <p class="text-gray-600 text-lg max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
-                    Hệ thống ứng dụng công nghệ AI giúp bạn phân tích ngũ hành cát hung, dịch nghĩa các cặp số phong thủy tài lộc cho mọi biển số xe ô tô, xe máy trên cả nước.
+                    {{ heroDescription }}
                 </p>
 
                 <!-- Anchor link leading down to table -->
@@ -248,8 +404,8 @@ onUnmounted(() => {
         <section id="table-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20">
             
             <header class="mb-8">
-                <h2 class="text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">Tra cứu danh sách biển số xe</h2>
-                <p class="text-sm text-gray-500 mt-1">Lọc nhanh hoặc nhập số xe cần tra ý nghĩa phong thủy</p>
+                <h2 class="text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">{{ tableTitle }}</h2>
+                <p class="text-sm text-gray-500 mt-1">{{ tableDescription }}</p>
             </header>
 
             <!-- Vehicle Type Selector -->
@@ -288,7 +444,7 @@ onUnmounted(() => {
                     class="px-5 py-2.5 text-sm font-bold rounded-t-lg transition border-b-2"
                     :class="activeTab === 'official' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
                 >
-                    Danh sách niêm yết
+                    Biển số chính thức
                 </button>
                 <button 
                     @click="activeTab = 'result'"
@@ -299,230 +455,404 @@ onUnmounted(() => {
                 </button>
             </div>
 
-            <!-- Filters -->
-            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Search input -->
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </span>
-                        <input 
-                            type="text" 
-                            v-model="searchQuery"
-                            @keyup.enter="reload"
-                            @blur="reload"
-                            placeholder="Nhập biển số cần tìm" 
-                            class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E]"
-                        />
-                    </div>
-
-                    <!-- Color select -->
-                    <div>
-                        <select 
-                            v-model="selectedColor"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] bg-white"
-                        >
-                            <option value="">Chọn màu biển</option>
-                            <option value="0">Biển trắng (Cá nhân)</option>
-                            <option value="1">Biển vàng (Kinh doanh)</option>
-                        </select>
-                    </div>
-
-                    <!-- Province select -->
-                    <div>
-                        <select 
-                            v-model="selectedProvince"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] bg-white"
-                        >
-                            <option value="">Chọn tỉnh, thành phố</option>
-                            <option v-for="prov in uniqueProvinces" :key="prov.code" :value="prov.code">
-                                {{ prov.name }}
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Kind multi-checkbox dropdown -->
-                    <div id="kind-dropdown-wrapper" class="relative">
-                        <button
-                            type="button"
-                            @click="kindDropdownOpen = !kindDropdownOpen"
-                            class="w-full flex items-center justify-between px-3 py-2 border rounded-lg text-sm bg-white transition focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20"
-                            :class="kindDropdownOpen ? 'border-[#8C1E1E] ring-2 ring-[#8C1E1E]/20' : 'border-gray-300'"
-                        >
-                            <span class="truncate" :class="selectedKind.length === 0 ? 'text-gray-400' : 'text-gray-700 font-medium'">
-                                <template v-if="selectedKind.length === 0">Chọn loại biển</template>
-                                <template v-else>{{ selectedKind.length }} loại đã chọn</template>
+            <!-- Filters and Table Layout Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mt-6">
+                
+                <!-- Left Sidebar Filters -->
+                <aside class="lg:col-span-1 space-y-4">
+                    <!-- General Filters -->
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                            <h3 class="text-base font-bold text-gray-900">Lọc kết quả</h3>
+                            <button 
+                                v-if="searchQuery || selectedColor || selectedProvince || selectedKind.length || startDate || endDate || selectedBirthYears.length || selectedAvoidNumbers.length"
+                                @click="clearAllFilters"
+                                class="text-xs text-[#8C1E1E] hover:underline font-semibold"
+                            >
+                                Xóa tất cả
+                            </button>
+                        </div>
+                        
+                        <!-- Search input -->
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
                             </span>
-                            <svg
-                                class="w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ml-2"
-                                :class="kindDropdownOpen ? 'rotate-180' : ''"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                            <input 
+                                type="text" 
+                                v-model="searchQuery"
+                                @keyup.enter="reload"
+                                @blur="reload"
+                                placeholder="Nhập để tìm kiếm biển số xe" 
+                                class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] bg-white text-gray-700 placeholder-gray-400"
+                            />
+                        </div>
 
-                        <!-- Dropdown panel -->
-                        <transition
-                            enter-active-class="transition ease-out duration-150"
-                            enter-from-class="opacity-0 translate-y-1"
-                            enter-to-class="opacity-100 translate-y-0"
-                            leave-active-class="transition ease-in duration-100"
-                            leave-from-class="opacity-100 translate-y-0"
-                            leave-to-class="opacity-0 translate-y-1"
-                        >
-                            <div
-                                v-if="kindDropdownOpen"
-                                class="absolute z-40 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
+                        <!-- Color select (custom styling matching reference image) -->
+                        <div class="relative">
+                            <select 
+                                v-model="selectedColor"
+                                class="w-full appearance-none bg-white px-5 py-2.5 pr-10 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] text-gray-700 cursor-pointer"
                             >
-                                <ul class="py-1.5 max-h-60 overflow-y-auto">
-                                    <li
-                                        v-for="kind in uniqueKinds"
-                                        :key="kind.id"
-                                        class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer select-none transition"
-                                        @click="toggleKind(kind.id.toString())"
-                                    >
-                                        <span
-                                            class="w-4 h-4 shrink-0 rounded border-2 flex items-center justify-center transition"
-                                            :class="selectedKind.includes(kind.id.toString())
-                                                ? 'bg-[#8C1E1E] border-[#8C1E1E]'
-                                                : 'border-gray-300 bg-white'"
-                                        >
-                                            <svg v-if="selectedKind.includes(kind.id.toString())" class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 12 12" stroke="currentColor" stroke-width="3">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2 6l3 3 5-5" />
-                                            </svg>
-                                        </span>
-                                        <span class="text-sm text-gray-700" :class="selectedKind.includes(kind.id.toString()) ? 'font-semibold text-[#8C1E1E]' : ''">
-                                            {{ kind.name }}
-                                        </span>
-                                    </li>
-                                    <li v-if="uniqueKinds.length === 0" class="px-4 py-3 text-sm text-gray-400 text-center">
-                                        Không có loại biển nào
-                                    </li>
-                                </ul>
-                                <!-- Footer actions -->
-                                <div v-if="selectedKind.length > 0" class="border-t border-gray-100 px-4 py-2 flex justify-end">
-                                    <button
-                                        type="button"
-                                        @click.stop="clearKinds()"
-                                        class="text-xs text-gray-400 hover:text-[#8C1E1E] font-medium transition"
-                                    >
-                                        Xóa bộ lọc
-                                    </button>
+                                <option value="">Chọn màu biển</option>
+                                <option value="0">Biển trắng (Cá nhân)</option>
+                                <option value="1">Biển vàng (Kinh doanh)</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Province select (custom styling matching reference image) -->
+                        <div class="relative">
+                            <select 
+                                v-model="selectedProvince"
+                                class="w-full appearance-none bg-white px-5 py-2.5 pr-10 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] text-gray-700 cursor-pointer"
+                            >
+                                <option value="">Chọn tỉnh, thành phố</option>
+                                <option v-for="prov in uniqueProvinces" :key="prov.code" :value="prov.code">
+                                    {{ prov.name }}
+                                </option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Date inputs with calendar icons -->
+                        <div class="space-y-3 pt-2">
+                            <!-- Start date -->
+                            <div class="relative">
+                                <input 
+                                    :type="startDateFocused || startDate ? 'date' : 'text'"
+                                    @focus="startDateFocused = true"
+                                    @blur="startDateFocused = false"
+                                    v-model="startDate"
+                                    placeholder="Từ ngày đấu giá"
+                                    class="w-full px-5 py-2.5 pr-10 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] text-gray-700 bg-white cursor-pointer"
+                                />
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
                                 </div>
                             </div>
-                        </transition>
+                            <!-- End date -->
+                            <div class="relative">
+                                <input 
+                                    :type="endDateFocused || endDate ? 'date' : 'text'"
+                                    @focus="endDateFocused = true"
+                                    @blur="endDateFocused = false"
+                                    v-model="endDate"
+                                    placeholder="Đến ngày đấu giá"
+                                    class="w-full px-5 py-2.5 pr-10 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] text-gray-700 bg-white cursor-pointer"
+                                />
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                              </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Data Table -->
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead class="bg-gray-100/80 border-b border-gray-200 text-gray-500 font-bold text-xs uppercase tracking-wider">
-                            <tr>
-                                <th class="py-4 px-6 text-center w-16">STT</th>
-                                <th class="py-4 px-6">Biển số</th>
-                                <th class="py-4 px-6">Giá khởi điểm</th>
-                                <th class="py-4 px-6">Tỉnh, Thành phố</th>
-                                <th class="py-4 px-6">Loại biển</th>
-                                <th class="py-4 px-6 text-center w-40">Lựa chọn</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            <tr 
-                                v-for="(plate, index) in filteredPlates" 
-                                :key="plate.id"
-                                class="hover:bg-gray-50/50 transition duration-150"
+                    <!-- Kinds Collapsible Section -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                        <button 
+                            type="button"
+                            @click="kindsOpen = !kindsOpen"
+                            class="w-full flex items-center justify-between px-4 py-3 bg-red-50/10 hover:bg-red-50/20 transition font-bold text-sm text-gray-900 border-b border-gray-100"
+                        >
+                            <span>Loại biển</span>
+                            <svg 
+                                class="w-4 h-4 transition-transform duration-200 text-gray-400"
+                                :class="kindsOpen ? 'rotate-180' : ''"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
                             >
-                                <td class="py-4 px-6 text-sm text-gray-500 text-center">
-                                    {{ index + 1 }}
-                                </td>
-
-                                <td class="py-4 px-6 text-sm text-gray-700">
-                                    {{ plate.display_number }}
-                                </td>
-
-                                <td class="py-4 px-6 text-sm text-gray-700">
-                                    {{ plate.winning_price > 0 ? formatMoney(plate.winning_price) : formatMoney(plate.starting_price) }}
-                                </td>
-
-                                <td class="py-4 px-6 text-sm text-gray-700">
-                                    {{ plate.province ? plate.province.name : 'Chưa xác định' }}
-                                </td>
-
-                                <td class="py-4 px-6 text-sm text-gray-700">
-                                    {{ plate.kinds.length > 0 ? plate.kinds[0].name : 'Biển thường' }}
-                                </td>
-
-                                <td class="py-4 px-6 text-center">
-                                    <Link 
-                                        :href="`/bien-so/${plate.slug}`"
-                                        class="px-3.5 py-1.5 rounded-md border border-[#8C1E1E] text-[#8C1E1E] text-xs font-bold hover:bg-[#8C1E1E] hover:text-white transition duration-200 shadow-sm inline-block"
-                                    >
-                                        Luận phong thủy
-                                    </Link>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Phân trang (Pagination) -->
-                <div v-if="props.plates.last_page > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50/50">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        <Link
-                            v-if="props.plates.current_page > 1"
-                            :href="props.plates.links[0]?.url || '#'"
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-xs font-bold rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                            Trước
-                        </Link>
-                        <Link
-                            v-if="props.plates.current_page < props.plates.last_page"
-                            :href="props.plates.links[props.plates.links.length - 1]?.url || '#'"
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-xs font-bold rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                            Sau
-                        </Link>
-                    </div>
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-xs text-gray-500 font-medium">
-                                Hiển thị từ <span class="font-bold">{{ (props.plates.current_page - 1) * props.plates.per_page + 1 }}</span> đến <span class="font-bold">{{ Math.min(props.plates.current_page * props.plates.per_page, props.plates.total) }}</span> trong tổng số <span class="font-bold">{{ props.plates.total }}</span> kết quả
-                            </p>
-                        </div>
-                        <div>
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                <template v-for="(link, i) in props.plates.links" :key="i">
-                                    <span
-                                        v-if="link.url === null"
-                                        class="relative inline-flex items-center px-3 py-2 border border-gray-300 bg-white text-xs font-medium text-gray-300 select-none"
-                                        v-html="link.label"
-                                    ></span>
-                                    <Link
-                                        v-else
-                                        :href="link.url"
-                                        class="relative inline-flex items-center px-3 py-2 border text-xs font-bold transition duration-150"
-                                        :class="link.active 
-                                            ? 'z-10 bg-[#8C1E1E] border-[#8C1E1E] text-white' 
-                                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
-                                    >
-                                        <span v-html="link.label"></span>
-                                    </Link>
-                                </template>
-                            </nav>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div v-show="kindsOpen" class="p-4 space-y-2.5 max-h-64 overflow-y-auto">
+                            <label 
+                                v-for="kind in uniqueKinds" 
+                                :key="kind.id"
+                                class="flex items-center gap-3 text-sm text-gray-600 hover:text-gray-900 cursor-pointer select-none"
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    :value="kind.id.toString()"
+                                    v-model="selectedKind"
+                                    class="w-4 h-4 rounded border-gray-300 text-[#8C1E1E] focus:ring-[#8C1E1E]/20 accent-[#8C1E1E]"
+                                />
+                                <span>{{ kind.name }}</span>
+                            </label>
+                            <div v-if="uniqueKinds.length === 0" class="text-xs text-gray-400 text-center py-2">
+                                Không có loại biển nào
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div v-if="filteredPlates.length === 0" class="text-center py-16 text-gray-500">
-                    <h3 class="text-base font-bold text-gray-700 mb-1">Không tìm thấy kết quả phù hợp</h3>
-                    <p class="text-gray-400 text-xs">Hãy thử thay đổi từ khóa tìm kiếm hoặc chỉnh lại bộ lọc.</p>
+                    <!-- Birth Years Collapsible Section -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                        <button 
+                            type="button"
+                            @click="birthYearsOpen = !birthYearsOpen"
+                            class="w-full flex items-center justify-between px-4 py-3 bg-red-50/10 hover:bg-red-50/20 transition font-bold text-sm text-gray-900 border-b border-gray-100"
+                        >
+                            <span>Năm sinh</span>
+                            <svg 
+                                class="w-4 h-4 transition-transform duration-200 text-gray-400"
+                                :class="birthYearsOpen ? 'rotate-180' : ''"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div v-show="birthYearsOpen" class="p-4 space-y-2.5">
+                            <label 
+                                v-for="opt in birthYearOptions" 
+                                :key="opt.value"
+                                class="flex items-center gap-3 text-sm text-gray-600 hover:text-gray-900 cursor-pointer select-none"
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    :value="opt.value"
+                                    v-model="selectedBirthYears"
+                                    class="w-4 h-4 rounded border-gray-300 text-[#8C1E1E] focus:ring-[#8C1E1E]/20 accent-[#8C1E1E]"
+                                />
+                                <span>{{ opt.label }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Avoid Numbers Collapsible Section -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                        <button 
+                            type="button"
+                            @click="avoidNumbersOpen = !avoidNumbersOpen"
+                            class="w-full flex items-center justify-between px-4 py-3 bg-red-50/10 hover:bg-red-50/20 transition font-bold text-sm text-gray-900 border-b border-gray-100"
+                        >
+                            <span>Tránh số</span>
+                            <svg 
+                                class="w-4 h-4 transition-transform duration-200 text-gray-400"
+                                :class="avoidNumbersOpen ? 'rotate-180' : ''"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div v-show="avoidNumbersOpen" class="p-4 space-y-2.5">
+                            <label 
+                                v-for="opt in avoidNumberOptions" 
+                                :key="opt.value"
+                                class="flex items-center gap-3 text-sm text-gray-600 hover:text-gray-900 cursor-pointer select-none"
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    :value="opt.value"
+                                    v-model="selectedAvoidNumbers"
+                                    class="w-4 h-4 rounded border-gray-300 text-[#8C1E1E] focus:ring-[#8C1E1E]/20 accent-[#8C1E1E]"
+                                />
+                                <span>{{ opt.label }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Right Content Table -->
+                <div class="lg:col-span-3 space-y-4">
+                    
+                    <!-- Data Table -->
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead class="bg-gray-100/80 border-b border-gray-200 text-gray-500 font-bold text-xs uppercase tracking-wider">
+                                    <tr>
+                                        <th class="py-4 px-6 text-center w-16">STT</th>
+                                        <th class="py-4 px-6">Biển số</th>
+                                        <th class="py-4 px-6">{{ activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}</th>
+                                        <th class="py-4 px-6">Tỉnh, Thành phố</th>
+                                        <th class="py-4 px-6">Loại biển</th>
+                                        <th v-if="activeTab !== 'announce'" class="py-4 px-6">Thời gian đấu giá</th>
+                                        <th class="py-4 px-6 text-center w-40">Lựa chọn</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr 
+                                        v-for="(plate, index) in filteredPlates" 
+                                        :key="plate.id"
+                                        class="hover:bg-gray-50/50 transition duration-150"
+                                    >
+                                        <td class="py-4 px-6 text-sm text-gray-500 text-center">
+                                            {{ index + 1 }}
+                                        </td>
+
+                                        <td class="py-4 px-6 text-sm text-gray-700">
+                                            {{ plate.display_number }}
+                                        </td>
+
+                                        <td class="py-4 px-6 text-sm text-gray-700">
+                                            {{ plate.winning_price > 0 ? formatMoney(plate.winning_price) : formatMoney(plate.starting_price) }}
+                                        </td>
+
+                                        <td class="py-4 px-6 text-sm text-gray-700">
+                                            {{ plate.province ? plate.province.name : 'Chưa xác định' }}
+                                        </td>
+
+                                        <td class="py-4 px-6 text-sm text-gray-700">
+                                            {{ plate.kinds.length > 0 ? plate.kinds[0].name : 'Biển thường' }}
+                                        </td>
+
+                                        <td v-if="activeTab !== 'announce'" class="py-4 px-6 text-sm text-gray-700">
+                                            {{ formatDate(plate.auction_start_time) }}
+                                        </td>
+
+                                        <td class="py-4 px-6 text-center">
+                                            <Link 
+                                                :href="`/bien-so/${plate.slug}`"
+                                                class="px-3.5 py-1.5 rounded-md border border-[#8C1E1E] text-[#8C1E1E] text-xs font-bold hover:bg-[#8C1E1E] hover:text-white transition duration-200 shadow-sm inline-block"
+                                            >
+                                                Luận phong thủy
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Phân trang (Pagination) -->
+                        <div v-if="props.plates.total > 0" class="px-6 py-4 border-t border-gray-100 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white select-none">
+                            <!-- Left side: Custom Limit dropdown selector -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-[#8C1E1E]">Xem</span>
+                                <div class="relative inline-block text-left">
+                                    <!-- Trigger Button -->
+                                    <button 
+                                        type="button" 
+                                        @click="isLimitDropdownOpen = !isLimitDropdownOpen"
+                                        class="inline-flex items-center justify-between gap-1 bg-white pl-3.5 pr-2.5 py-1.5 border border-gray-200 hover:border-gray-300 focus:border-gray-300 rounded-lg text-sm font-bold text-[#8C1E1E] focus:outline-none cursor-pointer min-w-[70px] transition-colors duration-150"
+                                    >
+                                        <span>{{ selectedLimit }}</span>
+                                        <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" :class="isLimitDropdownOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Click Outside Overlay -->
+                                    <div 
+                                        v-if="isLimitDropdownOpen" 
+                                        class="fixed inset-0 z-10" 
+                                        @click="isLimitDropdownOpen = false"
+                                    ></div>
+
+                                    <!-- Dropdown Menu Options -->
+                                    <div 
+                                        v-if="isLimitDropdownOpen"
+                                        class="absolute left-0 bottom-full mb-1 z-20 w-full rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-100 overflow-hidden"
+                                    >
+                                        <div class="py-1">
+                                            <button
+                                                v-for="opt in limitOptions"
+                                                :key="opt"
+                                                type="button"
+                                                @click="selectLimit(opt)"
+                                                class="w-full text-center px-4 py-2 text-sm font-bold transition-colors duration-150"
+                                                :class="selectedLimit === opt 
+                                                    ? 'bg-[#8C1E1E] text-white' 
+                                                    : 'text-[#8C1E1E] hover:bg-red-50'"
+                                            >
+                                                {{ opt }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right side: Page navigation numbers without border grids -->
+                            <div v-if="props.plates.last_page > 1" class="flex items-center justify-end">
+                                <nav class="flex items-center gap-1.5" aria-label="Pagination">
+                                    <template v-for="(link, i) in props.plates.links" :key="i">
+                                        <!-- Previous Button -->
+                                        <template v-if="i === 0">
+                                            <span
+                                                v-if="link.url === null"
+                                                class="w-8 h-8 flex items-center justify-center text-gray-300 cursor-not-allowed select-none"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                                </svg>
+                                            </span>
+                                            <Link
+                                                v-else
+                                                :href="link.url || '#'"
+                                                class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#8C1E1E] rounded-lg hover:bg-gray-50 transition duration-150"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                                </svg>
+                                            </Link>
+                                        </template>
+
+                                        <!-- Next Button -->
+                                        <template v-else-if="i === props.plates.links.length - 1">
+                                            <span
+                                                v-if="link.url === null"
+                                                class="w-8 h-8 flex items-center justify-center text-gray-300 cursor-not-allowed select-none"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </span>
+                                            <Link
+                                                v-else
+                                                :href="link.url || '#'"
+                                                class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#8C1E1E] rounded-lg hover:bg-gray-50 transition duration-150"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </Link>
+                                        </template>
+
+                                        <!-- Ellipsis -->
+                                        <template v-else-if="link.label === '...'">
+                                            <span class="w-8 h-8 flex items-center justify-center text-gray-400 select-none font-medium">
+                                                ...
+                                            </span>
+                                        </template>
+
+                                        <!-- Page Numbers -->
+                                        <template v-else>
+                                            <span
+                                                v-if="link.active"
+                                                class="min-w-[2rem] h-8 px-2 flex items-center justify-center bg-[#8C1E1E] text-white text-sm font-bold rounded-lg select-none"
+                                            >
+                                                {{ link.label }}
+                                            </span>
+                                            <Link
+                                                v-else
+                                                :href="link.url || '#'"
+                                                class="min-w-[2rem] h-8 px-2 flex items-center justify-center text-gray-500 hover:text-[#8C1E1E] text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150"
+                                            >
+                                                {{ link.label }}
+                                            </Link>
+                                        </template>
+                                    </template>
+                                </nav>
+                            </div>
+                        </div>
+
+                        <div v-if="filteredPlates.length === 0" class="text-center py-16 text-gray-500">
+                            <h3 class="text-base font-bold text-gray-700 mb-1">Không tìm thấy kết quả phù hợp</h3>
+                            <p class="text-gray-400 text-xs">Hãy thử thay đổi từ khóa tìm kiếm hoặc chỉnh lại bộ lọc.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -601,22 +931,11 @@ onUnmounted(() => {
                     <!-- FAQ Item 2 -->
                     <details class="group bg-white p-5 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
                         <summary class="flex justify-between items-center font-bold text-gray-900 cursor-pointer list-none text-sm sm:text-base">
-                            <span>Mô hình AI giải mã phong thủy biển số dựa trên yếu tố nào?</span>
+                            <span>Mô hình giải mã phong thủy biển số tự động dựa trên yếu tố nào?</span>
                             <span class="transition group-open:rotate-180 text-gray-400">▼</span>
                         </summary>
                         <p class="text-gray-600 mt-3 leading-relaxed text-xs sm:text-sm">
-                            Hệ thống AI của chúng tôi phân tích biển số xe dựa trên 3 yếu tố cốt lõi: Thứ nhất là ý nghĩa của các con số theo quan niệm phong thủy số học phương Đông; Thứ hai là sự kết hợp của các cặp số tiến lùi; Thứ ba là ngũ hành tương sinh tương khắc giữa các con số đại diện và niên mệnh của người dùng.
-                        </p>
-                    </details>
-
-                    <!-- FAQ Item 3 -->
-                    <details class="group bg-white p-5 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
-                        <summary class="flex justify-between items-center font-bold text-gray-900 cursor-pointer list-none text-sm sm:text-base">
-                            <span>Làm sao để Google nhanh chóng lập chỉ mục trang biển số của tôi?</span>
-                            <span class="transition group-open:rotate-180 text-gray-400">▼</span>
-                        </summary>
-                        <p class="text-gray-600 mt-3 leading-relaxed text-xs sm:text-sm">
-                            Hệ thống của chúng tôi đã tích hợp sẵn Google Indexing API. Khi có bất kỳ dữ liệu biển số nào được nhập mới và AI sinh nội dung thành công, một lệnh yêu cầu Index tự động sẽ được gửi trực tiếp đến hệ thống Google Search Console, giúp đẩy nhanh quá trình index trong vòng vài giờ thay vì vài tuần.
+                            Hệ thống của chúng tôi tự động phân tích biển số xe dựa trên 3 yếu tố cốt lõi: Thứ nhất là ý nghĩa của các con số theo quan niệm phong thủy số học phương Đông; Thứ hai là sự kết hợp của các cặp số tiến lùi; Thứ ba là ngũ hành tương sinh tương khắc giữa các con số đại diện và niên mệnh của người dùng.
                         </p>
                     </details>
                 </div>
@@ -626,10 +945,12 @@ onUnmounted(() => {
         <!-- Footer -->
         <footer class="border-t border-gray-200 bg-white py-12 text-center text-gray-400 text-xs font-medium">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <p class="mb-2 text-gray-500">© 2026 BIENSO.AI. Cổng thông tin giải mã phong thủy biển số xe tự động.</p>
-                <p class="text-gray-400 font-light">Nội dung giải luận mang tính chất tham khảo khoa học phong thủy số học, được hỗ trợ tổng hợp bởi công nghệ AI.</p>
+                <p class="mb-2 text-gray-500">© 2026 BISOXE.COM. Cổng thông tin giải mã phong thủy biển số xe tự động.</p>
+                <p class="text-gray-400 font-light">Nội dung giải luận mang tính chất tham khảo khoa học phong thủy số học, được hỗ trợ tổng hợp và tính toán tự động.</p>
             </div>
         </footer>
+
+        <BackToTop />
     </div>
 </template>
 

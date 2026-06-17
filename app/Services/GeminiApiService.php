@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Log;
 class GeminiApiService
 {
     protected string $apiKey;
+
     protected string $model;
+
     protected string $apiUrl;
 
     public function __construct()
@@ -22,8 +24,8 @@ class GeminiApiService
     /**
      * Sinh nội dung bài viết SEO phong thủy cho một biển số cụ thể.
      *
-     * @param LicensePlate $plate
      * @return array{title: string, meta_title: string, meta_description: string, content: string, video_script: string}
+     *
      * @throws \Exception
      */
     public function generateForLicensePlate(LicensePlate $plate): array
@@ -42,9 +44,9 @@ class GeminiApiService
 
         $priceStr = '';
         if ($plate->winning_price > 0) {
-            $priceStr = 'Đã trúng đấu giá với mức giá: ' . number_format($plate->winning_price) . ' VND';
+            $priceStr = 'Đã trúng đấu giá với mức giá: '.number_format($plate->winning_price).' VND';
         } else {
-            $priceStr = 'Giá khởi điểm đấu giá: ' . number_format($plate->starting_price) . ' VND';
+            $priceStr = 'Giá khởi điểm đấu giá: '.number_format($plate->starting_price).' VND';
         }
 
         $statusStr = match ($plate->status) {
@@ -83,13 +85,13 @@ Yêu cầu quan trọng:
         try {
             $response = Http::withoutVerifying()->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post($this->apiUrl . "?key={$this->apiKey}", [
+            ])->post($this->apiUrl."?key={$this->apiKey}", [
                 'contents' => [
                     [
                         'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
+                            ['text' => $prompt],
+                        ],
+                    ],
                 ],
                 'generationConfig' => [
                     'responseMimeType' => 'application/json',
@@ -102,33 +104,33 @@ Yêu cầu quan trọng:
                             'content' => ['type' => 'STRING'],
                             'video_script' => ['type' => 'STRING'],
                         ],
-                        'required' => ['title', 'meta_title', 'meta_description', 'content', 'video_script']
-                    ]
-                ]
+                        'required' => ['title', 'meta_title', 'meta_description', 'content', 'video_script'],
+                    ],
+                ],
             ]);
 
             if ($response->failed()) {
                 Log::error('Gemini API request failed', [
                     'status' => $response->status(),
-                    'body' => $response->body()
+                    'body' => $response->body(),
                 ]);
-                throw new \Exception("Gemini API returned status code " . $response->status());
+                throw new \Exception('Gemini API returned status code '.$response->status());
             }
 
             $result = $response->json();
             $textResult = $result['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
             if (empty($textResult)) {
-                throw new \Exception("Gemini API returned an empty response.");
+                throw new \Exception('Gemini API returned an empty response.');
             }
 
             $decoded = json_decode($textResult, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('Failed to decode Gemini JSON response', [
                     'raw_text' => $textResult,
-                    'error' => json_last_error_msg()
+                    'error' => json_last_error_msg(),
                 ]);
-                throw new \Exception("Gemini API response was not a valid JSON structure.");
+                throw new \Exception('Gemini API response was not a valid JSON structure.');
             }
 
             return [
@@ -140,8 +142,8 @@ Yêu cầu quan trọng:
             ];
 
         } catch (\Exception $e) {
-            Log::error('Error generating AI content for plate ' . $plate->full_number, [
-                'message' => $e->getMessage()
+            Log::error('Error generating automated content for plate '.$plate->full_number, [
+                'message' => $e->getMessage(),
             ]);
             throw $e;
         }

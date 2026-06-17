@@ -20,9 +20,10 @@ class SeoArticle extends Model
         'meta_description',
         'content',
         'video_script',
-        'ai_model',
+        'generation_model',
         'generated_at',
         'google_indexed_at',
+        'image_path',
     ];
 
     protected $casts = [

@@ -66,7 +66,7 @@ class LicensePlate extends Model
     }
 
     /**
-     * Lấy bài viết SEO do AI sinh ra cho biển số này.
+     * Lấy bài viết SEO được sinh tự động cho biển số này.
      */
     public function seoArticle(): HasOne
     {
