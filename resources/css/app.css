@@ -1,11 +1,169 @@
 @import 'tailwindcss';
 
+html {
+    scroll-behavior: smooth;
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme inline {
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        'Inter', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 }
+
+/* Custom style for rendering HTML articles dynamically from AI */
+.ai-content-body h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin-top: 2.25rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+    border-left: 4px solid #8C1E1E;
+    padding-left: 0.75rem;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.ai-content-body h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin-top: 1.75rem;
+    margin-bottom: 0.75rem;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.ai-content-body p {
+    margin-bottom: 1.25rem;
+    line-height: 1.8;
+    text-align: justify; /* Căn đều 2 bên */
+}
+
+.ai-content-body ul, .ai-content-body ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+}
+
+.ai-content-body li {
+    margin-bottom: 0.5rem;
+    line-height: 1.7;
+    text-align: justify;
+}
+
+.ai-content-body strong {
+    color: #8C1E1E;
+    font-weight: 700;
+}
+
+/* Table styles for AI-generated content */
+.ai-content-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0 2rem 0;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #E5E7EB;
+    display: table;
+}
+
+.ai-content-body div:has(> table),
+.ai-content-body p:has(> table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Header row - hỗ trợ cả <thead><th> và <tr><td> đầu tiên */
+.ai-content-body thead {
+    background: #8C1E1E;
+    color: white;
+}
+
+.ai-content-body thead th,
+.ai-content-body thead td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: white;
+    border-right: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Fallback: hàng đầu tiên trong tbody nếu không có thead */
+.ai-content-body tbody tr:first-child td:not([class]) {
+    background: #8C1E1E;
+    color: white;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Khi toàn bộ bảng không có thead — target tr đầu tiên của table */
+.ai-content-body table > tbody > tr:first-child > td,
+.ai-content-body table > tr:first-child > td {
+    background: #8C1E1E !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 0.83rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.8rem 1rem !important;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255,255,255,0.2) !important;
+    border-bottom: none !important;
+    text-align: center;
+}
+
+.ai-content-body tbody tr {
+    border-bottom: 1px solid #E5E7EB;
+    transition: background 0.15s;
+}
+
+.ai-content-body tbody tr:nth-child(even) {
+    background-color: #FDF9F9;
+}
+
+.ai-content-body tbody tr:nth-child(odd) {
+    background-color: #FFFFFF;
+}
+
+.ai-content-body tbody tr:hover {
+    background-color: #FEF2F2;
+}
+
+.ai-content-body tbody td,
+.ai-content-body tbody th {
+    padding: 0.65rem 1rem;
+    color: #374151;
+    vertical-align: top;
+    line-height: 1.6;
+    border-right: 1px solid #E5E7EB;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.ai-content-body tbody td:last-child,
+.ai-content-body tbody th:last-child {
+    border-right: none;
+}
+
+.ai-content-body tbody td strong {
+    color: #8C1E1E;
+}
+
+.ai-content-body tbody td:first-child {
+    font-weight: 700;
+    color: #111827;
+    background-color: #F9FAFB;
+    white-space: nowrap;
+    border-right: 2px solid #E5E7EB;
+}
+

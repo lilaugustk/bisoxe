@@ -63,6 +63,12 @@ class LicensePlateController extends Controller
         $status = $statusMap[$tab] ?? 'announced';
         $query->where('status', $status);
 
+        // Với tab "Biển số chính thức", chỉ hiển thị biển chưa tới giờ đấu giá
+        // (VPA API vẫn trả status waiting_auction cho biển đã qua giờ nhưng chưa có kết quả)
+        if ($status === 'waiting_auction') {
+            $query->where('auction_start_time', '>=', now());
+        }
+
         // 3. Lọc theo tìm kiếm
         if (! empty($search)) {
             $cleanSearch = strtoupper(str_replace(['-', '.'], '', $search));
@@ -79,12 +85,19 @@ class LicensePlateController extends Controller
             $query->where('province_code', $province);
         }
 
-        // 6. Lọc theo loại biển (hỗ trợ nhiều loại, phân tách bằng dấu phẩy)
+        // 6. Lọc theo loại biển chính (kind có priority nhỏ nhất = đẹp nhất)
+        // Ví dụ: lọc "Tứ quý" sẽ KHÔNG trả về biển Ngũ quý (vì kind chính của nó là Ngũ quý, không phải Tứ quý)
         if (! empty($kind)) {
             $kindIds = array_filter(array_map('intval', explode(',', $kind)));
             if (! empty($kindIds)) {
                 $query->whereHas('kinds', function ($q) use ($kindIds) {
-                    $q->whereIn('plate_kinds.id', $kindIds);
+                    $q->whereIn('plate_kinds.id', $kindIds)
+                      ->whereRaw('plate_kinds.priority = (
+                          SELECT MIN(pk2.priority)
+                          FROM license_plate_kinds lpk2
+                          JOIN plate_kinds pk2 ON pk2.id = lpk2.kind_id
+                          WHERE lpk2.plate_id = license_plate_kinds.plate_id
+                      )');
                 });
             }
         }
@@ -122,14 +135,34 @@ class LicensePlateController extends Controller
 
         // Sắp xếp
         if ($status === 'completed') {
-            $query->orderBy('winning_price', 'desc')->latest();
+            $query->orderBy('auction_start_time', 'desc')->latest();
+        } elseif ($status === 'waiting_auction') {
+            $query->select('license_plates.*')
+                ->selectSub(function ($q) {
+                    $q->selectRaw('MIN(pk.priority)')
+                      ->from('plate_kinds as pk')
+                      ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
+                      ->whereColumn('lpk.plate_id', 'license_plates.id');
+                }, 'min_kind_priority')
+                ->orderBy('auction_start_time', 'asc')
+                ->orderByRaw('COALESCE(min_kind_priority, 9999) asc')
+                ->latest();
         } else {
-            $query->latest();
+            $query->select('license_plates.*')
+                ->selectSub(function ($q) {
+                    $q->selectRaw('MIN(pk.priority)')
+                      ->from('plate_kinds as pk')
+                      ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
+                      ->whereColumn('lpk.plate_id', 'license_plates.id');
+                }, 'min_kind_priority')
+                ->orderByRaw('COALESCE(min_kind_priority, 9999) asc')
+                ->latest();
         }
 
-        $limit = (int) $request->input('limit', 10);
+
+        $limit = (int) $request->input('limit', 20);
         if (! in_array($limit, [10, 20, 50, 100])) {
-            $limit = 10;
+            $limit = 20;
         }
 
         $paginated = $query->paginate($limit)->onEachSide(1)->withQueryString();
@@ -212,11 +245,35 @@ class LicensePlateController extends Controller
             // Kiểm tra xem thực ra có bài viết chưa (phòng hờ tìm theo số biển nhưng bài viết đã có slug khác)
             $existingArticle = $plate->seoArticle;
             if ($existingArticle) {
-                return redirect()->route('plate.detail', ['slug' => $existingArticle->slug]);
+                $prediction = $predictorService->predict($plate);
+                $trend = $predictorService->getTrendData($plate);
+
+                return Inertia::render('Plate/Detail', [
+                    'article' => [
+                        'title' => $existingArticle->title,
+                        'meta_title' => $existingArticle->meta_title,
+                        'meta_description' => $existingArticle->meta_description,
+                        'content' => $existingArticle->content,
+                        'video_script' => $existingArticle->video_script,
+                        'slug' => $existingArticle->slug,
+                        'generation_model' => $existingArticle->generation_model,
+                        'generated_at' => $existingArticle->generated_at ? $existingArticle->generated_at->toISOString() : null,
+                        'image_url' => $existingArticle->image_path ? asset($existingArticle->image_path) : null,
+                    ],
+                    'plate' => $this->transformPlate($plate),
+                    'is_pending' => false,
+                    'price_prediction' => $prediction,
+                    'price_trend' => $trend,
+                ]);
             }
 
             // Nếu chưa có bài viết, tự động kích hoạt job sinh bài viết chạy ngầm ngay lập tức!
-            GenerateSeoArticleJob::dispatch($plate);
+            // Sử dụng Cache Lock để tránh đẩy nhiều job trùng lặp khi polling
+            $cacheKey = "generating_article_{$plate->id}";
+            if (! \Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                \Illuminate\Support\Facades\Cache::put($cacheKey, true, 300); // Khóa trong 5 phút
+                GenerateSeoArticleJob::dispatch($plate);
+            }
 
             $prediction = $predictorService->predict($plate);
             $trend = $predictorService->getTrendData($plate);
@@ -264,7 +321,7 @@ class LicensePlateController extends Controller
                 'code' => $plate->province->code,
                 'name' => $plate->province->name,
             ] : null,
-            'kinds' => $plate->kinds->map(fn ($k) => [
+            'kinds' => $plate->kinds->sortBy('priority')->values()->map(fn ($k) => [
                 'id' => $k->id,
                 'name' => $k->name,
             ])->toArray(),

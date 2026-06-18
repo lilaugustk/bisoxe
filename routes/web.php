@@ -9,7 +9,6 @@ Route::get('/bien-so-xe-o-to', [LicensePlateController::class, 'carIndex'])->nam
 Route::get('/bien-so-xe-may', [LicensePlateController::class, 'motorcycleIndex'])->name('plates.motorcycle');
 Route::get('/bien-so/{slug}', [LicensePlateController::class, 'show'])->name('plate.detail');
 
-// Blog / Cẩm nang
-Route::get('/cam-nang', [PostController::class, 'index'])->name('posts.index');
-Route::get('/cam-nang/{slug}', [PostController::class, 'show'])->name('post.show');
+Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
+Route::get('/bai-viet/{slug}', [PostController::class, 'show'])->name('posts.show');
 

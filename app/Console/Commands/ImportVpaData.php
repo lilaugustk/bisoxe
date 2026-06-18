@@ -236,25 +236,65 @@ class ImportVpaData extends Command
                     $existing = $existingPlates->get($fullNumber);
                     if ($existing) {
                         $existingStatus = $existing->status;
-                        $existingPrecedence = $statusPrecedence[$existingStatus] ?? 0;
-                        $newPrecedence = $statusPrecedence[$newStatus] ?? 0;
 
-                        // Bảo vệ trạng thái: Không ghi đè từ trạng thái cao hơn sang thấp hơn
-                        if ($existingPrecedence > $newPrecedence) {
-                            $newStatus = $existingStatus;
+                        // 1. Kiểm tra chu kỳ đấu giá mới:
+                        // Nếu bản ghi trong DB đang là completed nhưng bản ghi mới cào là announced/waiting_auction
+                        // và thời gian cào/cập nhật (crawled_at / updatedAt) mới hơn thời gian đấu giá đã diễn ra
+                        $isNewAuctionCycle = false;
+                        if ($existingStatus === 'completed' && in_array($newStatus, ['announced', 'waiting_auction'])) {
+                            $existingAuctionStart = $existing->auction_start_time ? Carbon::parse($existing->auction_start_time) : null;
+                            $newCrawled = Carbon::parse($crawledAt);
+
+                            if ($existingAuctionStart && $newCrawled->greaterThan($existingAuctionStart)) {
+                                $isNewAuctionCycle = true;
+                            }
                         }
 
-                        // Lấy giá trị lớn nhất của giá thắng / giá khởi điểm
-                        $winningPrice = max((int) $existing->winning_price, $winningPrice);
-                        $startingPrice = max((int) $existing->starting_price, $startingPrice);
+                        // 2. Kiểm tra kết quả đấu giá cũ (lịch sử):
+                        // Nếu bản ghi mới cào là completed nhưng trong DB đã cập nhật trạng thái mới hơn (announced/waiting_auction)
+                        $isOldResult = false;
+                        if ($newStatus === 'completed' && in_array($existingStatus, ['announced', 'waiting_auction'])) {
+                            $existingCrawled = $existing->crawled_at ? Carbon::parse($existing->crawled_at) : null;
+                            $newAuctionStart = $auctionStart ? Carbon::parse($auctionStart) : null;
 
-                        // Ghép nối các trường thời gian
-                        $registerStart = $registerStart ?? $existing->register_start_time;
-                        $registerEnd = $registerEnd ?? $existing->register_end_time;
-                        $auctionStart = $auctionStart ?? $existing->auction_start_time;
-                        $auctionEnd = $auctionEnd ?? $existing->auction_end_time;
+                            if ($existingCrawled && $newAuctionStart && $existingCrawled->greaterThan($newAuctionStart)) {
+                                $isOldResult = true;
+                            }
+                        }
 
-                        $createdAt = $existing->created_at;
+                        if ($isNewAuctionCycle) {
+                            // Hạ cấp về trạng thái công bố/chính thức mới, reset giá trúng và lấy giá khởi điểm mới
+                            $winningPrice = 0;
+                            $createdAt = $existing->created_at;
+                        } elseif ($isOldResult) {
+                            // Kết quả đấu giá cũ từ quá khứ -> giữ nguyên trạng thái active hiện tại trong DB
+                            $newStatus = $existingStatus;
+                            $winningPrice = 0;
+                            $startingPrice = $existing->starting_price;
+                            $registerStart = $existing->register_start_time;
+                            $registerEnd = $existing->register_end_time;
+                            $auctionStart = $existing->auction_start_time;
+                            $auctionEnd = $existing->auction_end_time;
+                            $createdAt = $existing->created_at;
+                        } else {
+                            // Logic mặc định bảo vệ trạng thái
+                            $existingPrecedence = $statusPrecedence[$existingStatus] ?? 0;
+                            $newPrecedence = $statusPrecedence[$newStatus] ?? 0;
+
+                            if ($existingPrecedence > $newPrecedence) {
+                                $newStatus = $existingStatus;
+                            }
+
+                            $winningPrice = max((int) $existing->winning_price, $winningPrice);
+                            $startingPrice = max((int) $existing->starting_price, $startingPrice);
+
+                            $registerStart = $registerStart ?? $existing->register_start_time;
+                            $registerEnd = $registerEnd ?? $existing->register_end_time;
+                            $auctionStart = $auctionStart ?? $existing->auction_start_time;
+                            $auctionEnd = $auctionEnd ?? $existing->auction_end_time;
+
+                            $createdAt = $existing->created_at;
+                        }
                     }
 
                     $platesToUpsert[] = [
@@ -319,22 +359,13 @@ class ImportVpaData extends Command
 
                         $kindIds = [];
 
-                        // 1. Lấy từ trường kinds có sẵn trong JSON
-                        if (isset($item['kinds']) && is_array($item['kinds'])) {
-                            foreach ($item['kinds'] as $k) {
-                                if (isset($k['id'])) {
-                                    $kindIds[] = (int) $k['id'];
-                                }
-                            }
-                        }
-
-                        // 2. Nếu không có sẵn (ví dụ file results), tự động nhận diện theo Regex của kinds
-                        if (empty($kindIds) && ! empty($item['serialNumber'])) {
+                        // Luôn sử dụng regex để nhận diện kind chính xác,
+                        // không tin tưởng hoàn toàn vào dữ liệu kinds từ VPA (có thể sai)
+                        if (! empty($item['serialNumber'])) {
                             $serialNumber = $item['serialNumber'];
                             foreach ($kindsCache as $kind) {
                                 if ($kind->regex) {
                                     try {
-                                        // Sử dụng dấu phân cách # để an toàn với regex
                                         if (preg_match('#'.str_replace('#', '\#', $kind->regex).'#', $serialNumber)) {
                                             $kindIds[] = (int) $kind->id;
                                         }

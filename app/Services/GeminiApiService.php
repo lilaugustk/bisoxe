@@ -68,7 +68,7 @@ Thông tin biển số xe:
 - Thông tin tài chính: {$priceStr}
 
 Nhiệm vụ của bạn là trả về một đối tượng JSON chứa chính xác các trường sau:
-1. 'title': Tiêu đề bài viết hấp dẫn, chứa biển số xe (Ví dụ: 'Giải mã phong thủy biển số ngũ quý 9 {$plate->display_number}: Ý nghĩa tài lộc vượt trội'). Tiêu đề nên dài khoảng 50-70 ký tự.
+1. 'title': Tiêu đề bài viết hấp dẫn, chứa biển số xe (Ví dụ: 'Giải mã phong thủy biển số ngũ quý 9 {$plate->display_number} mang lại ý nghĩa tài lộc vượt trội'). Tiêu đề nên dài khoảng 50-70 ký tự. Tuyệt đối không sử dụng dấu hai chấm (:) hoặc dấu gạch ngang (-) trong tiêu đề bài viết.
 2. 'meta_title': Tiêu đề meta tối ưu SEO cho kết quả tìm kiếm Google (dưới 60 ký tự).
 3. 'meta_description': Mô tả ngắn meta description thu hút người đọc click từ Google (dưới 160 ký tự).
 4. 'content': Bài viết chi tiết định dạng HTML (sử dụng các thẻ h2, h3, p, strong, ul, li). Bài viết cần tối thiểu 600 từ, chia làm các phần hợp lý:
@@ -143,6 +143,117 @@ Yêu cầu quan trọng:
 
         } catch (\Exception $e) {
             Log::error('Error generating automated content for plate '.$plate->full_number, [
+                'message' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Tự động đề xuất chủ đề mới và viết bài viết SEO chung.
+     *
+     * @param array $existingTitles Danh sách tiêu đề các bài viết đã tồn tại để tránh trùng lặp
+     * @return array{title: string, category: string, summary: string, meta_title: string, meta_description: string, content: string}
+     *
+     * @throws \Exception
+     */
+    public function generateGeneralArticle(array $existingTitles = []): array
+    {
+        if (empty($this->apiKey)) {
+            throw new \Exception('Gemini API key is not configured.');
+        }
+
+        $existingTitlesStr = empty($existingTitles) ? "Chưa có bài viết nào." : implode("\n- ", $existingTitles);
+
+        $prompt = "Bạn là một Tổng biên tập chuyên nghiệp, chuyên gia phong thủy xe cộ và chuyên gia tối ưu hóa SEO. 
+Nhiệm vụ của bạn là tự đề xuất 1 chủ đề độc đáo, mới lạ và viết một bài viết SEO chất lượng cao liên quan đến lĩnh vực biển số xe ở Việt Nam.
+
+Danh sách các tiêu đề bài viết ĐÃ CÓ (HÃY TRÁNH viết về các chủ đề tương tự):
+- {$existingTitlesStr}
+
+Yêu cầu về chủ đề và nội dung:
+1. Chủ đề phải thuộc một trong 3 chuyên mục sau:
+   - 'phong-thuy': Phân tích phong thủy biển số, cách chọn biển hợp tuổi, hợp mệnh, ngũ hành các con số.
+   - 'huong-dan': Hướng dẫn quy trình đăng ký tài khoản, nộp tiền đặt trước, quy trình tham gia đấu giá trên trang VPA, thủ tục nhận biển số trúng đấu giá.
+   - 'tin-tuc': Cập nhật thông tin thị trường biển số đẹp, phân tích kỷ lục giá biển số, xu hướng sưu tầm biển số xe.
+2. Bài viết chi tiết phải dài tối thiểu 800 từ, định dạng HTML phong phú (sử dụng các thẻ h2, h3, p, strong, ul, li).
+3. Câu cú rõ ràng, lôi cuốn, thông tin có tính chính xác cao và hữu ích cho người đọc tại Việt Nam.
+
+Trả về một đối tượng JSON chứa chính xác các trường sau:
+1. 'title': Tiêu đề bài viết hấp dẫn, chuẩn SEO (dưới 70 ký tự). Tuyệt đối không sử dụng dấu hai chấm (:) hoặc dấu gạch ngang (-) trong tiêu đề bài viết.
+2. 'category': Phải là một trong ba chuỗi chính xác: 'phong-thuy', 'huong-dan', 'tin-tuc'.
+3. 'summary': Tóm tắt ngắn nội dung bài viết (khoảng 150-200 ký tự).
+4. 'meta_title': Tiêu đề meta SEO (dưới 60 ký tự).
+5. 'meta_description': Mô tả meta SEO thu hút click (dưới 160 ký tự).
+6. 'content': Bài viết chi tiết định dạng HTML.
+
+Yêu cầu quan trọng:
+- Nội dung hoàn toàn bằng tiếng Việt.
+- Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên. Không thêm bất kỳ văn bản giải thích nào ngoài JSON.";
+
+        try {
+            $response = Http::withoutVerifying()->withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post($this->apiUrl."?key={$this->apiKey}", [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt],
+                        ],
+                    ],
+                ],
+                'generationConfig' => [
+                    'responseMimeType' => 'application/json',
+                    'responseSchema' => [
+                        'type' => 'OBJECT',
+                        'properties' => [
+                            'title' => ['type' => 'STRING'],
+                            'category' => ['type' => 'STRING'],
+                            'summary' => ['type' => 'STRING'],
+                            'meta_title' => ['type' => 'STRING'],
+                            'meta_description' => ['type' => 'STRING'],
+                            'content' => ['type' => 'STRING'],
+                        ],
+                        'required' => ['title', 'category', 'summary', 'meta_title', 'meta_description', 'content'],
+                    ],
+                ],
+            ]);
+
+            if ($response->failed()) {
+                Log::error('Gemini API general article request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \Exception('Gemini API returned status code '.$response->status());
+            }
+
+            $result = $response->json();
+            $textResult = $result['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+            if (empty($textResult)) {
+                throw new \Exception('Gemini API returned an empty response.');
+            }
+
+            $decoded = json_decode($textResult, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('Failed to decode Gemini JSON response for general article', [
+                    'raw_text' => $textResult,
+                    'error' => json_last_error_msg(),
+                ]);
+                throw new \Exception('Gemini API response was not a valid JSON structure.');
+            }
+
+            return [
+                'title' => $decoded['title'] ?? '',
+                'category' => $decoded['category'] ?? 'tin-tuc',
+                'summary' => $decoded['summary'] ?? '',
+                'meta_title' => $decoded['meta_title'] ?? '',
+                'meta_description' => $decoded['meta_description'] ?? '',
+                'content' => $decoded['content'] ?? '',
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Error generating general article', [
                 'message' => $e->getMessage(),
             ]);
             throw $e;

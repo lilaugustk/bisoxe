@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue';
 import BackToTop from '../../components/BackToTop.vue';
 
 interface Plate {
@@ -63,12 +63,60 @@ const props = defineProps<{
     price_trend: Record<string, ProvinceTrend>;
 }>();
 
-const activeTab = ref<'content' | 'video' | 'price'>('content');
 const plateStyle = ref<'long' | 'square'>('long');
+
+interface TocItem {
+    id: string;
+    text: string;
+    level: number;
+}
+const tocItems = ref<TocItem[]>([]);
+const isTocExpanded = ref(true);
+
+const generateToc = () => {
+    const articleBody = document.querySelector('.ai-content-body');
+
+    if (!articleBody) {
+        return;
+    }
+
+    const headings = articleBody.querySelectorAll('h2, h3');
+    const items: TocItem[] = [];
+
+    headings.forEach((heading, index) => {
+        const text = heading.textContent || '';
+        const id = heading.id || `toc-heading-${index}`;
+        heading.id = id;
+
+        items.push({
+            id,
+            text,
+            level: heading.tagName.toLowerCase() === 'h2' ? 2 : 3
+        });
+    });
+
+    tocItems.value = items;
+};
 
 let pollInterval: any = null;
 
 onMounted(() => {
+    // Nếu bài viết đã được gen xong và URL hiện tại chưa phải là URL chuẩn SEO (chứa slug)
+    // thì dùng router.replace chuyển hướng để tránh lưu vết trong history (sửa lỗi nút Back)
+    if (!props.is_pending && props.article && props.article.slug) {
+        const canonicalPath = `/bien-so/${props.article.slug}`;
+        
+        if (window.location.pathname !== canonicalPath) {
+            router.replace({ url: canonicalPath });
+        }
+    }
+
+    if (!props.is_pending) {
+        nextTick(() => {
+            generateToc();
+        });
+    }
+
     if (props.is_pending) {
         pollInterval = setInterval(() => {
             router.reload({
@@ -79,6 +127,20 @@ onMounted(() => {
                             clearInterval(pollInterval);
                             pollInterval = null;
                         }
+
+                        // Sau khi reload thành công và có bài viết mới
+                        // thực hiện replace URL sang chuẩn SEO
+                        if (page.props.article && (page.props.article as any).slug) {
+                            const canonicalPath = `/bien-so/${(page.props.article as any).slug}`;
+                            
+                            if (window.location.pathname !== canonicalPath) {
+                                router.replace({ url: canonicalPath });
+                            }
+                        }
+
+                        nextTick(() => {
+                            generateToc();
+                        });
                     }
                 }
             });
@@ -136,56 +198,196 @@ const statusColorClass = computed(() => {
 // --- PHẦN TÍNH TOÁN TỌA ĐỘ SVG CHO BIỂU ĐỒ NATIVE ---
 
 const hoveredIndex = ref<number | null>(null);
+const mouseX = ref(0);
+const mouseY = ref(0);
 
-// Tỉnh hiện tại
-const currentProvinceCode = props.plate.province?.code || '';
-const currentProvinceName = props.plate.province?.name || 'Tỉnh hiện tại';
+const onChartMouseMove = (e: MouseEvent) => {
+    mouseX.value = e.clientX;
+    mouseY.value = e.clientY;
+};
 
-// Tỉnh đối chiếu (so sánh)
-const compareProvinceCode = ref('');
+// Danh sách mã tỉnh đang được chọn hiển thị biểu đồ
+const selectedProvinceCodes = ref<string[]>([]);
 
-const comparedProvinceName = computed<string>(() => {
-    if (!compareProvinceCode.value) {
-        return '';
+// Kiểm tra trạng thái "Tất cả" (mảng rỗng = tất cả)
+const isAllSelected = computed(() => selectedProvinceCodes.value.length === 0);
+
+// Toggle chọn/bỏ chọn một tỉnh
+const toggleProvince = (code: string) => {
+    if (code === 'all') {
+        selectedProvinceCodes.value = [];
+
+        return;
     }
 
-    return props.price_trend[compareProvinceCode.value]?.province_name || '';
-});
-// Danh sách biển số tỉnh hiện tại
-const currentPlates = computed<PriceTrendItem[]>(() => {
-    return props.price_trend[currentProvinceCode]?.plates || [];
-});
+    const codes = [...selectedProvinceCodes.value];
+    const idx = codes.indexOf(code);
 
-// Danh sách biển số tỉnh đối chiếu
-const comparedPlates = computed<PriceTrendItem[]>(() => {
-    if (!compareProvinceCode.value) {
-        return [];
+    if (idx >= 0) {
+        codes.splice(idx, 1);
+    } else {
+        codes.push(code);
     }
 
-    return props.price_trend[compareProvinceCode.value]?.plates || [];
+    // Nếu chọn hết tất cả tỉnh thì chuyển về mode "Tất cả"
+    if (codes.length >= availableProvinces.value.length) {
+        selectedProvinceCodes.value = [];
+
+        return;
+    }
+
+    // Nếu bỏ hết thì fallback về "Tất cả"
+    if (codes.length === 0) {
+        selectedProvinceCodes.value = [];
+
+        return;
+    }
+
+    selectedProvinceCodes.value = codes;
+};
+
+// Kiểm tra 1 tỉnh có đang được chọn không
+const isProvinceActive = (code: string) => {
+    if (code === 'all') {
+        return isAllSelected.value;
+    }
+    
+    return selectedProvinceCodes.value.includes(code);
+};
+
+// Tên tỉnh đang chọn (dùng cho tiêu đề biểu đồ)
+const selectedProvinceName = computed(() => {
+    if (isAllSelected.value) {
+        return 'Tất cả tỉnh thành';
+    }
+
+    const names = selectedProvinceCodes.value
+        .map(code => props.price_trend[code]?.province_name)
+        .filter(Boolean);
+
+    if (names.length <= 2) {
+        return names.join(' & ');
+    }
+
+    return `${names.length} tỉnh thành`;
 });
 
-// Trục Y lớn nhất cho Giá trị biển số (Lấy mức trúng cao nhất của cả 2 tỉnh để đồng bộ tỷ lệ)
+// Danh sách biển số các tỉnh đang chọn (kèm tên tỉnh để hiển thị ở tooltip)
+const selectedPlates = computed<(PriceTrendItem & { province_name?: string })[]>(() => {
+    const codesToShow = isAllSelected.value
+        ? Object.keys(props.price_trend)
+        : selectedProvinceCodes.value;
+
+    const allPlates: (PriceTrendItem & { province_name?: string })[] = [];
+
+    codesToShow.forEach(code => {
+        const provinceName = props.price_trend[code]?.province_name || '';
+        const plates = (props.price_trend[code]?.plates || []).map(plate => ({
+            ...plate,
+            province_name: provinceName
+        }));
+        allPlates.push(...plates);
+    });
+
+    // Sắp xếp theo ngày đấu tăng dần (parse từ d/m/Y)
+    return allPlates.sort((a, b) => {
+        const parseDate = (dmy: string) => {
+            const parts = dmy.split('/');
+
+            if (parts.length !== 3) {
+return 0;
+}
+
+            return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime();
+        };
+
+        return parseDate(a.auction_date) - parseDate(b.auction_date);
+    });
+});
+
+// Danh sách tất cả các tỉnh thành có dữ liệu xu hướng để người dùng chọn
+const availableProvinces = computed(() => {
+    return Object.keys(props.price_trend)
+        .filter(code => props.price_trend[code]?.plates?.length > 0)
+        .map(code => ({
+            code,
+            name: props.price_trend[code].province_name,
+            count: props.price_trend[code].plates.length
+        }));
+});
+
+// Tổng số lượng biển số trên toàn quốc
+const totalPlatesCount = computed(() => {
+    let count = 0;
+    Object.keys(props.price_trend).forEach(code => {
+        count += props.price_trend[code]?.plates?.length || 0;
+    });
+
+    return count;
+});
+
+// Các chỉ mục sẽ hiển thị nhãn ở trục X để tránh chồng chéo chữ khi nhiều dữ liệu
+const labelIndices = computed<number[]>(() => {
+    const total = selectedPlates.value.length;
+
+    if (total === 0) {
+return [];
+}
+
+    if (total <= 6) {
+        return Array.from({ length: total }, (_, i) => i);
+    }
+
+    const indices = [0];
+    const steps = 5;
+
+    for (let i = 1; i < steps; i++) {
+        indices.push(Math.round((i * (total - 1)) / steps));
+    }
+
+    indices.push(total - 1);
+
+    return [...new Set(indices)];
+});
+
+// Trục Y lớn nhất cho Giá trị biển số (Lấy mức trúng cao nhất của tỉnh đang chọn để đồng bộ tỷ lệ và làm tròn số chẵn đẹp)
 const maxCategoryValue = computed<number>(() => {
-    const currentPrices = currentPlates.value.map((d: PriceTrendItem) => d.winning_price);
-    const comparedPrices = comparedPlates.value.map((d: PriceTrendItem) => d.winning_price);
-    const allPrices = [...currentPrices, ...comparedPrices];
+    const prices = selectedPlates.value.map((d: PriceTrendItem) => d.winning_price);
+    const maxPrice = prices.length > 0 ? Math.max(...prices, 40000000) : 40000000;
+    
+    // Tìm step chia 3 làm tròn đẹp
+    const rawStep = (maxPrice * 1.05) / 3; // Thêm 5% buffer để điểm cao nhất không chạm đỉnh khít khịt
+    let niceStep = 0;
 
-    if (allPrices.length === 0) {
-        return 40000000;
+    if (rawStep < 1000000000) {
+        // Dưới 1 tỷ: Làm tròn theo triệu (mốc chẵn đẹp)
+        const millionUnit = 1000000;
+        const rawStepMillions = rawStep / millionUnit;
+        const niceMillions = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 75, 80, 90, 100, 120, 125, 150, 175, 200, 250, 300, 350, 400, 450, 500, 600, 700, 750, 800, 900, 1000];
+        
+        const matched = niceMillions.find(m => m >= rawStepMillions);
+        niceStep = (matched ? matched : Math.ceil(rawStepMillions / 100) * 100) * millionUnit;
+    } else {
+        // Từ 1 tỷ trở lên: Làm tròn theo tỷ (mốc chẵn đẹp)
+        const billionUnit = 1000000000;
+        const rawStepBillions = rawStep / billionUnit;
+        const niceBillions = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7.5, 8, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 75, 80, 90, 100];
+        
+        const matched = niceBillions.find(b => b >= rawStepBillions);
+        niceStep = (matched ? matched : Math.ceil(rawStepBillions / 10) * 10) * billionUnit;
     }
 
-    return Math.max(...allPrices, 40000000) * 1.15;
+    return niceStep * 3;
 });
 
 // Định dạng rút gọn tiền trên trục Y (ví dụ: 100.000.000 -> 100 Tr)
 const formatShortMoney = (value: number) => {
     if (value >= 1000000000) {
-        return (value / 1000000000).toFixed(2).replace(/\.00$/, '') + ' Tỷ';
+        return parseFloat((value / 1000000000).toFixed(2)) + ' Tỷ';
     }
 
     if (value >= 1000000) {
-        return (value / 1000000).toFixed(0) + ' Tr';
+        return parseFloat((value / 1000000).toFixed(2)) + ' Tr';
     }
 
     return value.toLocaleString('vi-VN') + ' đ';
@@ -194,48 +396,32 @@ const formatShortMoney = (value: number) => {
 // Tính toán tọa độ X phân bố đều các điểm trong khoảng từ 60px đến 460px
 const getXCoordinate = (index: number, total: number) => {
     if (total <= 1) {
-        return 260; // Nằm ở giữa nếu chỉ có 1 điểm
+        return 250; // Nằm ở giữa nếu chỉ có 1 điểm
     }
 
-    const step = 400 / (total - 1);
+    const step = 425 / (total - 1);
 
-    return 60 + (index * step);
+    return 35 + (index * step);
 };
 
-// Hàm sinh đường dẫn Bezier mượt mà (smooth curve) đi qua các điểm
-const getSmoothPath = (points: { x: number; y: number }[]) => {
+// Hàm sinh đường dẫn dạng đường thẳng (straight line) đi qua các điểm
+const getLinePath = (points: { x: number; y: number }[]) => {
     if (points.length === 0) {
         return '';
     }
 
-    if (points.length === 1) {
-        return `M ${points[0].x} ${points[0].y}`;
-    }
-
-    if (points.length === 2) {
-        return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
-    }
-
     let d = `M ${points[0].x} ${points[0].y}`;
 
-    for (let i = 0; i < points.length - 1; i++) {
-        const p0 = points[i];
-        const p1 = points[i + 1];
-
-        const cpX1 = p0.x + (p1.x - p0.x) / 3;
-        const cpY1 = p0.y;
-        const cpX2 = p0.x + (2 * (p1.x - p0.x)) / 3;
-        const cpY2 = p1.y;
-
-        d += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${p1.x} ${p1.y}`;
+    for (let i = 1; i < points.length; i++) {
+        d += ` L ${points[i].x} ${points[i].y}`;
     }
 
     return d;
 };
 
-// Đường dẫn SVG cho tỉnh hiện tại (Đường đỏ)
+// Đường dẫn SVG cho tỉnh đang chọn (Đường đỏ)
 const categoryLinePath = computed<string>(() => {
-    const plates = currentPlates.value;
+    const plates = selectedPlates.value;
 
     if (plates.length === 0) {
         return '';
@@ -246,12 +432,12 @@ const categoryLinePath = computed<string>(() => {
         y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
     }));
 
-    return getSmoothPath(points);
+    return getLinePath(points);
 });
 
-// Đường dẫn SVG cho vùng màu Gradient tỉnh hiện tại
+// Đường dẫn SVG cho vùng màu Gradient tỉnh đang chọn
 const categoryAreaPath = computed<string>(() => {
-    const plates = currentPlates.value;
+    const plates = selectedPlates.value;
 
     if (plates.length === 0) {
         return '';
@@ -269,50 +455,9 @@ const categoryAreaPath = computed<string>(() => {
         return `M ${firstX} 180 L ${points[0].x} ${points[0].y} L ${firstX} 180 Z`;
     }
 
-    const smoothPath = getSmoothPath(points);
+    const linePath = getLinePath(points);
 
-    return `${smoothPath} L ${lastX} 180 L ${firstX} 180 Z`;
-});
-
-// Đường dẫn SVG cho tỉnh đối chiếu (Đường xanh)
-const compareLinePath = computed<string>(() => {
-    const plates = comparedPlates.value;
-
-    if (plates.length === 0) {
-        return '';
-    }
-
-    const points = plates.map((d: PriceTrendItem, i: number) => ({
-        x: getXCoordinate(i, plates.length),
-        y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
-    }));
-
-    return getSmoothPath(points);
-});
-
-// Đường dẫn SVG cho vùng màu Gradient tỉnh đối chiếu
-const compareAreaPath = computed<string>(() => {
-    const plates = comparedPlates.value;
-
-    if (plates.length === 0) {
-        return '';
-    }
-
-    const points = plates.map((d: PriceTrendItem, i: number) => ({
-        x: getXCoordinate(i, plates.length),
-        y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
-    }));
-
-    const firstX = getXCoordinate(0, plates.length);
-    const lastX = getXCoordinate(plates.length - 1, plates.length);
-
-    if (points.length === 1) {
-        return `M ${firstX} 180 L ${points[0].x} ${points[0].y} L ${firstX} 180 Z`;
-    }
-
-    const smoothPath = getSmoothPath(points);
-
-    return `${smoothPath} L ${lastX} 180 L ${firstX} 180 Z`;
+    return `${linePath} L ${lastX} 180 L ${firstX} 180 Z`;
 });
 </script>
 
@@ -338,7 +483,7 @@ const compareAreaPath = computed<string>(() => {
 
         <!-- 2. Main Header -->
         <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
                 <div class="flex items-center gap-8">
                     <!-- Logo -->
                     <Link href="/" class="flex items-center gap-3">
@@ -373,7 +518,6 @@ const compareAreaPath = computed<string>(() => {
                         </svg>
                         <div class="flex flex-col">
                             <span class="text-lg font-black text-[#8C1E1E] leading-none">BISOXE.COM</span>
-                            <span class="text-[10px] text-gray-500 font-bold tracking-widest mt-0.5">GIẢI MÃ PHONG THỦY</span>
                         </div>
                     </Link>
 
@@ -382,20 +526,17 @@ const compareAreaPath = computed<string>(() => {
                         <Link href="/" class="hover:text-[#8C1E1E] transition">Trang chủ</Link>
                         <Link href="/bien-so-xe-o-to" :class="plate.vehicle_type === 'car' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe ô tô</Link>
                         <Link href="/bien-so-xe-may" :class="plate.vehicle_type === 'motorcycle' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe máy, mô tô</Link>
+                        <Link href="/bai-viet" class="hover:text-[#8C1E1E] transition">Bài viết & Tin tức</Link>
                         <Link href="/#meanings-section" class="hover:text-[#8C1E1E] transition">Ý nghĩa phong thủy</Link>
                         <Link href="/#faq-section" class="hover:text-[#8C1E1E] transition">Hỏi đáp</Link>
                     </nav>
                 </div>
-                <div>
-                    <button class="px-4 py-2 border border-[#8C1E1E] text-[#8C1E1E] text-xs font-bold rounded-full hover:bg-red-50 transition">
-                        Liên hệ hợp tác
-                    </button>
-                </div>
+
             </div>
         </header>
 
         <!-- Main Content Layout -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             
             <!-- Breadcrumb / Back Navigation -->
             <div class="mb-5 flex items-center">
@@ -586,34 +727,7 @@ const compareAreaPath = computed<string>(() => {
             </div>
 
                     <!-- Content Area: generated articles & scripts -->
-                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                <!-- Navigation Tabs -->
-                <div class="flex border-b border-gray-200 bg-gray-50/50">
-                    <button 
-                        @click="activeTab = 'content'"
-                        class="px-6 py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all duration-200"
-                        :class="activeTab === 'content' ? 'border-[#8C1E1E] text-[#8C1E1E] bg-white' : 'border-transparent text-gray-500 hover:text-gray-900'"
-                    >
-                        Giải mã Phong Thủy & Đánh giá
-                    </button>
-                    <button 
-                        @click="activeTab = 'price'"
-                        class="px-6 py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all duration-200"
-                        :class="activeTab === 'price' ? 'border-[#8C1E1E] text-[#8C1E1E] bg-white' : 'border-transparent text-gray-500 hover:text-gray-900'"
-                    >
-                        Biểu đồ biến động giá
-                    </button>
-                    <button 
-                        @click="activeTab = 'video'"
-                        class="px-6 py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all duration-200"
-                        :class="activeTab === 'video' ? 'border-[#8C1E1E] text-[#8C1E1E] bg-white' : 'border-transparent text-gray-500 hover:text-gray-900'"
-                    >
-                        Kịch bản Video ngắn (Tiktok/Shorts)
-                    </button>
-                </div>
-
-                <!-- Tab Panels -->
-                <div class="p-6 lg:p-10">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden p-6 lg:p-10">
                     
                     <!-- Loading state: If content is still generating -->
                     <div v-if="is_pending" class="flex flex-col items-center justify-center py-16 text-center">
@@ -628,8 +742,8 @@ const compareAreaPath = computed<string>(() => {
                         </p>
                     </div>
 
-                    <!-- Main Article Tab -->
-                    <div v-else-if="activeTab === 'content'" class="prose max-w-none">
+                    <!-- Main Article Content -->
+                    <div v-else class="prose max-w-none">
                         <h1 class="text-2xl lg:text-3xl font-extrabold text-gray-900 mb-6 tracking-tight border-b border-gray-100 pb-4 font-sans">
                             {{ article.title }}
                         </h1>
@@ -644,226 +758,259 @@ const compareAreaPath = computed<string>(() => {
                                 height="630"
                             />
                         </div>
+                        <!-- Table of Contents Widget -->
+                        <div v-if="tocItems.length > 0" class="mb-8 p-5 bg-gray-50/80 border border-gray-200 rounded-xl">
+                            <div 
+                                @click="isTocExpanded = !isTocExpanded"
+                                class="flex items-center justify-between border-b border-gray-200/60 pb-2 mb-3 cursor-pointer select-none group"
+                            >
+                                <div class="flex items-center gap-2 text-gray-800 font-bold">
+                                    <svg class="w-4.5 h-4.5 text-[#8C1E1E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+                                    </svg>
+                                    <span class="text-xs uppercase tracking-wider">Mục lục bài viết</span>
+                                </div>
+                                <span class="text-xs font-bold text-[#8C1E1E] group-hover:underline">
+                                    {{ isTocExpanded ? '[Thu gọn]' : '[Mở rộng]' }}
+                                </span>
+                            </div>
+                            <nav v-show="isTocExpanded" class="space-y-2.5 text-xs sm:text-sm">
+                                <div 
+                                    v-for="item in tocItems" 
+                                    :key="item.id"
+                                    :class="item.level === 3 ? 'pl-5 text-gray-500' : 'font-semibold text-gray-700'"
+                                >
+                                    <a 
+                                        :href="`#${item.id}`" 
+                                        class="hover:text-[#8C1E1E] transition duration-150 inline-block py-0.5"
+                                    >
+                                        {{ item.text }}
+                                    </a>
+                                </div>
+                            </nav>
+                        </div>
+
                         <!-- Render HTML content safely -->
                         <div v-if="article.content" class="ai-content-body space-y-6 text-gray-700 leading-relaxed text-base" v-html="article.content"></div>
                         <div v-else class="text-gray-500 text-sm">Nội dung bài viết chưa được cập nhật.</div>
-                        
+
                         <!-- Article footer indexing badge -->
                         <div class="mt-12 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-                            <span>Mô hình phân tích: {{ article.generation_model || 'Llama-3.3-70b-versatile' }}</span>
+                            <span>BISOXE.COM</span>
                             <span v-if="article.generated_at">Ngày khởi tạo nội dung: {{ formatDate(article.generated_at) }}</span>
                         </div>
                     </div>
 
-                    <!-- Price Prediction Tab -->
-                    <div v-else-if="activeTab === 'price'" class="space-y-8">
-                        <!-- Empty State if no data -->
-                        <div v-if="!price_trend || Object.keys(price_trend).length === 0" class="flex flex-col items-center justify-center py-16 text-center max-w-4xl mx-auto w-full">
-                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100">
-                                <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.008 1.24l.885 1.77a2.25 2.25 0 0 0 2.007 1.24h1.98a2.25 2.25 0 0 0 2.007-1.24l.885-1.77a2.25 2.25 0 0 1 2.007-1.24h3.86m-18 0h18" />
-                                </svg>
-                            </div>
-                            <h3 class="text-base font-bold text-gray-800 mb-1">Chưa có dữ liệu lịch sử đấu giá</h3>
-                            <p class="text-xs text-gray-500 max-w-md">
-                                Không tìm thấy biển số {{ plate.vehicle_type === 'car' ? 'ô tô' : 'xe máy' }} nào có cùng sê-ri số đuôi "{{ plate.serial_number }}" đã hoàn thành đấu giá tại tỉnh thành {{ plate.province?.name || 'này' }}.
-                            </p>
-                        </div>
-
-                        <!-- Historical Trend SVG Chart with Tooltips -->
-                        <div v-else class="relative max-w-4xl mx-auto w-full">
+                    <!-- Price Fluctuation Chart (Displayed whether loading or completed, if there is historical data) -->
+                    <div v-if="availableProvinces.length > 0" class="mt-12 pt-8 border-t border-gray-200">
+                        <div class="relative w-full">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 border-b border-gray-100 pb-4">
                                 <div>
-                                    <h3 class="text-sm sm:text-base font-semibold text-gray-700 font-sans">
-                                        Lịch sử giá trúng đấu giá sê-ri số đuôi "{{ plate.serial_number }}" tại {{ plate.province?.name }}
+                                    <h3 class="text-lg font-bold text-gray-900 font-sans">
+                                        Lịch sử giá trúng đấu giá sê-ri số đuôi "{{ plate.serial_number }}" tại {{ selectedProvinceName }}
                                     </h3>
-                                    <p class="text-[11px] text-gray-400 mt-1">Đơn vị: VND. So sánh trực quan xu hướng giá giữa các địa phương.</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">Đơn vị: VND. Bản vẽ xu hướng giá theo thời gian thực tế.</p>
                                 </div>
                             </div>
                         
-                            <!-- Floating Tooltip Overlay (Side-by-side comparison) -->
-                            <div 
-                                v-if="hoveredIndex !== null" 
-                                class="absolute z-25 bg-slate-900/95 text-white text-[11px] p-3.5 rounded-xl shadow-xl border border-slate-800 pointer-events-none transition-all duration-150 space-y-3 min-w-[160px]"
-                                :style="{
-                                    left: `${(getXCoordinate(hoveredIndex, currentPlates.length) / 500) * 100}%`,
-                                    top: '120px',
-                                    transform: hoveredIndex >= currentPlates.length / 2 ? 'translateX(-105%)' : 'translateX(5%)'
-                                }"
-                            >
-                                <!-- Tỉnh hiện tại -->
-                                <div v-if="currentPlates[hoveredIndex]" class="space-y-1">
-                                    <div class="font-bold text-[#FCA5A5] border-b border-slate-700/50 pb-1 mb-1.5 flex items-center gap-1.5">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-[#8C1E1E]"></span>
-                                        {{ currentProvinceName }}
+                            <!-- Floating Tooltip (follows cursor) -->
+                            <Teleport to="body">
+                                <div 
+                                    v-if="hoveredIndex !== null && selectedPlates[hoveredIndex]" 
+                                    class="fixed z-[9999] pointer-events-none"
+                                    :style="{
+                                        left: `${mouseX + 14}px`,
+                                        top: `${mouseY - 14}px`,
+                                        transform: 'translateY(-100%)'
+                                    }"
+                                >
+                                    <div class="bg-white text-gray-800 text-[11px] rounded-lg shadow-[0_4px_20px_-2px_rgba(0,0,0,0.15)] border border-gray-200/80 min-w-[170px]">
+                                        <!-- Header tỉnh -->
+                                        <div class="px-3 py-1.5 bg-gray-50 rounded-t-lg border-b border-gray-100 flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full bg-[#8C1E1E] shrink-0"></span>
+                                            <span class="font-bold text-[10px] text-gray-600 truncate">{{ selectedPlates[hoveredIndex].province_name || selectedProvinceName }}</span>
+                                        </div>
+                                        <!-- Body -->
+                                        <div class="px-3 py-2 space-y-1">
+                                            <div class="flex items-center justify-between gap-3">
+                                                <span class="text-gray-400 text-[10px]">Biển số</span>
+                                                <span class="font-bold text-gray-900 text-[11px]">{{ selectedPlates[hoveredIndex].plate_number }}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between gap-3">
+                                                <span class="text-gray-400 text-[10px]">Giá trúng</span>
+                                                <span class="font-extrabold text-[#8C1E1E] text-[11px]">{{ formatShortMoney(selectedPlates[hoveredIndex].winning_price) }}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between gap-3">
+                                                <span class="text-gray-400 text-[10px]">Ngày đấu</span>
+                                                <span class="font-medium text-gray-600 text-[10px]">{{ selectedPlates[hoveredIndex].auction_date }}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>Biển: <span class="font-bold text-gray-200">{{ currentPlates[hoveredIndex].plate_number }}</span></div>
-                                    <div>Giá trúng: <span class="font-bold text-red-400">{{ formatMoney(currentPlates[hoveredIndex].winning_price) }}</span></div>
-                                    <div class="text-[10px] text-slate-400">Ngày đấu: {{ currentPlates[hoveredIndex].auction_date }}</div>
                                 </div>
-                                
-                                <!-- Tỉnh đối chiếu -->
-                                <div v-if="compareProvinceCode && comparedPlates[hoveredIndex]" class="space-y-1 pt-2 border-t border-slate-800">
-                                    <div class="font-bold text-[#93C5FD] border-b border-slate-700/50 pb-1 mb-1.5 flex items-center gap-1.5">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-[#3B82F6]"></span>
-                                        {{ comparedProvinceName }}
-                                    </div>
-                                    <div>Biển: <span class="font-bold text-gray-200">{{ comparedPlates[hoveredIndex].plate_number }}</span></div>
-                                    <div>Giá trúng: <span class="font-bold text-blue-400">{{ formatMoney(comparedPlates[hoveredIndex].winning_price) }}</span></div>
-                                    <div class="text-[10px] text-slate-400">Ngày đấu: {{ comparedPlates[hoveredIndex].auction_date }}</div>
-                                </div>
-                            </div>
+                            </Teleport>
 
                             <!-- SVG Price Chart -->
                             <div class="bg-gray-50 border border-gray-150 rounded-2xl p-4 md:p-6 shadow-inner relative overflow-hidden">
-                                <svg viewBox="0 0 500 230" class="w-full h-auto overflow-visible" xmlns="http://www.w3.org/2000/svg">
+                                <svg viewBox="0 0 500 216" class="w-full h-auto overflow-visible" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
-                                        <!-- Gradient definition for current province area fill -->
+                                        <!-- Gradient definition for selected province area fill -->
                                         <linearGradient id="currentAreaGrad" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stop-color="#8C1E1E" stop-opacity="0.25" />
                                             <stop offset="100%" stop-color="#8C1E1E" stop-opacity="0.0" />
                                         </linearGradient>
-                                        <!-- Gradient definition for compared province area fill -->
-                                        <linearGradient id="compareAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25" />
-                                            <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.0" />
-                                        </linearGradient>
                                     </defs>
 
                                     <!-- Grid lines & Y Axis values -->
-                                    <line x1="60" y1="30" x2="460" y2="30" stroke="#F3F4F6" stroke-width="1.5" />
-                                    <line x1="60" y1="30" x2="460" y2="30" stroke="#E5E7EB" stroke-dasharray="3,3" />
-                                    <text x="50" y="34" class="text-[9px] font-bold text-gray-400 font-sans text-right" text-anchor="end">
+                                    <line x1="35" y1="30" x2="460" y2="30" stroke="#E5E7EB" stroke-width="0.8" stroke-dasharray="3,3" />
+                                    <text x="30" y="33" class="text-[6px] font-semibold text-gray-400 font-sans text-right" text-anchor="end">
                                         {{ formatShortMoney(maxCategoryValue) }}
                                     </text>
 
-                                    <line x1="60" y1="80" x2="460" y2="80" stroke="#F3F4F6" stroke-width="1.5" />
-                                    <line x1="60" y1="80" x2="460" y2="80" stroke="#E5E7EB" stroke-dasharray="3,3" />
-                                    <text x="50" y="84" class="text-[9px] font-bold text-gray-400 font-sans text-right" text-anchor="end">
-                                        {{ formatShortMoney(maxCategoryValue * 0.66) }}
+                                    <line x1="35" y1="80" x2="460" y2="80" stroke="#E5E7EB" stroke-width="0.8" stroke-dasharray="3,3" />
+                                    <text x="30" y="83" class="text-[6px] font-semibold text-gray-400 font-sans text-right" text-anchor="end">
+                                        {{ formatShortMoney(maxCategoryValue * 2 / 3) }}
                                     </text>
 
-                                    <line x1="60" y1="130" x2="460" y2="130" stroke="#F3F4F6" stroke-width="1.5" />
-                                    <line x1="60" y1="130" x2="460" y2="130" stroke="#E5E7EB" stroke-dasharray="3,3" />
-                                    <text x="50" y="134" class="text-[9px] font-bold text-gray-400 font-sans text-right" text-anchor="end">
-                                        {{ formatShortMoney(maxCategoryValue * 0.33) }}
+                                    <line x1="35" y1="130" x2="460" y2="130" stroke="#E5E7EB" stroke-width="0.8" stroke-dasharray="3,3" />
+                                    <text x="30" y="133" class="text-[6px] font-semibold text-gray-400 font-sans text-right" text-anchor="end">
+                                        {{ formatShortMoney(maxCategoryValue * 1 / 3) }}
                                     </text>
 
                                     <!-- X Axis Line -->
-                                    <line x1="60" y1="180" x2="460" y2="180" stroke="#D1D5DB" stroke-width="1.5" />
-                                    <text x="50" y="184" class="text-[9px] font-bold text-gray-400 font-sans text-right" text-anchor="end">0</text>
+                                    <line x1="35" y1="180" x2="460" y2="180" stroke="#D1D5DB" stroke-width="1" />
+                                    <text x="30" y="183" class="text-[6px] font-semibold text-gray-400 font-sans text-right" text-anchor="end">0</text>
 
-                                    <!-- Area Fill (Current Province) -->
+                                    <!-- Area Fill (Selected Province) -->
                                     <path v-if="categoryAreaPath" :d="categoryAreaPath" fill="url(#currentAreaGrad)" />
 
-                                    <!-- Curve Line (Current Province) -->
-                                    <path v-if="categoryLinePath" :d="categoryLinePath" fill="none" stroke="#8C1E1E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-
-                                    <!-- Area Fill (Compared Province) -->
-                                    <path v-if="compareProvinceCode && compareAreaPath" :d="compareAreaPath" fill="url(#compareAreaGrad)" />
-
-                                    <!-- Curve Line (Compared Province) -->
-                                    <path v-if="compareProvinceCode && compareLinePath" :d="compareLinePath" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- Curve Line (Selected Province) -->
+                                    <path v-if="categoryLinePath" :d="categoryLinePath" fill="none" stroke="#8C1E1E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
 
                                     <!-- Highlight hovered vertical guide line -->
                                     <line 
                                         v-if="hoveredIndex !== null" 
-                                        :x1="getXCoordinate(hoveredIndex, currentPlates.length)" 
+                                        :x1="getXCoordinate(hoveredIndex, selectedPlates.length)" 
                                         y1="30" 
-                                        :x2="getXCoordinate(hoveredIndex, currentPlates.length)" 
+                                        :x2="getXCoordinate(hoveredIndex, selectedPlates.length)" 
                                         y2="180" 
                                         stroke="#D1D5DB" 
-                                        stroke-width="1" 
+                                        stroke-width="0.8" 
                                         stroke-dasharray="3,3" 
                                     />
 
-                                    <!-- Dots / Circles (Current Province) -->
-                                    <g v-for="(item, i) in currentPlates" :key="'curr-circle-' + i">
+                                    <!-- Dots / Circles (Selected Province) -->
+                                    <g v-for="(item, i) in selectedPlates" :key="'curr-circle-' + i">
                                         <circle 
-                                            :cx="getXCoordinate(i, currentPlates.length)" 
+                                            :cx="getXCoordinate(i, selectedPlates.length)" 
                                             :cy="180 - ((item.winning_price / maxCategoryValue) * 150)" 
-                                            :r="hoveredIndex === i ? 7 : 5" 
+                                            :r="hoveredIndex === i ? 4 : 2.5" 
                                             fill="#8C1E1E" 
                                             stroke="#FFFFFF" 
-                                            :stroke-width="hoveredIndex === i ? 2.5 : 1.5" 
+                                            :stroke-width="hoveredIndex === i ? 1.5 : 0.8" 
                                             class="transition-all duration-150"
                                         />
                                     </g>
 
                                     <!-- X Axis Labels (License Plate Number) -->
-                                    <text 
-                                        v-for="(item, i) in currentPlates" 
-                                        :key="'lbl-x-' + i"
-                                        :x="getXCoordinate(i, currentPlates.length)" 
-                                        y="200" 
-                                        class="text-[9px] font-bold text-gray-500 font-sans"
-                                        text-anchor="middle"
-                                    >
-                                        {{ item.plate_number }}
-                                    </text>
+                                    <template v-for="(item, i) in selectedPlates" :key="'lbl-x-' + i">
+                                        <text 
+                                            v-if="labelIndices.includes(i)"
+                                            :x="getXCoordinate(i, selectedPlates.length)" 
+                                            y="198" 
+                                            class="text-[6px] font-bold text-gray-500 font-sans"
+                                            text-anchor="middle"
+                                        >
+                                            {{ item.plate_number }}
+                                        </text>
+                                    </template>
 
                                     <!-- X Axis Labels (Auction Date) -->
-                                    <text 
-                                        v-for="(item, i) in currentPlates" 
-                                        :key="'lbl-date-' + i"
-                                        :x="getXCoordinate(i, currentPlates.length)" 
-                                        y="214" 
-                                        class="text-[8px] text-gray-400 font-medium font-sans"
-                                        text-anchor="middle"
-                                    >
-                                        {{ item.auction_date }}
-                                    </text>
+                                    <template v-for="(item, i) in selectedPlates" :key="'lbl-date-' + i">
+                                        <text 
+                                            v-if="labelIndices.includes(i)"
+                                            :x="getXCoordinate(i, selectedPlates.length)" 
+                                            y="210" 
+                                            class="text-[5.5px] text-gray-400 font-medium font-sans"
+                                            text-anchor="middle"
+                                        >
+                                            {{ item.auction_date }}
+                                        </text>
+                                    </template>
 
                                     <!-- Vertical Hover Hit Zones -->
                                     <rect
-                                        v-for="(item, i) in currentPlates"
+                                        v-for="(item, i) in selectedPlates"
                                         :key="'hover-zone-' + i"
-                                        :x="getXCoordinate(i, currentPlates.length) - (currentPlates.length > 1 ? 200 / (currentPlates.length - 1) : 200)"
+                                        :x="getXCoordinate(i, selectedPlates.length) - (selectedPlates.length > 1 ? 212.5 / (selectedPlates.length - 1) : 212.5)"
                                         y="10"
-                                        :width="currentPlates.length > 1 ? 400 / (currentPlates.length - 1) : 400"
+                                        :width="selectedPlates.length > 1 ? 425 / (selectedPlates.length - 1) : 425"
                                         height="180"
                                         fill="transparent"
                                         class="cursor-pointer"
                                         @mouseenter="hoveredIndex = i"
+                                        @mousemove="onChartMouseMove($event)"
                                         @mouseleave="hoveredIndex = null"
                                     />
                                 </svg>
                             </div>
 
-                            <!-- Legends -->
-                            <div class="mt-8 flex justify-center flex-wrap gap-6 text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-3.5 h-0.5 bg-[#8C1E1E] inline-block"></span>
-                                    <span>Giá trúng {{ currentProvinceName }}</span>
-                                </div>
-                                <div v-if="compareProvinceCode" class="flex items-center gap-1.5">
-                                    <span class="w-3.5 h-0.5 bg-[#3B82F6] inline-block"></span>
-                                    <span>Giá trúng {{ comparedProvinceName }}</span>
+                            <!-- Legend / Selection tabs below chart -->
+                            <div class="mt-6 border-t border-gray-150 pt-5">
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 text-center sm:text-left">
+                                    Xem lịch sử giá của các tỉnh/thành phố khác:
+                                </p>
+                                <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                                    <!-- Nút Tất cả -->
+                                    <button
+                                        @click="toggleProvince('all')"
+                                        class="px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer select-none"
+                                        :class="isAllSelected
+                                            ? 'bg-[#8C1E1E] text-white border-[#8C1E1E] shadow-sm'
+                                            : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-gray-250'"
+                                    >
+                                        <span>Tất cả</span>
+                                        <span 
+                                            class="px-1.5 py-0.5 text-[9px] font-black rounded-full"
+                                            :class="isAllSelected
+                                                ? 'bg-white/20 text-white'
+                                                : 'bg-gray-100 text-gray-500'"
+                                        >
+                                            {{ totalPlatesCount }}
+                                        </span>
+                                    </button>
+
+                                    <!-- Nút từng tỉnh thành -->
+                                    <button
+                                        v-for="prov in availableProvinces"
+                                        :key="prov.code"
+                                        @click="toggleProvince(prov.code)"
+                                        class="px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer select-none"
+                                        :class="isProvinceActive(prov.code)
+                                            ? 'bg-[#8C1E1E] text-white border-[#8C1E1E] shadow-sm'
+                                            : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-gray-250'"
+                                    >
+                                        <span>{{ prov.name }}</span>
+                                        <span 
+                                            class="px-1.5 py-0.5 text-[9px] font-black rounded-full"
+                                            :class="isProvinceActive(prov.code)
+                                                ? 'bg-white/20 text-white'
+                                                : 'bg-gray-100 text-gray-500'"
+                                        >
+                                            {{ prov.count }}
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Video Script Tab -->
-                    <div v-else-if="activeTab === 'video'" class="space-y-6">
-                        <div class="bg-red-50/50 border border-red-100/50 p-5 rounded-xl text-sm text-gray-600 mb-6 flex items-start gap-3">
-                            <p>
-                                <strong>Kịch bản video ngắn (TikTok/Reels/Shorts)</strong> được tự động soạn thảo. Bạn có thể sử dụng trực tiếp kịch bản này để làm voiceover bằng các công cụ đọc giọng nói tự động (như ElevenLabs, Vbee...) và dựng video ngắn để kéo lượt tìm kiếm về bài viết này.
-                            </p>
-                        </div>
-
-                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 font-mono text-sm leading-relaxed text-gray-800 whitespace-pre-wrap select-all shadow-inner">
-                            {{ article.video_script || 'Kịch bản video chưa được tạo cho biển số này.' }}
-                        </div>
-                    </div>
 
                 </div>
-            </div>
 
         </main>
 
         <!-- Footer -->
         <footer class="border-t border-gray-200 bg-white py-12 mt-16 text-center text-gray-400 text-xs font-medium">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
                 <p class="mb-2 text-gray-500">© 2026 BISOXE.COM. Nền tảng phân tích phong thủy biển số xe tự động.</p>
                 <p class="text-gray-400 font-light">Nội dung giải luận mang tính chất tham khảo khoa học phong thủy số học, được hỗ trợ tổng hợp và tính toán tự động.</p>
             </div>
@@ -874,161 +1021,8 @@ const compareAreaPath = computed<string>(() => {
 </template>
 
 <style>
-body, .font-sans, .font-serif, .ai-content-body h2, .ai-content-body h3 {
+body, .font-sans, .font-serif {
     font-family: 'Inter', sans-serif !important;
-}
-
-/* Custom style for rendering html articles dynamically */
-.ai-content-body h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #111827;
-    margin-top: 2.25rem;
-    margin-bottom: 1rem;
-    letter-spacing: -0.02em;
-    border-left: 4px solid #8C1E1E;
-    padding-left: 0.75rem;
-}
-
-.ai-content-body h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #1F2937;
-    margin-top: 1.75rem;
-    margin-bottom: 0.75rem;
-}
-
-.ai-content-body p {
-    margin-bottom: 1.25rem;
-    line-height: 1.8;
-}
-
-.ai-content-body ul, .ai-content-body ol {
-    margin-bottom: 1.25rem;
-    padding-left: 1.5rem;
-    list-style-type: disc;
-}
-
-.ai-content-body li {
-    margin-bottom: 0.5rem;
-    line-height: 1.7;
-}
-
-.ai-content-body strong {
-    color: #8C1E1E;
-    font-weight: 700;
-}
-
-/* Table styles for AI-generated content */
-.ai-content-body table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1.5rem 0 2rem 0;
-    font-size: 0.9rem;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border: 1px solid #E5E7EB;
-}
-
-/* Bọc wrapper overflow để table responsive trên mobile */
-.ai-content-body table {
-    display: table;
-}
-
-.ai-content-body div:has(> table),
-.ai-content-body p:has(> table) {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Header row - hỗ trợ cả <thead><th> và <tr><td> đầu tiên */
-.ai-content-body thead {
-    background: #8C1E1E;
-    color: white;
-}
-
-.ai-content-body thead th,
-.ai-content-body thead td {
-    padding: 0.8rem 1rem;
-    text-align: left;
-    font-weight: 700;
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: white;
-    border-right: 1px solid rgba(255,255,255,0.15);
-}
-
-/* Fallback: hàng đầu tiên trong tbody nếu không có thead */
-.ai-content-body tbody tr:first-child td:not([class]) {
-    background: #8C1E1E;
-    color: white;
-    font-weight: 700;
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-
-/* Khi toàn bộ bảng không có thead — target tr đầu tiên của table */
-.ai-content-body table > tbody > tr:first-child > td,
-.ai-content-body table > tr:first-child > td {
-    background: #8C1E1E !important;
-    color: white !important;
-    font-weight: 700 !important;
-    font-size: 0.83rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 0.8rem 1rem !important;
-    white-space: nowrap;
-    border-right: 1px solid rgba(255,255,255,0.2) !important;
-    border-bottom: none !important;
-    text-align: center;
-}
-
-.ai-content-body tbody tr {
-    border-bottom: 1px solid #E5E7EB;
-    transition: background 0.15s;
-}
-
-.ai-content-body tbody tr:nth-child(even) {
-    background-color: #FDF9F9;
-}
-
-.ai-content-body tbody tr:nth-child(odd) {
-    background-color: #FFFFFF;
-}
-
-.ai-content-body tbody tr:hover {
-    background-color: #FEF2F2;
-}
-
-.ai-content-body tbody td,
-.ai-content-body tbody th {
-    padding: 0.65rem 1rem;
-    color: #374151;
-    vertical-align: top;
-    line-height: 1.6;
-    border-right: 1px solid #E5E7EB;
-    border-bottom: 1px solid #E5E7EB;
-}
-
-.ai-content-body tbody td:last-child,
-.ai-content-body tbody th:last-child {
-    border-right: none;
-}
-
-.ai-content-body tbody td strong {
-    color: #8C1E1E;
-}
-
-.ai-content-body tbody td:first-child {
-    font-weight: 700;
-    color: #111827;
-    background-color: #F9FAFB;
-    white-space: nowrap;
-    border-right: 2px solid #E5E7EB;
 }
 
 /* Perspective utilities for 3D card tilt */

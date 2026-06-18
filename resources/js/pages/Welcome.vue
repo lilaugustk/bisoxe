@@ -2,6 +2,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import BackToTop from '../components/BackToTop.vue';
+import DatePicker from '../components/DatePicker.vue';
 
 interface Plate {
     id: number;
@@ -65,8 +66,7 @@ const activeVehicle = ref(props.filters.vehicle || 'car'); // 'car' | 'motorcycl
 
 const startDate = ref(props.filters.start_date || '');
 const endDate = ref(props.filters.end_date || '');
-const startDateFocused = ref(false);
-const endDateFocused = ref(false);
+
 const selectedBirthYears = ref<string[]>(
     props.filters.birth_years
         ? props.filters.birth_years.split(',')
@@ -78,7 +78,7 @@ const selectedAvoidNumbers = ref<string[]>(
         : []
 );
 
-const selectedLimit = ref(props.filters.limit ? Number(props.filters.limit) : 10);
+const selectedLimit = ref(props.filters.limit ? Number(props.filters.limit) : 20);
 const isLimitDropdownOpen = ref(false);
 const limitOptions = [10, 20, 50, 100];
 const selectLimit = (val: number) => {
@@ -115,7 +115,7 @@ const clearAllFilters = () => {
     endDate.value = '';
     selectedBirthYears.value = [];
     selectedAvoidNumbers.value = [];
-    selectedLimit.value = 10;
+    selectedLimit.value = 20;
     reload();
 };
 
@@ -262,15 +262,51 @@ const reload = () => {
     });
 };
 
-// Theo dõi thay đổi của các bộ lọc dạng dropdown, tab và loại xe để tải lại dữ liệu ngay lập tức
-watch([selectedColor, selectedProvince, activeTab, activeVehicle, startDate, endDate, selectedLimit], () => {
-    reload();
-});
+// Theo dõi thay đổi của các bộ lọc để tải lại dữ liệu ngay lập tức
+watch(
+    [
+        selectedColor,
+        selectedProvince,
+        activeTab,
+        activeVehicle,
+        startDate,
+        endDate,
+        selectedLimit,
+        selectedKind,
+        selectedBirthYears,
+        selectedAvoidNumbers
+    ],
+    (newValues, oldValues) => {
+        const newTab = newValues[2];
+        const oldTab = oldValues ? oldValues[2] : null;
 
-// Watch các mảng checkbox bằng deep:true
-watch([selectedKind, selectedBirthYears, selectedAvoidNumbers], () => {
-    reload();
-}, { deep: true });
+        if (newTab !== oldTab && newTab === 'result') {
+            let hasChanges = false;
+
+            if (selectedKind.value.length > 0) {
+                selectedKind.value = [];
+                hasChanges = true;
+            }
+
+            if (selectedBirthYears.value.length > 0) {
+                selectedBirthYears.value = [];
+                hasChanges = true;
+            }
+
+            if (selectedAvoidNumbers.value.length > 0) {
+                selectedAvoidNumbers.value = [];
+                hasChanges = true;
+            }
+            
+            if (hasChanges) {
+                return;
+            }
+        }
+
+        reload();
+    },
+    { deep: true }
+);
 
 
 
@@ -320,7 +356,7 @@ onUnmounted(() => {
 
         <!-- 2. Main Header -->
         <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
                 <div class="flex items-center gap-8">
                     <!-- Logo -->
                     <Link href="/" class="flex items-center gap-3">
@@ -355,7 +391,6 @@ onUnmounted(() => {
                         </svg>
                         <div class="flex flex-col">
                             <span class="text-lg font-black text-[#8C1E1E] leading-none">BISOXE.COM</span>
-                            <span class="text-[10px] text-gray-500 font-bold tracking-widest mt-0.5">GIẢI MÃ PHONG THỦY</span>
                         </div>
                     </Link>
 
@@ -364,15 +399,12 @@ onUnmounted(() => {
                         <Link href="/" :class="currentPath === '/' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Trang chủ</Link>
                         <Link href="/bien-so-xe-o-to" :class="currentPath === '/bien-so-xe-o-to' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe ô tô</Link>
                         <Link href="/bien-so-xe-may" :class="currentPath === '/bien-so-xe-may' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe máy, mô tô</Link>
+                        <Link href="/bai-viet" :class="currentPath.startsWith('/bai-viet') ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Bài viết & Tin tức</Link>
                         <a href="#meanings-section" class="hover:text-[#8C1E1E] transition">Ý nghĩa phong thủy</a>
                         <a href="#faq-section" class="hover:text-[#8C1E1E] transition">Hỏi đáp</a>
                     </nav>
                 </div>
-                <div>
-                    <button class="px-4 py-2 border border-[#8C1E1E] text-[#8C1E1E] text-xs font-bold rounded-full hover:bg-red-50 transition">
-                        Liên hệ hợp tác
-                    </button>
-                </div>
+
             </div>
         </header>
 
@@ -383,7 +415,7 @@ onUnmounted(() => {
                 <div class="absolute bottom-[10%] right-[10%] w-[30rem] h-[30rem] bg-amber-100 rounded-full blur-3xl"></div>
             </div>
 
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 tracking-tight mb-6" v-html="heroH1Html"></h1>
                 
                 <p class="text-gray-600 text-lg max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
@@ -401,7 +433,7 @@ onUnmounted(() => {
         </section>
 
         <!-- 4. Tab Options & Filter Bar Section -->
-        <section id="table-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20">
+        <section id="table-section" class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20">
             
             <header class="mb-8">
                 <h2 class="text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">{{ tableTitle }}</h2>
@@ -525,45 +557,21 @@ onUnmounted(() => {
                             </div>
                         </div>
 
-                        <!-- Date inputs with calendar icons -->
+                        <!-- Date inputs with custom calendar picker -->
                         <div class="space-y-3 pt-2">
-                            <!-- Start date -->
-                            <div class="relative">
-                                <input 
-                                    :type="startDateFocused || startDate ? 'date' : 'text'"
-                                    @focus="startDateFocused = true"
-                                    @blur="startDateFocused = false"
-                                    v-model="startDate"
-                                    placeholder="Từ ngày đấu giá"
-                                    class="w-full px-5 py-2.5 pr-10 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] text-gray-700 bg-white cursor-pointer"
-                                />
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <!-- End date -->
-                            <div class="relative">
-                                <input 
-                                    :type="endDateFocused || endDate ? 'date' : 'text'"
-                                    @focus="endDateFocused = true"
-                                    @blur="endDateFocused = false"
-                                    v-model="endDate"
-                                    placeholder="Đến ngày đấu giá"
-                                    class="w-full px-5 py-2.5 pr-10 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1E1E]/20 focus:border-[#8C1E1E] text-gray-700 bg-white cursor-pointer"
-                                />
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                              </div>
+                            <DatePicker
+                                v-model="startDate"
+                                placeholder="Từ ngày đấu giá"
+                            />
+                            <DatePicker
+                                v-model="endDate"
+                                placeholder="Đến ngày đấu giá"
+                            />
                         </div>
                     </div>
 
                     <!-- Kinds Collapsible Section -->
-                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <div v-if="activeTab !== 'result'" class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
                         <button 
                             type="button"
                             @click="kindsOpen = !kindsOpen"
@@ -599,7 +607,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Birth Years Collapsible Section -->
-                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <div v-if="activeTab !== 'result'" class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
                         <button 
                             type="button"
                             @click="birthYearsOpen = !birthYearsOpen"
@@ -632,7 +640,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Avoid Numbers Collapsible Section -->
-                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <div v-if="activeTab !== 'result'" class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
                         <button 
                             type="button"
                             @click="avoidNumbersOpen = !avoidNumbersOpen"
@@ -716,7 +724,7 @@ onUnmounted(() => {
                                         <td class="py-4 px-6 text-center">
                                             <Link 
                                                 :href="`/bien-so/${plate.slug}`"
-                                                class="px-3.5 py-1.5 rounded-md border border-[#8C1E1E] text-[#8C1E1E] text-xs font-bold hover:bg-[#8C1E1E] hover:text-white transition duration-200 shadow-sm inline-block"
+                                                class="px-3.5 py-1.5 rounded-md border border-[#8C1E1E] text-[#8C1E1E] text-xs font-bold hover:bg-[#8C1E1E] hover:text-white transition duration-200 shadow-sm inline-block whitespace-nowrap"
                                             >
                                                 Luận phong thủy
                                             </Link>
@@ -859,7 +867,7 @@ onUnmounted(() => {
 
         <!-- 5. SEO Text Section: Ý nghĩa các số phong thủy (Rất nhiều văn bản giá trị cho Google Bot đọc) -->
         <section id="meanings-section" class="bg-white border-t border-b border-gray-200 py-16 scroll-mt-20">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
                 <header class="text-center mb-12">
                     <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Giải Mã Ý Nghĩa Phong Thủy Các Con Số</h2>
                     <p class="text-gray-500 mt-2">Theo quan niệm phong thủy phương Đông và khoa học dịch số</p>
@@ -870,7 +878,7 @@ onUnmounted(() => {
                         Mỗi con số từ 0 đến 9 xuất hiện trên biển số xe ô tô hay xe máy đều sở hữu một năng lượng riêng biệt, ảnh hưởng gián tiếp tới vận khí của chủ sở hữu trên các cung đường. Hãy cùng chúng tôi giải mã sơ bộ ý nghĩa của từng con số:
                     </p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
                         <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
                             <h3 class="font-bold text-gray-900 mb-1 text-base">Số 0 - Khởi đầu / Vô hạn</h3>
                             <p class="text-xs sm:text-sm">Tượng trưng cho sự khai sinh, khởi đầu hoàn toàn mới. Thể hiện sự viên mãn khép kín và năng lượng vô tận của vũ trụ.</p>
@@ -910,13 +918,13 @@ onUnmounted(() => {
 
         <!-- 6. FAQ Section (Tối ưu hóa Schema FAQ hỗ trợ SEO cực mạnh) -->
         <section id="faq-section" class="py-16 bg-[#F9FAFB] scroll-mt-20">
-            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
                 <header class="text-center mb-12">
                     <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Câu Hỏi Thường Gặp</h2>
                     <p class="text-gray-500 mt-2">Giải đáp thắc mắc phổ biến về phong thủy biển số xe</p>
                 </header>
 
-                <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- FAQ Item 1 -->
                     <details class="group bg-white p-5 rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
                         <summary class="flex justify-between items-center font-bold text-gray-900 cursor-pointer list-none text-sm sm:text-base">
@@ -944,7 +952,7 @@ onUnmounted(() => {
 
         <!-- Footer -->
         <footer class="border-t border-gray-200 bg-white py-12 text-center text-gray-400 text-xs font-medium">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
                 <p class="mb-2 text-gray-500">© 2026 BISOXE.COM. Cổng thông tin giải mã phong thủy biển số xe tự động.</p>
                 <p class="text-gray-400 font-light">Nội dung giải luận mang tính chất tham khảo khoa học phong thủy số học, được hỗ trợ tổng hợp và tính toán tự động.</p>
             </div>
