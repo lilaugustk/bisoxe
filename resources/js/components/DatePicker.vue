@@ -15,9 +15,18 @@ const pickerRef = ref<HTMLElement | null>(null);
 
 // Vietnamese month & day names
 const monthNames = [
-    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-    'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-    'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    'Tháng 1',
+    'Tháng 2',
+    'Tháng 3',
+    'Tháng 4',
+    'Tháng 5',
+    'Tháng 6',
+    'Tháng 7',
+    'Tháng 8',
+    'Tháng 9',
+    'Tháng 10',
+    'Tháng 11',
+    'Tháng 12',
 ];
 const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
@@ -27,24 +36,36 @@ const viewMonth = ref(now.getMonth());
 const viewYear = ref(now.getFullYear());
 
 // When modelValue changes externally, sync the view
-watch(() => props.modelValue, (val) => {
-    if (val) {
-        const d = new Date(val);
-        if (!isNaN(d.getTime())) {
-            viewMonth.value = d.getMonth();
-            viewYear.value = d.getFullYear();
+watch(
+    () => props.modelValue,
+    (val) => {
+        if (val) {
+            const d = new Date(val);
+
+            if (!isNaN(d.getTime())) {
+                viewMonth.value = d.getMonth();
+                viewYear.value = d.getFullYear();
+            }
         }
-    }
-});
+    },
+);
 
 // Format display value
 const displayValue = computed(() => {
-    if (!props.modelValue) return '';
+    if (!props.modelValue) {
+        return '';
+    }
+
     const d = new Date(props.modelValue);
-    if (isNaN(d.getTime())) return '';
+
+    if (isNaN(d.getTime())) {
+        return '';
+    }
+
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
+
     return `${day}/${month}/${year}`;
 });
 
@@ -98,6 +119,7 @@ const calendarDays = computed(() => {
 
     // Current month days
     const today = new Date();
+
     for (let d = 1; d <= totalDays; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         days.push({
@@ -105,7 +127,10 @@ const calendarDays = computed(() => {
             month,
             year,
             isCurrentMonth: true,
-            isToday: d === today.getDate() && month === today.getMonth() && year === today.getFullYear(),
+            isToday:
+                d === today.getDate() &&
+                month === today.getMonth() &&
+                year === today.getFullYear(),
             isSelected: props.modelValue === dateStr,
             dateStr,
         });
@@ -113,6 +138,7 @@ const calendarDays = computed(() => {
 
     // Next month fill to complete 6 rows
     const remaining = 42 - days.length;
+
     for (let d = 1; d <= remaining; d++) {
         const m = month === 11 ? 0 : month + 1;
         const y = month === 11 ? year + 1 : year;
@@ -171,8 +197,10 @@ const clearDate = () => {
 // Toggle dropdown
 const togglePicker = () => {
     isOpen.value = !isOpen.value;
+
     if (isOpen.value && props.modelValue) {
         const d = new Date(props.modelValue);
+
         if (!isNaN(d.getTime())) {
             viewMonth.value = d.getMonth();
             viewYear.value = d.getFullYear();
@@ -205,7 +233,7 @@ onUnmounted(() => {
             class="date-picker-trigger"
             :class="{ 'has-value': modelValue, 'is-open': isOpen }"
         >
-            <span class="trigger-text" :class="{ 'placeholder': !modelValue }">
+            <span class="trigger-text" :class="{ placeholder: !modelValue }">
                 {{ displayValue || placeholder || 'Chọn ngày' }}
             </span>
             <div class="trigger-icons">
@@ -216,13 +244,33 @@ onUnmounted(() => {
                     @click.stop="clearDate"
                     title="Xóa"
                 >
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                        class="h-3.5 w-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
                     </svg>
                 </span>
                 <!-- Calendar icon -->
-                <svg class="calendar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <svg
+                    class="calendar-icon"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                 </svg>
             </div>
         </button>
@@ -232,26 +280,66 @@ onUnmounted(() => {
             <div v-if="isOpen" class="calendar-dropdown">
                 <!-- Header -->
                 <div class="calendar-header">
-                    <button type="button" @click="prevMonth" class="nav-btn" aria-label="Tháng trước">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    <button
+                        type="button"
+                        @click="prevMonth"
+                        class="nav-btn"
+                        aria-label="Tháng trước"
+                    >
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M15 19l-7-7 7-7"
+                            />
                         </svg>
                     </button>
 
-                    <button type="button" @click="goToToday" class="header-label" title="Về hôm nay">
+                    <button
+                        type="button"
+                        @click="goToToday"
+                        class="header-label"
+                        title="Về hôm nay"
+                    >
                         {{ headerLabel }}
                     </button>
 
-                    <button type="button" @click="nextMonth" class="nav-btn" aria-label="Tháng sau">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    <button
+                        type="button"
+                        @click="nextMonth"
+                        class="nav-btn"
+                        aria-label="Tháng sau"
+                    >
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M9 5l7 7-7 7"
+                            />
                         </svg>
                     </button>
                 </div>
 
                 <!-- Day Names -->
                 <div class="day-names-row">
-                    <span v-for="name in dayNames" :key="name" class="day-name" :class="{ 'is-sun': name === 'CN' }">
+                    <span
+                        v-for="name in dayNames"
+                        :key="name"
+                        class="day-name"
+                        :class="{ 'is-sun': name === 'CN' }"
+                    >
                         {{ name }}
                     </span>
                 </div>
@@ -277,12 +365,24 @@ onUnmounted(() => {
 
                 <!-- Footer -->
                 <div class="calendar-footer">
-                    <button type="button" @click="goToToday; selectDay(
-                        `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`
-                    )" class="today-btn">
+                    <button
+                        type="button"
+                        @click="
+                            goToToday;
+                            selectDay(
+                                `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`,
+                            );
+                        "
+                        class="today-btn"
+                    >
                         Hôm nay
                     </button>
-                    <button v-if="modelValue" type="button" @click="clearDate" class="clear-date-btn">
+                    <button
+                        v-if="modelValue"
+                        type="button"
+                        @click="clearDate"
+                        class="clear-date-btn"
+                    >
                         Xóa ngày
                     </button>
                 </div>
@@ -320,7 +420,7 @@ onUnmounted(() => {
 
 .date-picker-trigger.is-open,
 .date-picker-trigger:focus {
-    border-color: #8C1E1E;
+    border-color: #8c1e1e;
     box-shadow: 0 0 0 3px rgba(140, 30, 30, 0.1);
 }
 
@@ -354,7 +454,7 @@ onUnmounted(() => {
 
 .clear-btn:hover {
     background: #fee2e2;
-    color: #8C1E1E;
+    color: #8c1e1e;
 }
 
 .calendar-icon {
@@ -366,7 +466,7 @@ onUnmounted(() => {
 }
 
 .date-picker-trigger.is-open .calendar-icon {
-    color: #8C1E1E;
+    color: #8c1e1e;
 }
 
 /* Calendar Dropdown */
@@ -379,7 +479,9 @@ onUnmounted(() => {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 1rem;
-    box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.06);
+    box-shadow:
+        0 20px 40px -8px rgba(0, 0, 0, 0.12),
+        0 8px 16px -4px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     min-width: 280px;
 }
@@ -409,7 +511,7 @@ onUnmounted(() => {
 
 .nav-btn:hover {
     background: #fef2f2;
-    color: #8C1E1E;
+    color: #8c1e1e;
 }
 
 .header-label {
@@ -427,7 +529,7 @@ onUnmounted(() => {
 
 .header-label:hover {
     background: #fef2f2;
-    color: #8C1E1E;
+    color: #8c1e1e;
 }
 
 /* Day Names */
@@ -479,7 +581,7 @@ onUnmounted(() => {
 
 .day-cell:hover {
     background: #fef2f2;
-    color: #8C1E1E;
+    color: #8c1e1e;
 }
 
 .day-cell.other-month {
@@ -501,7 +603,7 @@ onUnmounted(() => {
 
 .day-cell.is-today {
     background: #fef2f2;
-    color: #8C1E1E;
+    color: #8c1e1e;
     font-weight: 700;
     position: relative;
 }
@@ -515,11 +617,11 @@ onUnmounted(() => {
     width: 0.25rem;
     height: 0.25rem;
     border-radius: 9999px;
-    background: #8C1E1E;
+    background: #8c1e1e;
 }
 
 .day-cell.is-selected {
-    background: #8C1E1E !important;
+    background: #8c1e1e !important;
     color: white !important;
     font-weight: 700;
     box-shadow: 0 2px 8px rgba(140, 30, 30, 0.3);
@@ -542,7 +644,7 @@ onUnmounted(() => {
 .today-btn {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #8C1E1E;
+    color: #8c1e1e;
     background: none;
     border: none;
     cursor: pointer;

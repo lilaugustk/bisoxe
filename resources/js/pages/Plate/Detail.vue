@@ -2,6 +2,8 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue';
 import BackToTop from '../../components/BackToTop.vue';
+import Footer from '../../components/Footer.vue';
+import Header from '../../components/Header.vue';
 
 interface Plate {
     id: number;
@@ -91,7 +93,7 @@ const generateToc = () => {
         items.push({
             id,
             text,
-            level: heading.tagName.toLowerCase() === 'h2' ? 2 : 3
+            level: heading.tagName.toLowerCase() === 'h2' ? 2 : 3,
         });
     });
 
@@ -105,7 +107,7 @@ onMounted(() => {
     // thì dùng router.replace chuyển hướng để tránh lưu vết trong history (sửa lỗi nút Back)
     if (!props.is_pending && props.article && props.article.slug) {
         const canonicalPath = `/bien-so/${props.article.slug}`;
-        
+
         if (window.location.pathname !== canonicalPath) {
             router.replace({ url: canonicalPath });
         }
@@ -130,9 +132,12 @@ onMounted(() => {
 
                         // Sau khi reload thành công và có bài viết mới
                         // thực hiện replace URL sang chuẩn SEO
-                        if (page.props.article && (page.props.article as any).slug) {
+                        if (
+                            page.props.article &&
+                            (page.props.article as any).slug
+                        ) {
                             const canonicalPath = `/bien-so/${(page.props.article as any).slug}`;
-                            
+
                             if (window.location.pathname !== canonicalPath) {
                                 router.replace({ url: canonicalPath });
                             }
@@ -142,7 +147,7 @@ onMounted(() => {
                             generateToc();
                         });
                     }
-                }
+                },
             });
         }, 5000);
     }
@@ -156,7 +161,11 @@ onUnmounted(() => {
 
 // Định dạng tiền tệ VND
 const formatMoney = (value: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value);
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        maximumFractionDigits: 0,
+    }).format(value);
 };
 
 // Định dạng ngày tháng
@@ -172,26 +181,34 @@ const formatDate = (dateStr: string | null) => {
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
 // Trạng thái đấu giá bằng tiếng Việt
 const statusLabel = computed(() => {
     switch (props.plate.status) {
-        case 'waiting_auction': return 'Đang chờ đấu giá';
-        case 'announced': return 'Đã công bố lịch';
-        case 'completed': return 'Đã hoàn thành';
-        default: return 'Đang cập nhật';
+        case 'waiting_auction':
+            return 'Đang chờ đấu giá';
+        case 'announced':
+            return 'Đã công bố lịch';
+        case 'completed':
+            return 'Đã hoàn thành';
+        default:
+            return 'Đang cập nhật';
     }
 });
 
 const statusColorClass = computed(() => {
     switch (props.plate.status) {
-        case 'waiting_auction': return 'bg-blue-50 text-blue-700 border border-blue-100';
-        case 'announced': return 'bg-amber-50 text-amber-700 border border-amber-100';
-        case 'completed': return 'bg-green-50 text-green-700 border border-green-100';
-        default: return 'bg-gray-50 text-gray-700 border border-gray-100';
+        case 'waiting_auction':
+            return 'bg-blue-50 text-blue-700 border border-blue-100';
+        case 'announced':
+            return 'bg-amber-50 text-amber-700 border border-amber-100';
+        case 'completed':
+            return 'bg-green-50 text-green-700 border border-green-100';
+        default:
+            return 'bg-gray-50 text-gray-700 border border-gray-100';
     }
 });
 
@@ -251,7 +268,7 @@ const isProvinceActive = (code: string) => {
     if (code === 'all') {
         return isAllSelected.value;
     }
-    
+
     return selectedProvinceCodes.value.includes(code);
 };
 
@@ -262,7 +279,7 @@ const selectedProvinceName = computed(() => {
     }
 
     const names = selectedProvinceCodes.value
-        .map(code => props.price_trend[code]?.province_name)
+        .map((code) => props.price_trend[code]?.province_name)
         .filter(Boolean);
 
     if (names.length <= 2) {
@@ -273,18 +290,20 @@ const selectedProvinceName = computed(() => {
 });
 
 // Danh sách biển số các tỉnh đang chọn (kèm tên tỉnh để hiển thị ở tooltip)
-const selectedPlates = computed<(PriceTrendItem & { province_name?: string })[]>(() => {
+const selectedPlates = computed<
+    (PriceTrendItem & { province_name?: string })[]
+>(() => {
     const codesToShow = isAllSelected.value
         ? Object.keys(props.price_trend)
         : selectedProvinceCodes.value;
 
     const allPlates: (PriceTrendItem & { province_name?: string })[] = [];
 
-    codesToShow.forEach(code => {
+    codesToShow.forEach((code) => {
         const provinceName = props.price_trend[code]?.province_name || '';
-        const plates = (props.price_trend[code]?.plates || []).map(plate => ({
+        const plates = (props.price_trend[code]?.plates || []).map((plate) => ({
             ...plate,
-            province_name: provinceName
+            province_name: provinceName,
         }));
         allPlates.push(...plates);
     });
@@ -295,10 +314,14 @@ const selectedPlates = computed<(PriceTrendItem & { province_name?: string })[]>
             const parts = dmy.split('/');
 
             if (parts.length !== 3) {
-return 0;
-}
+                return 0;
+            }
 
-            return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime();
+            return new Date(
+                parseInt(parts[2]),
+                parseInt(parts[1]) - 1,
+                parseInt(parts[0]),
+            ).getTime();
         };
 
         return parseDate(a.auction_date) - parseDate(b.auction_date);
@@ -308,18 +331,18 @@ return 0;
 // Danh sách tất cả các tỉnh thành có dữ liệu xu hướng để người dùng chọn
 const availableProvinces = computed(() => {
     return Object.keys(props.price_trend)
-        .filter(code => props.price_trend[code]?.plates?.length > 0)
-        .map(code => ({
+        .filter((code) => props.price_trend[code]?.plates?.length > 0)
+        .map((code) => ({
             code,
             name: props.price_trend[code].province_name,
-            count: props.price_trend[code].plates.length
+            count: props.price_trend[code].plates.length,
         }));
 });
 
 // Tổng số lượng biển số trên toàn quốc
 const totalPlatesCount = computed(() => {
     let count = 0;
-    Object.keys(props.price_trend).forEach(code => {
+    Object.keys(props.price_trend).forEach((code) => {
         count += props.price_trend[code]?.plates?.length || 0;
     });
 
@@ -331,8 +354,8 @@ const labelIndices = computed<number[]>(() => {
     const total = selectedPlates.value.length;
 
     if (total === 0) {
-return [];
-}
+        return [];
+    }
 
     if (total <= 6) {
         return Array.from({ length: total }, (_, i) => i);
@@ -352,9 +375,12 @@ return [];
 
 // Trục Y lớn nhất cho Giá trị biển số (Lấy mức trúng cao nhất của tỉnh đang chọn để đồng bộ tỷ lệ và làm tròn số chẵn đẹp)
 const maxCategoryValue = computed<number>(() => {
-    const prices = selectedPlates.value.map((d: PriceTrendItem) => d.winning_price);
-    const maxPrice = prices.length > 0 ? Math.max(...prices, 40000000) : 40000000;
-    
+    const prices = selectedPlates.value.map(
+        (d: PriceTrendItem) => d.winning_price,
+    );
+    const maxPrice =
+        prices.length > 0 ? Math.max(...prices, 40000000) : 40000000;
+
     // Tìm step chia 3 làm tròn đẹp
     const rawStep = (maxPrice * 1.05) / 3; // Thêm 5% buffer để điểm cao nhất không chạm đỉnh khít khịt
     let niceStep = 0;
@@ -363,18 +389,29 @@ const maxCategoryValue = computed<number>(() => {
         // Dưới 1 tỷ: Làm tròn theo triệu (mốc chẵn đẹp)
         const millionUnit = 1000000;
         const rawStepMillions = rawStep / millionUnit;
-        const niceMillions = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 75, 80, 90, 100, 120, 125, 150, 175, 200, 250, 300, 350, 400, 450, 500, 600, 700, 750, 800, 900, 1000];
-        
-        const matched = niceMillions.find(m => m >= rawStepMillions);
-        niceStep = (matched ? matched : Math.ceil(rawStepMillions / 100) * 100) * millionUnit;
+        const niceMillions = [
+            5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 75, 80, 90, 100, 120,
+            125, 150, 175, 200, 250, 300, 350, 400, 450, 500, 600, 700, 750,
+            800, 900, 1000,
+        ];
+
+        const matched = niceMillions.find((m) => m >= rawStepMillions);
+        niceStep =
+            (matched ? matched : Math.ceil(rawStepMillions / 100) * 100) *
+            millionUnit;
     } else {
         // Từ 1 tỷ trở lên: Làm tròn theo tỷ (mốc chẵn đẹp)
         const billionUnit = 1000000000;
         const rawStepBillions = rawStep / billionUnit;
-        const niceBillions = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7.5, 8, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 75, 80, 90, 100];
-        
-        const matched = niceBillions.find(b => b >= rawStepBillions);
-        niceStep = (matched ? matched : Math.ceil(rawStepBillions / 10) * 10) * billionUnit;
+        const niceBillions = [
+            0.1, 0.2, 0.3, 0.4, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7.5, 8, 10,
+            12.5, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 75, 80, 90, 100,
+        ];
+
+        const matched = niceBillions.find((b) => b >= rawStepBillions);
+        niceStep =
+            (matched ? matched : Math.ceil(rawStepBillions / 10) * 10) *
+            billionUnit;
     }
 
     return niceStep * 3;
@@ -401,7 +438,7 @@ const getXCoordinate = (index: number, total: number) => {
 
     const step = 425 / (total - 1);
 
-    return 35 + (index * step);
+    return 35 + index * step;
 };
 
 // Hàm sinh đường dẫn dạng đường thẳng (straight line) đi qua các điểm
@@ -429,7 +466,7 @@ const categoryLinePath = computed<string>(() => {
 
     const points = plates.map((d: PriceTrendItem, i: number) => ({
         x: getXCoordinate(i, plates.length),
-        y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
+        y: 180 - (d.winning_price / maxCategoryValue.value) * 150,
     }));
 
     return getLinePath(points);
@@ -445,7 +482,7 @@ const categoryAreaPath = computed<string>(() => {
 
     const points = plates.map((d: PriceTrendItem, i: number) => ({
         x: getXCoordinate(i, plates.length),
-        y: 180 - ((d.winning_price / maxCategoryValue.value) * 150)
+        y: 180 - (d.winning_price / maxCategoryValue.value) * 150,
     }));
 
     const firstX = getXCoordinate(0, plates.length);
@@ -465,249 +502,370 @@ const categoryAreaPath = computed<string>(() => {
     <Head>
         <title>{{ article.meta_title || article.title }}</title>
         <meta name="description" :content="article.meta_description" />
-        <meta property="og:title" :content="props.article.meta_title || props.article.title" />
+        <meta
+            property="og:title"
+            :content="props.article.meta_title || props.article.title"
+        />
         <meta property="og:description" :content="article.meta_description" />
         <meta property="og:type" content="article" />
         <meta property="og:url" :content="`/bien-so/${article.slug}`" />
-        <meta v-if="article.image_url" property="og:image" :content="article.image_url" />
-        <meta v-if="article.image_url" property="og:image:width" content="1200" />
-        <meta v-if="article.image_url" property="og:image:height" content="630" />
-        <meta v-if="article.image_url" name="twitter:card" content="summary_large_image" />
-        <meta v-if="article.image_url" name="twitter:image" :content="article.image_url" />
+        <meta
+            v-if="article.image_url"
+            property="og:image"
+            :content="article.image_url"
+        />
+        <meta
+            v-if="article.image_url"
+            property="og:image:width"
+            content="1200"
+        />
+        <meta
+            v-if="article.image_url"
+            property="og:image:height"
+            content="630"
+        />
+        <meta
+            v-if="article.image_url"
+            name="twitter:card"
+            content="summary_large_image"
+        />
+        <meta
+            v-if="article.image_url"
+            name="twitter:image"
+            :content="article.image_url"
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossorigin="anonymous"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
     </Head>
 
-    <div class="min-h-screen bg-[#F9FAFB] text-[#111827] font-sans antialiased">
-
+    <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
         <!-- 2. Main Header -->
-        <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-                <div class="flex items-center gap-8">
-                    <!-- Logo -->
-                    <Link href="/" class="flex items-center gap-3">
-                        <svg class="w-10 h-10 shadow-md rounded-lg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <linearGradient id="logoBgGrad" x1="0" y1="0" x2="100" y2="100">
-                                    <stop offset="0%" stop-color="#8C1E1E"/>
-                                    <stop offset="100%" stop-color="#5A1212"/>
-                                </linearGradient>
-                                <linearGradient id="plateGrad" x1="0" y1="0" x2="100" y2="100">
-                                    <stop offset="0%" stop-color="#FFFFFF"/>
-                                    <stop offset="100%" stop-color="#F3F4F6"/>
-                                </linearGradient>
-                            </defs>
-                            <!-- Background -->
-                            <rect width="100" height="100" rx="22" fill="url(#logoBgGrad)"/>
-                            
-                            <!-- License Plate Shape -->
-                            <rect x="16" y="32" width="68" height="38" rx="6" fill="url(#plateGrad)" stroke="#F5B800" stroke-width="2.5"/>
-                            <rect x="20" y="36" width="60" height="30" rx="4" fill="none" stroke="#9CA3AF" stroke-width="1" opacity="0.4"/>
-                            
-                            <!-- Screws -->
-                            <circle cx="21" cy="37" r="1.5" fill="#9CA3AF"/>
-                            <circle cx="79" cy="37" r="1.5" fill="#9CA3AF"/>
-                            
-                            <!-- The B Character -->
-                            <text x="50" y="57" text-anchor="middle" font-family="'Inter', sans-serif" font-size="24" font-weight="900" fill="#111827">B</text>
-                            
-                            <!-- Speed lines below / Swoosh -->
-                            <path d="M12 78 C 30 70, 70 70, 88 78" stroke="#F5B800" stroke-width="3" stroke-linecap="round"/>
-                            <path d="M22 84 C 38 78, 62 78, 78 84" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
-                        </svg>
-                        <div class="flex flex-col">
-                            <span class="text-lg font-black text-[#8C1E1E] leading-none">BISOXE.COM</span>
-                        </div>
-                    </Link>
-
-                    <!-- Navigation Menu -->
-                    <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600">
-                        <Link href="/" class="hover:text-[#8C1E1E] transition">Trang chủ</Link>
-                        <Link href="/bien-so-xe-o-to" :class="plate.vehicle_type === 'car' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe ô tô</Link>
-                        <Link href="/bien-so-xe-may" :class="plate.vehicle_type === 'motorcycle' ? 'text-[#8C1E1E]' : 'hover:text-[#8C1E1E] transition'">Biển số xe máy, mô tô</Link>
-                        <Link href="/bai-viet" class="hover:text-[#8C1E1E] transition">Bài viết & Tin tức</Link>
-                        <Link href="/#meanings-section" class="hover:text-[#8C1E1E] transition">Ý nghĩa phong thủy</Link>
-                        <Link href="/#faq-section" class="hover:text-[#8C1E1E] transition">Hỏi đáp</Link>
-                    </nav>
-                </div>
-
-            </div>
-        </header>
+        <Header />
 
         <!-- Main Content Layout -->
-        <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-            
+        <main class="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
             <!-- Breadcrumb / Back Navigation -->
             <div class="mb-5 flex items-center">
-                <Link 
-                    href="/" 
-                    class="flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-[#8C1E1E] transition group"
+                <Link
+                    href="/"
+                    class="group flex items-center gap-1.5 text-sm font-bold text-gray-500 transition hover:text-[#8C1E1E]"
                 >
-                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    <svg
+                        class="h-4 w-4 transform transition-transform group-hover:-translate-x-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15 19l-7-7 7-7"
+                        />
                     </svg>
                     Quay lại trang chủ
                 </Link>
             </div>
 
             <!-- Top Section: Plate View & Summary Info -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-                
+            <div class="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
                 <!-- Left: License Plate simulation card -->
-                <div class="lg:col-span-7 flex flex-col justify-between items-center p-6 bg-white rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group min-h-[300px]">
+                <div
+                    class="group relative flex min-h-[300px] flex-col items-center justify-between overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:col-span-7"
+                >
                     <!-- Decor background lights -->
-                    <div class="absolute -top-20 -left-20 w-48 h-48 bg-red-50 rounded-full blur-3xl group-hover:bg-red-100/70 transition-all duration-700"></div>
-                    <div class="absolute -bottom-20 -right-20 w-48 h-48 bg-amber-50 rounded-full blur-3xl group-hover:bg-amber-100/70 transition-all duration-700"></div>
+                    <div
+                        class="absolute -top-20 -left-20 h-48 w-48 rounded-full bg-red-50 blur-3xl transition-all duration-700 group-hover:bg-red-100/70"
+                    ></div>
+                    <div
+                        class="absolute -right-20 -bottom-20 h-48 w-48 rounded-full bg-amber-50 blur-3xl transition-all duration-700 group-hover:bg-amber-100/70"
+                    ></div>
 
                     <!-- Label plate type -->
-                    <div class="mb-4 flex gap-2 relative z-10">
-                        <span v-for="kind in plate.kinds" :key="kind.id" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-50 text-[#8C1E1E] border border-red-100/50">
+                    <div class="relative z-10 mb-4 flex gap-2">
+                        <span
+                            v-for="kind in plate.kinds"
+                            :key="kind.id"
+                            class="rounded-full border border-red-100/50 bg-red-50 px-2.5 py-0.5 text-xs font-bold text-[#8C1E1E]"
+                        >
                             {{ kind.name }}
                         </span>
-                        <span v-if="plate.kinds.length === 0" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                        <span
+                            v-if="plate.kinds.length === 0"
+                            class="rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600"
+                        >
                             Biển số đấu giá
                         </span>
                     </div>
 
                     <!-- Plate Simulation Wrapper -->
-                    <div class="w-full flex items-center justify-center py-4 relative z-10">
-                        <div class="perspective-1000">
-                            <div class="transform transition-all duration-500 hover:rotate-x-6 hover:rotate-y-6">
-                                
+                    <div
+                        class="relative z-10 flex w-full items-center justify-center py-4"
+                    >
+                        <div class="perspective-1000 w-full flex justify-center">
+                            <div
+                                class="transform transition-all duration-500 hover:rotate-x-6 hover:rotate-y-6 w-full flex justify-center"
+                            >
                                 <!-- 1. Long Plate Style (Biển dài tiêu chuẩn 1 dòng) -->
-                                <div 
+                                <div
                                     v-if="plateStyle === 'long'"
-                                    class="w-[480px] max-w-full aspect-[520/110] rounded-lg p-1 shadow-[0_8px_20px_-3px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,0.8)] border flex items-center justify-center transition-all relative"
-                                    :class="plate.color === 1 ? 'bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black border-2 border-black/80' : 'bg-gradient-to-b from-white via-white to-gray-50 text-black border-2 border-gray-300'"
+                                    class="relative flex aspect-[520/110] w-full max-w-[480px] items-center justify-center rounded-lg border p-1 shadow-[0_8px_20px_-3px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all"
+                                    :class="
+                                        plate.color === 1
+                                            ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black'
+                                            : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'
+                                    "
                                 >
                                     <!-- Acrylic shine layer -->
-                                    <div class="absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none"></div>
+                                    <div
+                                        class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"
+                                    ></div>
 
                                     <!-- Embossed inner border line -->
-                                    <div 
-                                        class="w-full h-full rounded border flex items-center justify-center px-8 select-none"
-                                        :class="plate.color === 1 ? 'border-black/35' : 'border-gray-300'"
+                                    <div
+                                        class="flex h-full w-full items-center justify-center rounded border px-4 min-[380px]:px-6 sm:px-8 select-none"
+                                        :class="
+                                            plate.color === 1
+                                                ? 'border-black/35'
+                                                : 'border-gray-300'
+                                        "
                                     >
                                         <!-- Long Plate Text (Single Line) -->
-                                        <div class="flex items-center justify-center font-sans font-black tracking-tight text-center">
+                                        <div
+                                            class="flex items-center justify-center text-center font-sans font-black tracking-tight"
+                                        >
                                             <!-- Mã vùng + Seri (e.g. 60K) -->
-                                            <span class="text-[3rem] font-black text-black leading-none uppercase select-none">
-                                                {{ plate.local_symbol }}{{ plate.serial_letter }}
+                                            <span
+                                                class="text-[1.8rem] min-[380px]:text-[2.2rem] min-[440px]:text-[2.6rem] md:text-[3rem] leading-none font-black text-black uppercase select-none"
+                                            >
+                                                {{ plate.local_symbol
+                                                }}{{ plate.serial_letter }}
                                             </span>
-                                            
+
                                             <!-- Gạch ngang nhỏ ở giữa -->
-                                            <span class="text-[2.8rem] font-bold text-black/80 mx-3.5 leading-none">-</span>
-                                            
+                                            <span
+                                                class="mx-1.5 min-[380px]:mx-2.5 md:mx-3.5 text-[1.6rem] min-[380px]:text-[2rem] min-[440px]:text-[2.4rem] md:text-[2.8rem] leading-none font-bold text-black/80"
+                                            >-</span
+                                            >
+
                                             <!-- Dãy số ngũ số (e.g. 559.95) -->
-                                            <span class="text-[3rem] font-black text-black leading-none flex items-center select-none">
-                                                {{ plate.serial_number.slice(0, 3) }}
-                                                <span class="w-2 h-2 rounded-full bg-black mx-1 self-end mb-1 shrink-0"></span>
-                                                {{ plate.serial_number.slice(3) }}
+                                            <span
+                                                class="flex items-center text-[1.8rem] min-[380px]:text-[2.2rem] min-[440px]:text-[2.6rem] md:text-[3rem] leading-none font-black text-black select-none"
+                                            >
+                                                {{
+                                                    plate.serial_number.slice(
+                                                        0,
+                                                        3,
+                                                    )
+                                                }}
+                                                <span
+                                                    class="mx-0.5 md:mx-1 mb-0.5 md:mb-1 h-1 w-1 md:h-2 md:w-2 shrink-0 self-end rounded-full bg-black"
+                                                ></span>
+                                                {{
+                                                    plate.serial_number.slice(3)
+                                                }}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- 2. Square Plate Style (Biển vuông 2 dòng) -->
-                                <div 
+                                <div
                                     v-else
-                                    class="w-[260px] aspect-[280/200] rounded-xl p-1.5 shadow-[0_8px_20px_-3px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,0.8)] border flex items-center justify-center transition-all relative"
-                                    :class="plate.color === 1 ? 'bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black border-2 border-black/80' : 'bg-gradient-to-b from-white via-white to-gray-50 text-black border-2 border-gray-300'"
+                                    class="relative flex aspect-[280/200] w-full max-w-[260px] items-center justify-center rounded-xl border p-1.5 shadow-[0_8px_20px_-3px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all"
+                                    :class="
+                                        plate.color === 1
+                                            ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black'
+                                            : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'
+                                    "
                                 >
                                     <!-- Acrylic shine layer -->
-                                    <div class="absolute inset-0 rounded-lg bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none"></div>
+                                    <div
+                                        class="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-tr from-transparent via-white/5 to-transparent"
+                                    ></div>
 
                                     <!-- Embossed inner border line -->
-                                    <div 
-                                        class="w-full h-full rounded border flex flex-col justify-between items-center py-4 px-6 select-none"
-                                        :class="plate.color === 1 ? 'border-black/35' : 'border-gray-300'"
+                                    <div
+                                        class="flex h-full w-full flex-col items-center justify-between rounded border px-4 py-4 min-[380px]:px-6 min-[380px]:py-6 select-none"
+                                        :class="
+                                            plate.color === 1
+                                                ? 'border-black/35'
+                                                : 'border-gray-300'
+                                        "
                                     >
                                         <!-- Row 1: Mã vùng + Seri -->
-                                        <div class="text-[2.8rem] font-black leading-none text-center w-full font-sans uppercase">
-                                            {{ plate.local_symbol }}{{ plate.serial_letter }}
+                                        <div
+                                            class="w-full text-center font-sans text-[2rem] min-[380px]:text-[2.4rem] md:text-[2.8rem] leading-none font-black uppercase"
+                                        >
+                                            {{ plate.local_symbol
+                                            }}{{ plate.serial_letter }}
                                         </div>
 
                                         <!-- Row 2: Dãy 5 số -->
-                                        <div class="text-[3.2rem] font-black leading-none text-center w-full flex justify-center items-end font-sans">
-                                            <span>{{ plate.serial_number.slice(0, 3) }}</span>
-                                            <span class="w-1.5 h-1.5 rounded-full bg-black mx-0.5 mb-1 shrink-0"></span>
-                                            <span>{{ plate.serial_number.slice(3) }}</span>
+                                        <div
+                                            class="flex w-full items-end justify-center text-center font-sans text-[2.4rem] min-[380px]:text-[2.8rem] md:text-[3.2rem] leading-none font-black"
+                                        >
+                                            <span>{{
+                                                plate.serial_number.slice(0, 3)
+                                            }}</span>
+                                            <span
+                                                class="mx-0.5 mb-0.5 md:mb-1 h-1 w-1 md:h-1.5 md:w-1.5 shrink-0 rounded-full bg-black"
+                                            ></span>
+                                            <span>{{
+                                                plate.serial_number.slice(3)
+                                            }}</span>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
 
                     <!-- Plate Layout Toggle Options & Description -->
-                    <div class="mt-4 flex flex-col items-center gap-3 relative z-10 w-full">
+                    <div
+                        class="relative z-10 mt-4 flex w-full flex-col items-center gap-3"
+                    >
+
                         <!-- Switch Plate Layout Buttons -->
-                        <div class="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200">
-                            <button 
+                        <div
+                            class="flex rounded-lg border border-gray-200 bg-gray-100 p-0.5"
+                        >
+                            <button
                                 @click="plateStyle = 'long'"
-                                class="px-3 py-1 text-xs font-bold rounded-md transition"
-                                :class="plateStyle === 'long' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-950'"
+                                class="rounded-md px-3 py-1 text-xs font-bold transition"
+                                :class="
+                                    plateStyle === 'long'
+                                        ? 'bg-white text-gray-900 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-950'
+                                "
                             >
                                 Bản biển dài
                             </button>
-                            <button 
+                            <button
                                 @click="plateStyle = 'square'"
-                                class="px-3 py-1 text-xs font-bold rounded-md transition"
-                                :class="plateStyle === 'square' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-950'"
+                                class="rounded-md px-3 py-1 text-xs font-bold transition"
+                                :class="
+                                    plateStyle === 'square'
+                                        ? 'bg-white text-gray-900 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-950'
+                                "
                             >
                                 Bản biển vuông
                             </button>
                         </div>
 
                         <div class="text-center">
-                            <p class="text-gray-500 text-xs">
-                                Vùng đăng ký: <strong class="text-gray-900">{{ plate.province ? plate.province.name : 'Chưa rõ' }}</strong>
+                            <p class="text-xs text-gray-500">
+                                Vùng đăng ký:
+                                <strong class="text-gray-900">{{
+                                    plate.province
+                                        ? plate.province.name
+                                        : 'Chưa rõ'
+                                }}</strong>
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Right: Compact auction details card -->
-                <div class="lg:col-span-5 flex flex-col justify-between p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
+                <div
+                    class="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:col-span-5"
+                >
                     <div>
-                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                            <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Thông tin biển số</span>
-                            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase border" :class="statusColorClass">
+                        <div
+                            class="mb-4 flex items-center justify-between border-b border-gray-100 pb-3"
+                        >
+                            <span
+                                class="text-[11px] font-bold tracking-wider text-gray-400 uppercase"
+                                >Thông tin biển số</span
+                            >
+                            <span
+                                class="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase"
+                                :class="statusColorClass"
+                            >
                                 {{ statusLabel }}
                             </span>
                         </div>
 
-                        <h2 class="text-2xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                        <h2
+                            class="mb-4 text-2xl font-extrabold tracking-tight text-gray-900"
+                        >
                             {{ plate.display_number }}
                         </h2>
 
                         <!-- Tight Info fields -->
                         <div class="space-y-2.5">
-                            <div class="flex justify-between py-1.5 border-b border-gray-100/50">
-                                <span class="text-gray-500 text-xs">Tỉnh/Thành phố:</span>
-                                <span class="text-sm font-bold text-gray-800">{{ plate.province ? plate.province.name : 'Chưa rõ' }}</span>
+                            <div
+                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                            >
+                                <span class="text-xs text-gray-500"
+                                    >Tỉnh/Thành phố:</span
+                                >
+                                <span class="text-sm font-bold text-gray-800">{{
+                                    plate.province
+                                        ? plate.province.name
+                                        : 'Chưa rõ'
+                                }}</span>
                             </div>
-                            <div class="flex justify-between py-1.5 border-b border-gray-100/50">
-                                <span class="text-gray-500 text-xs">Loại phương tiện:</span>
+                            <div
+                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                            >
+                                <span class="text-xs text-gray-500"
+                                    >Loại phương tiện:</span
+                                >
                                 <span class="text-sm font-bold text-gray-800">
-                                    {{ plate.vehicle_type === 'car' ? 'Xe Ô tô' : 'Xe Máy' }}
+                                    {{
+                                        plate.vehicle_type === 'car'
+                                            ? 'Xe Ô tô'
+                                            : 'Xe Máy'
+                                    }}
                                 </span>
                             </div>
-                            <div class="flex justify-between py-1.5 border-b border-gray-100/50">
-                                <span class="text-gray-505 text-gray-500 text-xs">Màu biển số:</span>
+                            <div
+                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                            >
+                                <span
+                                    class="text-gray-505 text-xs text-gray-500"
+                                    >Màu biển số:</span
+                                >
                                 <span class="text-sm font-bold text-gray-800">
-                                    {{ plate.color === 1 ? 'Nền Vàng (Kinh doanh)' : 'Nền Trắng (Cá nhân)' }}
+                                    {{
+                                        plate.color === 1
+                                            ? 'Nền Vàng (Kinh doanh)'
+                                            : 'Nền Trắng (Cá nhân)'
+                                    }}
                                 </span>
                             </div>
-                            <div class="flex justify-between py-1.5 border-b border-gray-100/50" v-if="plate.starting_price > 0">
-                                <span class="text-gray-500 text-xs">Giá khởi điểm:</span>
-                                <span class="text-sm font-bold text-gray-800">{{ formatMoney(plate.starting_price) }}</span>
+                            <div
+                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                v-if="plate.starting_price > 0"
+                            >
+                                <span class="text-xs text-gray-500"
+                                    >Giá khởi điểm:</span
+                                >
+                                <span class="text-sm font-bold text-gray-800">{{
+                                    formatMoney(plate.starting_price)
+                                }}</span>
                             </div>
-                            <div class="flex justify-between py-1.5 border-b border-gray-100/50" v-if="plate.auction_start_time">
-                                <span class="text-gray-505 text-gray-500 text-xs">Thời gian đấu giá:</span>
-                                <span class="text-xs font-bold text-gray-800 text-right">
+                            <div
+                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                v-if="plate.auction_start_time"
+                            >
+                                <span
+                                    class="text-gray-505 text-xs text-gray-500"
+                                    >Thời gian đấu giá:</span
+                                >
+                                <span
+                                    class="text-right text-xs font-bold text-gray-800"
+                                >
                                     {{ formatDate(plate.auction_start_time) }}
                                 </span>
                             </div>
@@ -715,313 +873,610 @@ const categoryAreaPath = computed<string>(() => {
                     </div>
 
                     <!-- Highlighted Winning Price block -->
-                    <div class="mt-6 p-4 rounded-xl border" :class="plate.winning_price > 0 ? 'bg-[#8C1E1E]/5 border-[#8C1E1E]/10' : 'bg-gray-50 border-gray-100'">
-                        <span class="text-[10px] uppercase font-bold tracking-wider" :class="plate.winning_price > 0 ? 'text-[#8C1E1E]' : 'text-gray-500'">
+                    <div
+                        class="mt-6 rounded-xl border p-4"
+                        :class="
+                            plate.winning_price > 0
+                                ? 'border-[#8C1E1E]/10 bg-[#8C1E1E]/5'
+                                : 'border-gray-100 bg-gray-50'
+                        "
+                    >
+                        <span
+                            class="text-[10px] font-bold tracking-wider uppercase"
+                            :class="
+                                plate.winning_price > 0
+                                    ? 'text-[#8C1E1E]'
+                                    : 'text-gray-500'
+                            "
+                        >
                             Giá Trúng Đấu Giá
                         </span>
-                        <div class="mt-1" :class="plate.winning_price > 0 ? 'text-2xl font-black text-[#8C1E1E]' : 'text-sm font-bold text-gray-600'">
-                            {{ plate.winning_price > 0 ? formatMoney(plate.winning_price) : 'Chưa diễn ra / Đang cập nhật' }}
+                        <div
+                            class="mt-1"
+                            :class="
+                                plate.winning_price > 0
+                                    ? 'text-2xl font-black text-[#8C1E1E]'
+                                    : 'text-sm font-bold text-gray-600'
+                            "
+                        >
+                            {{
+                                plate.winning_price > 0
+                                    ? formatMoney(plate.winning_price)
+                                    : 'Chưa diễn ra / Đang cập nhật'
+                            }}
                         </div>
                     </div>
                 </div>
             </div>
 
-                    <!-- Content Area: generated articles & scripts -->
-                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden p-6 lg:p-10">
-                    
-                    <!-- Loading state: If content is still generating -->
-                    <div v-if="is_pending" class="flex flex-col items-center justify-center py-16 text-center">
-                        <div class="relative w-16 h-16 mb-6">
-                            <!-- Pulse spinner -->
-                            <div class="absolute inset-0 rounded-full border-4 border-[#8C1E1E]/20 animate-ping"></div>
-                            <div class="absolute inset-0 rounded-full border-4 border-t-[#8C1E1E] border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+            <!-- Content Area: generated articles & scripts -->
+            <div
+                class="overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-10"
+            >
+                <!-- Price Fluctuation Chart (Displayed whether loading or completed, if there is historical data) -->
+                <div
+                    v-if="availableProvinces.length > 0"
+                    class="mb-12 border-b border-gray-200 pb-8"
+                >
+                    <div class="relative w-full">
+                        <div
+                            class="mb-6 flex flex-col gap-4 border-b border-gray-100 pb-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <div>
+                                <h3
+                                    class="font-sans text-lg font-bold text-gray-900"
+                                >
+                                    Lịch sử giá trúng đấu giá sê-ri số đuôi "{{
+                                        plate.serial_number
+                                    }}" tại {{ selectedProvinceName }}
+                                </h3>
+                                <p class="mt-1 text-[11px] text-gray-400">
+                                    Đơn vị: VND. Bản vẽ xu hướng giá theo thời
+                                    gian thực tế.
+                                </p>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Hệ Thống Đang Phân Tích...</h3>
-                        <p class="text-gray-500 max-w-md text-sm">
-                            Hệ thống đang giải mã chi tiết các số phong thủy, ngũ hành hợp mệnh và soạn thảo bài viết tối ưu cho biển số này. Vui lòng tải lại trang sau 1 phút!
-                        </p>
-                    </div>
 
-                    <!-- Main Article Content -->
-                    <div v-else class="prose max-w-none">
-                        <h1 class="text-2xl lg:text-3xl font-extrabold text-gray-900 mb-6 tracking-tight border-b border-gray-100 pb-4 font-sans">
-                            {{ article.title }}
-                        </h1>
-                        <!-- Featured image (WebP) -->
-                        <div v-if="article.image_url" class="mb-6 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                            <img
-                                :src="article.image_url"
-                                :alt="`Biển số ${plate.display_number} - ${plate.province?.name ?? ''}`"
-                                class="w-full h-auto object-cover"
-                                loading="lazy"
-                                width="1200"
-                                height="630"
-                            />
-                        </div>
-                        <!-- Table of Contents Widget -->
-                        <div v-if="tocItems.length > 0" class="mb-8 p-5 bg-gray-50/80 border border-gray-200 rounded-xl">
-                            <div 
-                                @click="isTocExpanded = !isTocExpanded"
-                                class="flex items-center justify-between border-b border-gray-200/60 pb-2 mb-3 cursor-pointer select-none group"
+                        <!-- Floating Tooltip (follows cursor) -->
+                        <Teleport to="body">
+                            <div
+                                v-if="
+                                    hoveredIndex !== null &&
+                                    selectedPlates[hoveredIndex]
+                                "
+                                class="pointer-events-none fixed z-[9999]"
+                                :style="{
+                                    left: `${mouseX + 14}px`,
+                                    top: `${mouseY - 14}px`,
+                                    transform: 'translateY(-100%)',
+                                }"
                             >
-                                <div class="flex items-center gap-2 text-gray-800 font-bold">
-                                    <svg class="w-4.5 h-4.5 text-[#8C1E1E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
-                                    </svg>
-                                    <span class="text-xs uppercase tracking-wider">Mục lục bài viết</span>
-                                </div>
-                                <span class="text-xs font-bold text-[#8C1E1E] group-hover:underline">
-                                    {{ isTocExpanded ? '[Thu gọn]' : '[Mở rộng]' }}
-                                </span>
-                            </div>
-                            <nav v-show="isTocExpanded" class="space-y-2.5 text-xs sm:text-sm">
-                                <div 
-                                    v-for="item in tocItems" 
-                                    :key="item.id"
-                                    :class="item.level === 3 ? 'pl-5 text-gray-500' : 'font-semibold text-gray-700'"
+                                <div
+                                    class="min-w-[170px] rounded-lg border border-gray-200/80 bg-white text-[11px] text-gray-800 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.15)]"
                                 >
-                                    <a 
-                                        :href="`#${item.id}`" 
-                                        class="hover:text-[#8C1E1E] transition duration-150 inline-block py-0.5"
+                                    <!-- Header tỉnh -->
+                                    <div
+                                        class="flex items-center gap-1.5 rounded-t-lg border-b border-gray-100 bg-gray-50 px-3 py-1.5"
                                     >
-                                        {{ item.text }}
-                                    </a>
-                                </div>
-                            </nav>
-                        </div>
-
-                        <!-- Render HTML content safely -->
-                        <div v-if="article.content" class="ai-content-body space-y-6 text-gray-700 leading-relaxed text-base" v-html="article.content"></div>
-                        <div v-else class="text-gray-500 text-sm">Nội dung bài viết chưa được cập nhật.</div>
-
-                        <!-- Article footer indexing badge -->
-                        <div class="mt-12 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-                            <span>BISOXE.COM</span>
-                            <span v-if="article.generated_at">Ngày khởi tạo nội dung: {{ formatDate(article.generated_at) }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Price Fluctuation Chart (Displayed whether loading or completed, if there is historical data) -->
-                    <div v-if="availableProvinces.length > 0" class="mt-12 pt-8 border-t border-gray-200">
-                        <div class="relative w-full">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 border-b border-gray-100 pb-4">
-                                <div>
-                                    <h3 class="text-lg font-bold text-gray-900 font-sans">
-                                        Lịch sử giá trúng đấu giá sê-ri số đuôi "{{ plate.serial_number }}" tại {{ selectedProvinceName }}
-                                    </h3>
-                                    <p class="text-[11px] text-gray-400 mt-1">Đơn vị: VND. Bản vẽ xu hướng giá theo thời gian thực tế.</p>
-                                </div>
-                            </div>
-                        
-                            <!-- Floating Tooltip (follows cursor) -->
-                            <Teleport to="body">
-                                <div 
-                                    v-if="hoveredIndex !== null && selectedPlates[hoveredIndex]" 
-                                    class="fixed z-[9999] pointer-events-none"
-                                    :style="{
-                                        left: `${mouseX + 14}px`,
-                                        top: `${mouseY - 14}px`,
-                                        transform: 'translateY(-100%)'
-                                    }"
-                                >
-                                    <div class="bg-white text-gray-800 text-[11px] rounded-lg shadow-[0_4px_20px_-2px_rgba(0,0,0,0.15)] border border-gray-200/80 min-w-[170px]">
-                                        <!-- Header tỉnh -->
-                                        <div class="px-3 py-1.5 bg-gray-50 rounded-t-lg border-b border-gray-100 flex items-center gap-1.5">
-                                            <span class="w-2 h-2 rounded-full bg-[#8C1E1E] shrink-0"></span>
-                                            <span class="font-bold text-[10px] text-gray-600 truncate">{{ selectedPlates[hoveredIndex].province_name || selectedProvinceName }}</span>
+                                        <span
+                                            class="h-2 w-2 shrink-0 rounded-full bg-[#8C1E1E]"
+                                        ></span>
+                                        <span
+                                            class="truncate text-[10px] font-bold text-gray-600"
+                                            >{{
+                                                selectedPlates[hoveredIndex]
+                                                    .province_name ||
+                                                selectedProvinceName
+                                            }}</span
+                                        >
+                                    </div>
+                                    <!-- Body -->
+                                    <div class="space-y-1 px-3 py-2">
+                                        <div
+                                            class="flex items-center justify-between gap-3"
+                                        >
+                                            <span
+                                                class="text-[10px] text-gray-400"
+                                                >Biển số</span
+                                            >
+                                            <span
+                                                class="text-[11px] font-bold text-gray-900"
+                                                >{{
+                                                    selectedPlates[hoveredIndex]
+                                                        .plate_number
+                                                }}</span
+                                            >
                                         </div>
-                                        <!-- Body -->
-                                        <div class="px-3 py-2 space-y-1">
-                                            <div class="flex items-center justify-between gap-3">
-                                                <span class="text-gray-400 text-[10px]">Biển số</span>
-                                                <span class="font-bold text-gray-900 text-[11px]">{{ selectedPlates[hoveredIndex].plate_number }}</span>
-                                            </div>
-                                            <div class="flex items-center justify-between gap-3">
-                                                <span class="text-gray-400 text-[10px]">Giá trúng</span>
-                                                <span class="font-extrabold text-[#8C1E1E] text-[11px]">{{ formatShortMoney(selectedPlates[hoveredIndex].winning_price) }}</span>
-                                            </div>
-                                            <div class="flex items-center justify-between gap-3">
-                                                <span class="text-gray-400 text-[10px]">Ngày đấu</span>
-                                                <span class="font-medium text-gray-600 text-[10px]">{{ selectedPlates[hoveredIndex].auction_date }}</span>
-                                            </div>
+                                        <div
+                                            class="flex items-center justify-between gap-3"
+                                        >
+                                            <span
+                                                class="text-[10px] text-gray-400"
+                                                >Giá trúng</span
+                                            >
+                                            <span
+                                                class="text-[11px] font-extrabold text-[#8C1E1E]"
+                                                >{{
+                                                    formatShortMoney(
+                                                        selectedPlates[
+                                                            hoveredIndex
+                                                        ].winning_price,
+                                                    )
+                                                }}</span
+                                            >
+                                        </div>
+                                        <div
+                                            class="flex items-center justify-between gap-3"
+                                        >
+                                            <span
+                                                class="text-[10px] text-gray-400"
+                                                >Ngày đấu</span
+                                            >
+                                            <span
+                                                class="text-[10px] font-medium text-gray-600"
+                                                >{{
+                                                    selectedPlates[hoveredIndex]
+                                                        .auction_date
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
                                 </div>
-                            </Teleport>
-
-                            <!-- SVG Price Chart -->
-                            <div class="bg-gray-50 border border-gray-150 rounded-2xl p-4 md:p-6 shadow-inner relative overflow-hidden">
-                                <svg viewBox="0 0 500 216" class="w-full h-auto overflow-visible" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <!-- Gradient definition for selected province area fill -->
-                                        <linearGradient id="currentAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="#8C1E1E" stop-opacity="0.25" />
-                                            <stop offset="100%" stop-color="#8C1E1E" stop-opacity="0.0" />
-                                        </linearGradient>
-                                    </defs>
-
-                                    <!-- Grid lines & Y Axis values -->
-                                    <line x1="35" y1="30" x2="460" y2="30" stroke="#E5E7EB" stroke-width="0.8" stroke-dasharray="3,3" />
-                                    <text x="30" y="33" class="text-[6px] font-semibold text-gray-400 font-sans text-right" text-anchor="end">
-                                        {{ formatShortMoney(maxCategoryValue) }}
-                                    </text>
-
-                                    <line x1="35" y1="80" x2="460" y2="80" stroke="#E5E7EB" stroke-width="0.8" stroke-dasharray="3,3" />
-                                    <text x="30" y="83" class="text-[6px] font-semibold text-gray-400 font-sans text-right" text-anchor="end">
-                                        {{ formatShortMoney(maxCategoryValue * 2 / 3) }}
-                                    </text>
-
-                                    <line x1="35" y1="130" x2="460" y2="130" stroke="#E5E7EB" stroke-width="0.8" stroke-dasharray="3,3" />
-                                    <text x="30" y="133" class="text-[6px] font-semibold text-gray-400 font-sans text-right" text-anchor="end">
-                                        {{ formatShortMoney(maxCategoryValue * 1 / 3) }}
-                                    </text>
-
-                                    <!-- X Axis Line -->
-                                    <line x1="35" y1="180" x2="460" y2="180" stroke="#D1D5DB" stroke-width="1" />
-                                    <text x="30" y="183" class="text-[6px] font-semibold text-gray-400 font-sans text-right" text-anchor="end">0</text>
-
-                                    <!-- Area Fill (Selected Province) -->
-                                    <path v-if="categoryAreaPath" :d="categoryAreaPath" fill="url(#currentAreaGrad)" />
-
-                                    <!-- Curve Line (Selected Province) -->
-                                    <path v-if="categoryLinePath" :d="categoryLinePath" fill="none" stroke="#8C1E1E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
-
-                                    <!-- Highlight hovered vertical guide line -->
-                                    <line 
-                                        v-if="hoveredIndex !== null" 
-                                        :x1="getXCoordinate(hoveredIndex, selectedPlates.length)" 
-                                        y1="30" 
-                                        :x2="getXCoordinate(hoveredIndex, selectedPlates.length)" 
-                                        y2="180" 
-                                        stroke="#D1D5DB" 
-                                        stroke-width="0.8" 
-                                        stroke-dasharray="3,3" 
-                                    />
-
-                                    <!-- Dots / Circles (Selected Province) -->
-                                    <g v-for="(item, i) in selectedPlates" :key="'curr-circle-' + i">
-                                        <circle 
-                                            :cx="getXCoordinate(i, selectedPlates.length)" 
-                                            :cy="180 - ((item.winning_price / maxCategoryValue) * 150)" 
-                                            :r="hoveredIndex === i ? 4 : 2.5" 
-                                            fill="#8C1E1E" 
-                                            stroke="#FFFFFF" 
-                                            :stroke-width="hoveredIndex === i ? 1.5 : 0.8" 
-                                            class="transition-all duration-150"
-                                        />
-                                    </g>
-
-                                    <!-- X Axis Labels (License Plate Number) -->
-                                    <template v-for="(item, i) in selectedPlates" :key="'lbl-x-' + i">
-                                        <text 
-                                            v-if="labelIndices.includes(i)"
-                                            :x="getXCoordinate(i, selectedPlates.length)" 
-                                            y="198" 
-                                            class="text-[6px] font-bold text-gray-500 font-sans"
-                                            text-anchor="middle"
-                                        >
-                                            {{ item.plate_number }}
-                                        </text>
-                                    </template>
-
-                                    <!-- X Axis Labels (Auction Date) -->
-                                    <template v-for="(item, i) in selectedPlates" :key="'lbl-date-' + i">
-                                        <text 
-                                            v-if="labelIndices.includes(i)"
-                                            :x="getXCoordinate(i, selectedPlates.length)" 
-                                            y="210" 
-                                            class="text-[5.5px] text-gray-400 font-medium font-sans"
-                                            text-anchor="middle"
-                                        >
-                                            {{ item.auction_date }}
-                                        </text>
-                                    </template>
-
-                                    <!-- Vertical Hover Hit Zones -->
-                                    <rect
-                                        v-for="(item, i) in selectedPlates"
-                                        :key="'hover-zone-' + i"
-                                        :x="getXCoordinate(i, selectedPlates.length) - (selectedPlates.length > 1 ? 212.5 / (selectedPlates.length - 1) : 212.5)"
-                                        y="10"
-                                        :width="selectedPlates.length > 1 ? 425 / (selectedPlates.length - 1) : 425"
-                                        height="180"
-                                        fill="transparent"
-                                        class="cursor-pointer"
-                                        @mouseenter="hoveredIndex = i"
-                                        @mousemove="onChartMouseMove($event)"
-                                        @mouseleave="hoveredIndex = null"
-                                    />
-                                </svg>
                             </div>
+                        </Teleport>
 
-                            <!-- Legend / Selection tabs below chart -->
-                            <div class="mt-6 border-t border-gray-150 pt-5">
-                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 text-center sm:text-left">
-                                    Xem lịch sử giá của các tỉnh/thành phố khác:
-                                </p>
-                                <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
-                                    <!-- Nút Tất cả -->
-                                    <button
-                                        @click="toggleProvince('all')"
-                                        class="px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer select-none"
-                                        :class="isAllSelected
-                                            ? 'bg-[#8C1E1E] text-white border-[#8C1E1E] shadow-sm'
-                                            : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-gray-250'"
+                        <!-- SVG Price Chart -->
+                        <div
+                            class="border-gray-150 relative overflow-hidden rounded-2xl border bg-gray-50 p-4 shadow-inner md:p-6"
+                        >
+                            <svg
+                                viewBox="0 0 500 216"
+                                class="h-auto w-full overflow-visible"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <defs>
+                                    <!-- Gradient definition for selected province area fill -->
+                                    <linearGradient
+                                        id="currentAreaGrad"
+                                        x1="0"
+                                        y1="0"
+                                        x2="0"
+                                        y2="1"
                                     >
-                                        <span>Tất cả</span>
-                                        <span 
-                                            class="px-1.5 py-0.5 text-[9px] font-black rounded-full"
-                                            :class="isAllSelected
-                                                ? 'bg-white/20 text-white'
-                                                : 'bg-gray-100 text-gray-500'"
-                                        >
-                                            {{ totalPlatesCount }}
-                                        </span>
-                                    </button>
+                                        <stop
+                                            offset="0%"
+                                            stop-color="#8C1E1E"
+                                            stop-opacity="0.25"
+                                        />
+                                        <stop
+                                            offset="100%"
+                                            stop-color="#8C1E1E"
+                                            stop-opacity="0.0"
+                                        />
+                                    </linearGradient>
+                                </defs>
 
-                                    <!-- Nút từng tỉnh thành -->
-                                    <button
-                                        v-for="prov in availableProvinces"
-                                        :key="prov.code"
-                                        @click="toggleProvince(prov.code)"
-                                        class="px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer select-none"
-                                        :class="isProvinceActive(prov.code)
-                                            ? 'bg-[#8C1E1E] text-white border-[#8C1E1E] shadow-sm'
-                                            : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-gray-250'"
+                                <!-- Grid lines & Y Axis values -->
+                                <line
+                                    x1="35"
+                                    y1="30"
+                                    x2="460"
+                                    y2="30"
+                                    stroke="#E5E7EB"
+                                    stroke-width="0.8"
+                                    stroke-dasharray="3,3"
+                                />
+                                <text
+                                    x="30"
+                                    y="33"
+                                    class="text-right font-sans text-[6px] font-semibold text-gray-400"
+                                    text-anchor="end"
+                                >
+                                    {{ formatShortMoney(maxCategoryValue) }}
+                                </text>
+
+                                <line
+                                    x1="35"
+                                    y1="80"
+                                    x2="460"
+                                    y2="80"
+                                    stroke="#E5E7EB"
+                                    stroke-width="0.8"
+                                    stroke-dasharray="3,3"
+                                />
+                                <text
+                                    x="30"
+                                    y="83"
+                                    class="text-right font-sans text-[6px] font-semibold text-gray-400"
+                                    text-anchor="end"
+                                >
+                                    {{
+                                        formatShortMoney(
+                                            (maxCategoryValue * 2) / 3,
+                                        )
+                                    }}
+                                </text>
+
+                                <line
+                                    x1="35"
+                                    y1="130"
+                                    x2="460"
+                                    y2="130"
+                                    stroke="#E5E7EB"
+                                    stroke-width="0.8"
+                                    stroke-dasharray="3,3"
+                                />
+                                <text
+                                    x="30"
+                                    y="133"
+                                    class="text-right font-sans text-[6px] font-semibold text-gray-400"
+                                    text-anchor="end"
+                                >
+                                    {{
+                                        formatShortMoney(
+                                            (maxCategoryValue * 1) / 3,
+                                        )
+                                    }}
+                                </text>
+
+                                <!-- X Axis Line -->
+                                <line
+                                    x1="35"
+                                    y1="180"
+                                    x2="460"
+                                    y2="180"
+                                    stroke="#D1D5DB"
+                                    stroke-width="1"
+                                />
+                                <text
+                                    x="30"
+                                    y="183"
+                                    class="text-right font-sans text-[6px] font-semibold text-gray-400"
+                                    text-anchor="end"
+                                >
+                                    0
+                                </text>
+
+                                <!-- Area Fill (Selected Province) -->
+                                <path
+                                    v-if="categoryAreaPath"
+                                    :d="categoryAreaPath"
+                                    fill="url(#currentAreaGrad)"
+                                />
+
+                                <!-- Curve Line (Selected Province) -->
+                                <path
+                                    v-if="categoryLinePath"
+                                    :d="categoryLinePath"
+                                    fill="none"
+                                    stroke="#8C1E1E"
+                                    stroke-width="1.2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+
+                                <!-- Highlight hovered vertical guide line -->
+                                <line
+                                    v-if="hoveredIndex !== null"
+                                    :x1="
+                                        getXCoordinate(
+                                            hoveredIndex,
+                                            selectedPlates.length,
+                                        )
+                                    "
+                                    y1="30"
+                                    :x2="
+                                        getXCoordinate(
+                                            hoveredIndex,
+                                            selectedPlates.length,
+                                        )
+                                    "
+                                    y2="180"
+                                    stroke="#D1D5DB"
+                                    stroke-width="0.8"
+                                    stroke-dasharray="3,3"
+                                />
+
+                                <!-- Dots / Circles (Selected Province) -->
+                                <g
+                                    v-for="(item, i) in selectedPlates"
+                                    :key="'curr-circle-' + i"
+                                >
+                                    <circle
+                                        :cx="
+                                            getXCoordinate(
+                                                i,
+                                                selectedPlates.length,
+                                            )
+                                        "
+                                        :cy="
+                                            180 -
+                                            (item.winning_price /
+                                                maxCategoryValue) *
+                                                150
+                                        "
+                                        :r="hoveredIndex === i ? 4 : 2.5"
+                                        fill="#8C1E1E"
+                                        stroke="#FFFFFF"
+                                        :stroke-width="
+                                            hoveredIndex === i ? 1.5 : 0.8
+                                        "
+                                        class="transition-all duration-150"
+                                    />
+                                </g>
+
+                                <!-- X Axis Labels (License Plate Number) -->
+                                <template
+                                    v-for="(item, i) in selectedPlates"
+                                    :key="'lbl-x-' + i"
+                                >
+                                    <text
+                                        v-if="labelIndices.includes(i)"
+                                        :x="
+                                            getXCoordinate(
+                                                i,
+                                                selectedPlates.length,
+                                            )
+                                        "
+                                        y="198"
+                                        class="font-sans text-[6px] font-bold text-gray-500"
+                                        text-anchor="middle"
                                     >
-                                        <span>{{ prov.name }}</span>
-                                        <span 
-                                            class="px-1.5 py-0.5 text-[9px] font-black rounded-full"
-                                            :class="isProvinceActive(prov.code)
+                                        {{ item.plate_number }}
+                                    </text>
+                                </template>
+
+                                <!-- X Axis Labels (Auction Date) -->
+                                <template
+                                    v-for="(item, i) in selectedPlates"
+                                    :key="'lbl-date-' + i"
+                                >
+                                    <text
+                                        v-if="labelIndices.includes(i)"
+                                        :x="
+                                            getXCoordinate(
+                                                i,
+                                                selectedPlates.length,
+                                            )
+                                        "
+                                        y="210"
+                                        class="font-sans text-[5.5px] font-medium text-gray-400"
+                                        text-anchor="middle"
+                                    >
+                                        {{ item.auction_date }}
+                                    </text>
+                                </template>
+
+                                <!-- Vertical Hover Hit Zones -->
+                                <rect
+                                    v-for="(item, i) in selectedPlates"
+                                    :key="'hover-zone-' + i"
+                                    :x="
+                                        getXCoordinate(
+                                            i,
+                                            selectedPlates.length,
+                                        ) -
+                                        (selectedPlates.length > 1
+                                            ? 212.5 /
+                                              (selectedPlates.length - 1)
+                                            : 212.5)
+                                    "
+                                    y="10"
+                                    :width="
+                                        selectedPlates.length > 1
+                                            ? 425 / (selectedPlates.length - 1)
+                                            : 425
+                                    "
+                                    height="180"
+                                    fill="transparent"
+                                    class="cursor-pointer"
+                                    @mouseenter="hoveredIndex = i"
+                                    @mousemove="onChartMouseMove($event)"
+                                    @mouseleave="hoveredIndex = null"
+                                />
+                            </svg>
+                        </div>
+
+                        <!-- Legend / Selection tabs below chart -->
+                        <div class="border-gray-150 mt-6 border-t pt-5">
+                            <p
+                                class="mb-3 text-center text-xs font-bold tracking-wider text-gray-500 uppercase sm:text-left"
+                            >
+                                Xem lịch sử giá của các tỉnh/thành phố khác:
+                            </p>
+                            <div
+                                class="flex flex-wrap justify-center gap-2 sm:justify-start"
+                            >
+                                <!-- Nút Tất cả -->
+                                <button
+                                    @click="toggleProvince('all')"
+                                    class="flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200 select-none"
+                                    :class="
+                                        isAllSelected
+                                            ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white shadow-sm'
+                                            : 'border-gray-250 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    "
+                                >
+                                    <span>Tất cả</span>
+                                    <span
+                                        class="rounded-full px-1.5 py-0.5 text-[9px] font-black"
+                                        :class="
+                                            isAllSelected
                                                 ? 'bg-white/20 text-white'
-                                                : 'bg-gray-100 text-gray-500'"
-                                        >
-                                            {{ prov.count }}
-                                        </span>
-                                    </button>
-                                </div>
+                                                : 'bg-gray-100 text-gray-500'
+                                        "
+                                    >
+                                        {{ totalPlatesCount }}
+                                    </span>
+                                </button>
+
+                                <!-- Nút từng tỉnh thành -->
+                                <button
+                                    v-for="prov in availableProvinces"
+                                    :key="prov.code"
+                                    @click="toggleProvince(prov.code)"
+                                    class="flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200 select-none"
+                                    :class="
+                                        isProvinceActive(prov.code)
+                                            ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white shadow-sm'
+                                            : 'border-gray-250 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    "
+                                >
+                                    <span>{{ prov.name }}</span>
+                                    <span
+                                        class="rounded-full px-1.5 py-0.5 text-[9px] font-black"
+                                        :class="
+                                            isProvinceActive(prov.code)
+                                                ? 'bg-white/20 text-white'
+                                                : 'bg-gray-100 text-gray-500'
+                                        "
+                                    >
+                                        {{ prov.count }}
+                                    </span>
+                                </button>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
+                <!-- Loading state: If content is still generating -->
+                <div
+                    v-if="is_pending"
+                    class="flex flex-col items-center justify-center py-16 text-center"
+                >
+                    <div class="relative mb-6 h-16 w-16">
+                        <!-- Pulse spinner -->
+                        <div
+                            class="absolute inset-0 animate-ping rounded-full border-4 border-[#8C1E1E]/20"
+                        ></div>
+                        <div
+                            class="absolute inset-0 animate-spin rounded-full border-4 border-t-[#8C1E1E] border-r-transparent border-b-transparent border-l-transparent"
+                        ></div>
+                    </div>
+                    <h3 class="mb-2 text-xl font-bold text-gray-900">
+                        Hệ Thống Đang Phân Tích...
+                    </h3>
+                    <p class="max-w-md text-sm text-gray-500">
+                        Hệ thống đang giải mã chi tiết các số phong thủy, ngũ
+                        hành hợp mệnh và soạn thảo bài viết tối ưu cho biển số
+                        này. Vui lòng tải lại trang sau 1 phút!
+                    </p>
+                </div>
+
+                <!-- Main Article Content -->
+                <div v-else class="prose max-w-none">
+                    <h1
+                        class="mb-6 border-b border-gray-100 pb-4 font-sans text-2xl font-extrabold tracking-tight text-gray-900 lg:text-3xl"
+                    >
+                        {{ article.title }}
+                    </h1>
+                    <!-- Featured image (WebP) -->
+                    <div
+                        v-if="article.image_url"
+                        class="mb-6 overflow-hidden rounded-xl border border-gray-100 shadow-sm"
+                    >
+                        <img
+                            :src="article.image_url"
+                            :alt="`Biển số ${plate.display_number} - ${plate.province?.name ?? ''}`"
+                            class="h-auto w-full object-cover"
+                            loading="lazy"
+                            width="1200"
+                            height="630"
+                        />
+                    </div>
+                    <!-- Table of Contents Widget -->
+                    <div
+                        v-if="tocItems.length > 0"
+                        class="mb-8 rounded-xl border border-gray-200 bg-gray-50/80 p-5"
+                    >
+                        <div
+                            @click="isTocExpanded = !isTocExpanded"
+                            class="group mb-3 flex cursor-pointer items-center justify-between border-b border-gray-200/60 pb-2 select-none"
+                        >
+                            <div
+                                class="flex items-center gap-2 font-bold text-gray-800"
+                            >
+                                <svg
+                                    class="h-4.5 w-4.5 text-[#8C1E1E]"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M4 6h16M4 12h16M4 18h7"
+                                    />
+                                </svg>
+                                <span class="text-xs tracking-wider uppercase"
+                                    >Mục lục bài viết</span
+                                >
+                            </div>
+                            <span
+                                class="text-xs font-bold text-[#8C1E1E] group-hover:underline"
+                            >
+                                {{ isTocExpanded ? '[Thu gọn]' : '[Mở rộng]' }}
+                            </span>
+                        </div>
+                        <nav
+                            v-show="isTocExpanded"
+                            class="space-y-2.5 text-xs sm:text-sm"
+                        >
+                            <div
+                                v-for="item in tocItems"
+                                :key="item.id"
+                                :class="
+                                    item.level === 3
+                                        ? 'pl-5 text-gray-500'
+                                        : 'font-semibold text-gray-700'
+                                "
+                            >
+                                <a
+                                    :href="`#${item.id}`"
+                                    class="inline-block py-0.5 transition duration-150 hover:text-[#8C1E1E]"
+                                >
+                                    {{ item.text }}
+                                </a>
+                            </div>
+                        </nav>
+                    </div>
+
+                    <!-- Render HTML content safely -->
+                    <div
+                        v-if="article.content"
+                        class="ai-content-body space-y-6 text-base leading-relaxed text-gray-700"
+                        v-html="article.content"
+                    ></div>
+                    <div v-else class="text-sm text-gray-500">
+                        Nội dung bài viết chưa được cập nhật.
+                    </div>
+
+                    <!-- Article footer indexing badge -->
+                    <div
+                        class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-6 text-xs text-gray-400"
+                    >
+                        <span>BISOXE.COM</span>
+                        <span v-if="article.generated_at"
+                            >Ngày khởi tạo nội dung:
+                            {{ formatDate(article.generated_at) }}</span
+                        >
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- Footer -->
-        <footer class="border-t border-gray-200 bg-white py-12 mt-16 text-center text-gray-400 text-xs font-medium">
-            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-                <p class="mb-2 text-gray-500">© 2026 BISOXE.COM. Nền tảng phân tích phong thủy biển số xe tự động.</p>
-                <p class="text-gray-400 font-light">Nội dung giải luận mang tính chất tham khảo khoa học phong thủy số học, được hỗ trợ tổng hợp và tính toán tự động.</p>
-            </div>
-        </footer>
+        <Footer />
 
         <BackToTop />
     </div>
 </template>
 
 <style>
-body, .font-sans, .font-serif {
+body,
+.font-sans,
+.font-serif {
     font-family: 'Inter', sans-serif !important;
 }
 
