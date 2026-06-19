@@ -182,10 +182,14 @@ class ImportVpaData extends Command
                         foreach ($item['kinds'] as $k) {
                             $kId = $k['id'] ?? null;
                             if ($kId && ! $kindsCache->has($kId)) {
+                                $kName = $k['name'] ?? '';
+                                if ($kName === 'Phong thuỷ' || $kName === 'Phong thủy' || $kId === 10) {
+                                    $kName = 'Biển thường';
+                                }
                                 $newKind = PlateKind::updateOrCreate(
                                     ['id' => $kId],
                                     [
-                                        'name' => $k['name'] ?? '',
+                                        'name' => $kName,
                                         'priority' => $k['priority'] ?? null,
                                         'regex' => $k['regex'] ?? null,
                                         'group_name' => $k['group'] ?? null,

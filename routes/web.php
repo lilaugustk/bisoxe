@@ -11,4 +11,3 @@ Route::get('/bien-so/{slug}', [LicensePlateController::class, 'show'])->name('pl
 
 Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
 Route::get('/bai-viet/{slug}', [PostController::class, 'show'])->name('posts.show');
-

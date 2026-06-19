@@ -171,14 +171,14 @@ const isPostActive = computed(() => {
                         href="#meanings-section"
                         class="transition hover:text-[#8C1E1E]"
                     >
-                        Ý nghĩa phong thủy
+                        Ý nghĩa biển số
                     </a>
                     <Link
                         v-else
                         href="/#meanings-section"
                         class="transition hover:text-[#8C1E1E]"
                     >
-                        Ý nghĩa phong thủy
+                        Ý nghĩa các con số
                     </Link>
                     <a
                         v-if="isHomePath"
@@ -283,7 +283,7 @@ const isPostActive = computed(() => {
                         class="py-3 transition hover:text-[#8C1E1E]"
                         @click="closeMobileMenu"
                     >
-                        Ý nghĩa phong thủy
+                        Ý nghĩa biển số
                     </a>
                     <Link
                         v-else
@@ -291,7 +291,7 @@ const isPostActive = computed(() => {
                         class="py-3 transition hover:text-[#8C1E1E]"
                         @click="closeMobileMenu"
                     >
-                        Ý nghĩa phong thủy
+                        Ý nghĩa biển số
                     </Link>
                     <a
                         v-if="isHomePath"

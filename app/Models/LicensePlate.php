@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -20,21 +22,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $status
  * @property int $starting_price
  * @property int $winning_price
- * @property \Illuminate\Support\Carbon|null $register_start_time
- * @property \Illuminate\Support\Carbon|null $register_end_time
- * @property \Illuminate\Support\Carbon|null $auction_start_time
- * @property \Illuminate\Support\Carbon|null $auction_end_time
- * @property \Illuminate\Support\Carbon|null $crawled_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * 
+ * @property Carbon|null $register_start_time
+ * @property Carbon|null $register_end_time
+ * @property Carbon|null $auction_start_time
+ * @property Carbon|null $auction_end_time
+ * @property Carbon|null $crawled_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property Province|null $province
- * @property \Illuminate\Database\Eloquent\Collection<int, PlateKind> $kinds
+ * @property Collection<int, PlateKind> $kinds
  * @property SeoArticle|null $seoArticle
  */
 class LicensePlate extends Model
 {
-
     protected $table = 'license_plates';
 
     protected $fillable = [

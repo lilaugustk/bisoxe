@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import BackToTop from '../../components/BackToTop.vue';
 import Footer from '../../components/Footer.vue';
 import Header from '../../components/Header.vue';
 
 interface Plate {
     id: number;
+    slug: string;
     full_number: string;
     display_number: string;
     vehicle_type: string; // 'car' | 'motorcycle'
@@ -44,6 +45,19 @@ interface PricePrediction {
     max: number;
     confidence: string;
     kind_name: string;
+    base_price: number;
+    province_multiplier: number;
+    nut_multiplier: number;
+    bad_multiplier: number;
+    has_bad_numbers: boolean;
+    nut: number;
+    is_completed: boolean;
+    trend: {
+        multiplier: number;
+        direction: 'up' | 'down' | 'stable';
+        percentage: number;
+        label: string;
+    };
 }
 
 interface PriceTrendItem {
@@ -57,12 +71,22 @@ interface ProvinceTrend {
     plates: PriceTrendItem[];
 }
 
+interface PlateScore {
+    score: number;
+    rating: string;
+    rating_color: string;
+    nut: number;
+    reasons: string[];
+}
+
 const props = defineProps<{
     article: Article;
     plate: Plate;
     is_pending: boolean;
     price_prediction: PricePrediction;
     price_trend: Record<string, ProvinceTrend>;
+    plate_score: PlateScore;
+    related_plates: Plate[];
 }>();
 
 const plateStyle = ref<'long' | 'square'>('long');
@@ -157,6 +181,8 @@ onUnmounted(() => {
     if (pollInterval) {
         clearInterval(pollInterval);
     }
+
+    document.body.style.overflow = '';
 });
 
 // Định dạng tiền tệ VND
@@ -495,6 +521,48 @@ const categoryAreaPath = computed<string>(() => {
     const linePath = getLinePath(points);
 
     return `${linePath} L ${lastX} 180 L ${firstX} 180 Z`;
+});
+
+const scoreColor = computed(() => {
+    const s = props.plate_score?.score ?? 0;
+    let color = '#6B7280';
+
+    if (s >= 90) {
+        color = '#EF4444';
+    } else if (s >= 80) {
+        color = '#F59E0B';
+    } else if (s >= 70) {
+        color = '#10B981';
+    } else if (s >= 60) {
+        color = '#3B82F6';
+    }
+
+    return color;
+});
+
+
+
+
+
+const showScoringGuide = ref(false);
+const showPriceGuide = ref(false);
+
+// Khóa cuộn trang khi mở modal hướng dẫn chấm điểm
+watch(showScoringGuide, (newVal) => {
+    if (newVal) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+});
+
+// Khóa cuộn trang khi mở modal hướng dẫn định giá
+watch(showPriceGuide, (newVal) => {
+    if (newVal) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
 });
 </script>
 
@@ -904,6 +972,140 @@ const categoryAreaPath = computed<string>(() => {
                                     ? formatMoney(plate.winning_price)
                                     : 'Chưa diễn ra / Đang cập nhật'
                             }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Scoring & Predictions -->
+            <div class="mb-8 grid grid-cols-1 gap-6" :class="plate.status !== 'completed' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
+                <!-- Left: Score Card -->
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="mb-5 border-b border-gray-100 pb-3 flex items-center justify-between">
+                        <h3 class="text-base font-bold text-gray-900">Chấm điểm & Phân tích thế số</h3>
+                        <div class="flex items-center gap-2 select-none">
+                            <span class="text-xs font-bold text-gray-500">Xem cách tính</span>
+                            <button 
+                                @click="showScoringGuide = !showScoringGuide"
+                                class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                                :class="showScoringGuide ? 'bg-[#8C1E1E]' : 'bg-gray-200'"
+                                type="button"
+                                aria-label="Toggle scoring guide"
+                            >
+                                <span 
+                                    class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+                                    :class="showScoringGuide ? 'translate-x-4' : 'translate-x-0'"
+                                />
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+                        <!-- Score Circular Gauge SVG -->
+                        <div class="relative flex items-center justify-center h-28 w-28 shrink-0 bg-gray-50/50 rounded-full border border-gray-100 p-1">
+                            <svg class="h-full w-full transform -rotate-90" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Track circle -->
+                                <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="40"
+                                    stroke="#E5E7EB"
+                                    stroke-width="5"
+                                    fill="none"
+                                />
+                                <!-- Progress circle -->
+                                <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="40"
+                                    :stroke="scoreColor"
+                                    stroke-width="5"
+                                    stroke-linecap="round"
+                                    fill="none"
+                                    :stroke-dasharray="2 * Math.PI * 40"
+                                    :stroke-dashoffset="2 * Math.PI * 40 * (1 - plate_score.score / 100)"
+                                    class="transition-all duration-700 ease-out"
+                                />
+                            </svg>
+                            <!-- Center text overlay -->
+                            <div class="absolute text-center flex flex-col items-center justify-center">
+                                <span class="text-3.5xl font-extrabold tracking-tight leading-none text-gray-900">{{ plate_score.score }}</span>
+                                <span class="text-gray-400 text-[8px] font-bold tracking-wider uppercase mt-1">ĐIỂM</span>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 w-full space-y-3">
+                            <div class="flex flex-wrap gap-2.5 pt-1">
+                                <span class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600 select-none">
+                                    Nút số: <strong class="text-gray-900 font-bold ml-1">{{ plate_score.nut }} nút</strong>
+                                </span>
+                                <span class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600 select-none">
+                                    Thế số: <strong class="text-gray-900 font-bold ml-1">{{ plate.kinds.length > 0 ? plate.kinds[0].name : 'Biển thường' }}</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Scoring Explanation is now presented in a Teleport Modal -->
+                </div>
+
+                <!-- Right: Prediction Card (if not completed) -->
+                <div v-if="plate.status !== 'completed'" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="mb-5 border-b border-gray-100 pb-3 flex items-center justify-between">
+                        <h3 class="text-base font-bold text-gray-900">Ước lượng giá trị biển số</h3>
+                        <div class="flex items-center gap-2 select-none">
+                            <span class="text-xs font-bold text-gray-500">Xem cách tính</span>
+                            <button 
+                                @click="showPriceGuide = !showPriceGuide"
+                                class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                                :class="showPriceGuide ? 'bg-[#8C1E1E]' : 'bg-gray-200'"
+                                type="button"
+                                aria-label="Toggle price guide"
+                            >
+                                <span 
+                                    class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+                                    :class="showPriceGuide ? 'translate-x-4' : 'translate-x-0'"
+                                />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <!-- Predicted Price Range display -->
+                        <div class="rounded-xl bg-gray-50 p-5 border border-gray-100 text-center">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Giá trị dự kiến</span>
+                            <div class="text-3xl font-extrabold text-[#8C1E1E] tracking-tight leading-none my-2.5">
+                                {{ formatMoney(price_prediction.expected) }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                Khoảng ước tính: <strong class="text-gray-800">{{ formatShortMoney(price_prediction.min) }}</strong> - <strong class="text-gray-800">{{ formatShortMoney(price_prediction.max) }}</strong>
+                            </div>
+                            
+                            <!-- Dynamic Trend Badge -->
+                            <div class="mt-3.5 flex items-center justify-center gap-1.5 text-xs select-none">
+                                <span class="text-gray-400 text-[10px] font-bold tracking-wider uppercase">Xu hướng:</span>
+                                <span 
+                                    v-if="price_prediction.trend.direction === 'up'"
+                                    class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-[11px] font-bold text-green-700 border border-green-150 animate-pulse"
+                                >
+                                    <span>↗</span>
+                                    <span>{{ price_prediction.trend.label }} (+{{ price_prediction.trend.percentage }}%)</span>
+                                </span>
+                                <span 
+                                    v-else-if="price_prediction.trend.direction === 'down'"
+                                    class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-[11px] font-bold text-red-700 border border-red-150"
+                                >
+                                    <span>↘</span>
+                                    <span>{{ price_prediction.trend.label }} ({{ price_prediction.trend.percentage }}%)</span>
+                                </span>
+                                <span 
+                                    v-else
+                                    class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold text-gray-600 border border-gray-200"
+                                >
+                                    <span>→</span>
+                                    <span>{{ price_prediction.trend.label }} ({{ price_prediction.trend.percentage >= 0 ? '+' : '' }}{{ price_prediction.trend.percentage }}%)</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1354,19 +1556,17 @@ const categoryAreaPath = computed<string>(() => {
                         ></div>
                     </div>
                     <h3 class="mb-2 text-xl font-bold text-gray-900">
-                        Hệ Thống Đang Phân Tích...
+                        Đang tổng hợp dữ liệu...
                     </h3>
                     <p class="max-w-md text-sm text-gray-500">
-                        Hệ thống đang giải mã chi tiết các số phong thủy, ngũ
-                        hành hợp mệnh và soạn thảo bài viết tối ưu cho biển số
-                        này. Vui lòng tải lại trang sau 1 phút!
+                        Hệ thống đang tiến hành tra cứu ý nghĩa thế số, đối chiếu lịch sử giá trúng đấu giá và lập báo cáo chi tiết. Vui lòng tải lại trang sau ít phút!
                     </p>
                 </div>
 
                 <!-- Main Article Content -->
                 <div v-else class="prose max-w-none">
                     <h1
-                        class="mb-6 border-b border-gray-100 pb-4 font-sans text-2xl font-extrabold tracking-tight text-gray-900 lg:text-3xl"
+                        class="mb-6 border-b border-gray-100 pb-4 font-sans text-2xl font-extrabold tracking-tight text-gray-900 lg:text-3xl leading-tight"
                     >
                         {{ article.title }}
                     </h1>
@@ -1464,6 +1664,90 @@ const categoryAreaPath = computed<string>(() => {
                     </div>
                 </div>
             </div>
+
+            <!-- Related License Plates Section -->
+            <div v-if="related_plates && related_plates.length > 0" class="mt-8 border-t border-gray-250 pt-8">
+                <h3 class="mb-6 text-xl font-extrabold tracking-tight text-gray-900">
+                    Đề xuất biển số xe liên quan
+                </h3>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div
+                        v-for="relPlate in related_plates"
+                        :key="relPlate.id"
+                        class="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-wrap gap-1">
+                                <span v-for="kind in relPlate.kinds" :key="kind.id" class="rounded-full border border-red-100/50 bg-red-50 px-2 py-0.5 text-[9px] font-bold text-[#8C1E1E] uppercase">
+                                    {{ kind.name }}
+                                </span>
+                                <span v-if="relPlate.kinds.length === 0" class="rounded-full border border-gray-200 bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-650 uppercase">
+                                    Biển thường
+                                </span>
+                            </div>
+                            <span
+                                class="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase"
+                                :class="
+                                    relPlate.status === 'completed'
+                                        ? 'bg-green-50 text-green-700 border border-green-100'
+                                        : relPlate.status === 'announced'
+                                        ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                                        : 'bg-blue-50 text-blue-700 border border-blue-100'
+                                "
+                            >
+                                {{
+                                    relPlate.status === 'completed'
+                                        ? 'Đã đấu giá'
+                                        : relPlate.status === 'announced'
+                                        ? 'Đã công bố'
+                                        : 'Đang chờ'
+                                }}
+                            </span>
+                        </div>
+
+                        <!-- Simulated License Plate Thumbnail -->
+                        <div class="my-4 flex justify-center">
+                            <!-- Mini Long Plate Representation -->
+                            <div
+                                class="relative flex aspect-[520/110] w-full max-w-[220px] items-center justify-center rounded border px-3 py-1 shadow-sm select-none"
+                                :class="
+                                    relPlate.color === 1
+                                        ? 'border-black/50 bg-gradient-to-b from-amber-400 to-amber-500 text-black'
+                                        : 'border-gray-200 bg-gradient-to-b from-white to-gray-50 text-black'
+                                "
+                            >
+                                <div class="flex items-center justify-center font-sans font-black tracking-tight text-xs uppercase text-black">
+                                    <span>{{ relPlate.local_symbol }}{{ relPlate.serial_letter }}</span>
+                                    <span class="mx-1 font-bold text-black/85">-</span>
+                                    <span>
+                                        {{ relPlate.serial_number.slice(0, 3) }}
+                                        <span class="mx-0.5 mb-0.5 inline-block h-0.5 w-0.5 rounded-full bg-black"></span>
+                                        {{ relPlate.serial_number.slice(3) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 border-t border-gray-100 pt-2 flex items-center justify-between">
+                            <div class="text-[11px] text-gray-500 leading-relaxed">
+                                <div>Khu vực: <strong class="text-gray-700">{{ relPlate.province?.name ?? 'Chưa rõ' }}</strong></div>
+                                <div class="mt-0.5">
+                                    {{ relPlate.status === 'completed' ? 'Giá trúng:' : 'Giá khởi điểm:' }}
+                                    <strong class="text-gray-900">
+                                        {{ formatShortMoney(relPlate.status === 'completed' ? relPlate.winning_price : relPlate.starting_price) }}
+                                    </strong>
+                                </div>
+                            </div>
+                            <Link
+                                :href="`/bien-so/${relPlate.slug}`"
+                                class="rounded-md border border-[#8C1E1E] bg-white px-2.5 py-1.5 text-[10px] font-bold text-[#8C1E1E] shadow-sm transition hover:bg-[#8C1E1E] hover:text-white"
+                            >
+                                Xem phân tích
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- Footer -->
@@ -1471,6 +1755,421 @@ const categoryAreaPath = computed<string>(() => {
 
         <BackToTop />
     </div>
+
+    <!-- Teleport Modal for Detailed Scoring Guide -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="showScoringGuide" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10" aria-modal="true" role="dialog">
+                <!-- Backdrop backdrop-blur -->
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="showScoringGuide = false"></div>
+                
+                <!-- Modal content container -->
+                <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all transform scale-100 border border-gray-100 z-10 animate-fade-in">
+                    <!-- Close button in absolute top-right -->
+                    <button @click="showScoringGuide = false" class="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors focus:outline-none" aria-label="Close modal">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <!-- Header -->
+                    <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-3">
+                        <div>
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Công thức tính điểm chi tiết</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Cách thức tự động chấm điểm và đánh giá biển số xe</p>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="px-8 py-6 sm:py-8 overflow-y-auto space-y-6 bg-[#F9FAFB]">
+                        <p class="leading-relaxed text-gray-600 text-sm sm:text-[15px]">
+                            Điểm số của biển số được tính tự động dựa trên tổng hợp các yếu tố thế số, tổng nút và quan niệm dân gian với thang điểm từ <span class="font-bold text-gray-900">10 đến 99</span>:
+                        </p>
+                        
+                        <!-- Grid with columns -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            
+                            <!-- Column 1: Base & VIP -->
+                            <div class="space-y-6">
+                                <!-- Base Score -->
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 transition hover:shadow-md hover:border-gray-300">
+                                    <div class="flex items-center justify-between mb-3.5">
+                                        <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Khởi điểm</span>
+                                        <span class="text-xs sm:text-sm font-black text-gray-950 bg-gray-100/80 px-2.5 py-1 rounded">50đ</span>
+                                    </div>
+                                    <h5 class="text-sm font-bold text-gray-900">Điểm cơ sở ban đầu</h5>
+                                    <p class="text-xs sm:text-[13px] text-gray-500 mt-1.5 leading-relaxed">Tất cả biển số đều bắt đầu từ mốc 50 điểm trước khi cộng/trừ các yếu tố khác.</p>
+                                </div>
+
+                                <!-- VIP Layouts -->
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 transition hover:shadow-md hover:border-gray-300">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Ưu tiên</span>
+                                        <span class="text-sm font-bold text-gray-950">Thế số VIP</span>
+                                    </div>
+                                    <div class="space-y-2.5 text-xs sm:text-[13px] leading-relaxed">
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Ngũ quý</span>
+                                            <span class="font-bold text-gray-950">+45đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Sảnh tiến / Tứ quý</span>
+                                            <span class="font-bold text-gray-950">+35đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Lộc phát / Số gánh</span>
+                                            <span class="font-bold text-gray-950">+25đ / +20đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Tam hoa</span>
+                                            <span class="font-bold text-gray-950">+20đ</span>
+                                        </div>
+                                        <div class="flex justify-between pt-0.5">
+                                            <span class="text-gray-600">Thần tài / Ông địa / Lặp đôi</span>
+                                            <span class="font-bold text-gray-950">+15đ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Column 2: Nút, May mắn & Trừ điểm -->
+                            <div class="space-y-6">
+                                <!-- Nút & Cặp số may mắn -->
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 transition hover:shadow-md hover:border-gray-300">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Bổ trợ</span>
+                                        <span class="text-sm font-bold text-gray-950">Nút số & Cặp số đẹp</span>
+                                    </div>
+                                    <div class="space-y-3.5 text-xs sm:text-[13px] leading-relaxed">
+                                        <!-- Nút -->
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-2">
+                                                <span>Tổng nút đạt 9 - 10:</span>
+                                                <span class="font-bold text-gray-950">+10đ</span>
+                                            </div>
+                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-2">
+                                                <span>Tổng nút đạt 7 - 8:</span>
+                                                <span class="font-bold text-gray-950">+5đ</span>
+                                            </div>
+                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-2">
+                                                <span>Các trường hợp nút khác:</span>
+                                                <span class="font-bold text-gray-950">+2đ</span>
+                                            </div>
+                                        </div>
+                                        <!-- May mắn -->
+                                        <div class="space-y-2 pt-0.5">
+                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-2">
+                                                <span>Chứa Lộc Phát (68/86):</span>
+                                                <span class="font-bold text-gray-950">+8đ</span>
+                                            </div>
+                                            <div class="flex justify-between text-gray-600">
+                                                <span>Chứa Thần Tài (39/79):</span>
+                                                <span class="font-bold text-gray-950">+5đ</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Penalties (Trừ điểm số hạn) -->
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 transition hover:shadow-md hover:border-gray-300">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <span class="text-xs font-bold text-[#8C1E1E] bg-red-50 px-2.5 py-1 rounded uppercase tracking-wider">Hạn chế</span>
+                                        <span class="text-sm font-bold text-gray-950">Trừ điểm số hạn / xấu</span>
+                                    </div>
+                                    <div class="space-y-2.5 text-xs sm:text-[13px] mb-4 leading-relaxed">
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Chứa cặp số hạn (49/53):</span>
+                                            <span class="font-bold text-[#8C1E1E]">-15đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Chứa cả hai số 4 và 7:</span>
+                                            <span class="font-bold text-[#8C1E1E]">-10đ</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Chứa riêng số 4 hoặc số 7:</span>
+                                            <span class="font-bold text-[#8C1E1E]">-5đ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="px-8 py-5 border-t border-gray-100 flex justify-end bg-gray-50">
+                        <button @click="showScoringGuide = false" type="button" class="px-6 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-xs sm:text-sm font-bold transition-all shadow-sm focus:outline-none">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
+    <!-- Teleport Modal for Detailed Price Prediction Guide -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="showPriceGuide" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10" aria-modal="true" role="dialog">
+                <!-- Backdrop backdrop-blur -->
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="showPriceGuide = false"></div>
+                
+                <!-- Modal content container -->
+                <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all transform scale-100 border border-gray-100 z-10 animate-fade-in">
+                    <!-- Close button in absolute top-right -->
+                    <button @click="showPriceGuide = false" class="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors focus:outline-none" aria-label="Close modal">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <!-- Header -->
+                    <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-3">
+                        <div>
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Cách tính giá dự kiến chi tiết</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Cách thức tự động ước lượng giá trị biển số xe</p>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="px-8 py-6 sm:py-8 overflow-y-auto space-y-6 bg-[#F9FAFB]">
+                        <!-- Part 1: Current Plate Calculation -->
+                        <div class="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-150 pb-4 mb-6">
+                                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider text-[#8C1E1E] flex items-center gap-2">
+                                    <svg class="w-4.5 h-4.5 text-[#8C1E1E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    Chi tiết các bước định giá biển: {{ plate.display_number }}
+                                </h4>
+                                <div class="mt-2 sm:mt-0 flex items-center gap-2">
+                                    <span class="text-xs text-gray-500 font-medium">Độ tin cậy:</span>
+                                    <span class="rounded-full bg-blue-50 border border-blue-150 px-2.5 py-0.5 text-[10px] font-bold text-blue-700">
+                                        {{ price_prediction.confidence }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Premium Vertical Calculation Steps Pipeline -->
+                            <div class="relative pl-6 sm:pl-8 border-l border-gray-200 space-y-8 select-none">
+                                <!-- Step 1: Base Price -->
+                                <div class="relative">
+                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">1</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <div>
+                                            <h5 class="text-sm font-bold text-gray-900">Mốc giá nền theo thế số</h5>
+                                            <p class="text-xs text-gray-500 mt-0.5">Dựa trên trung bình trúng đấu giá thực tế của nhóm thế số <strong class="text-gray-700 font-semibold">{{ price_prediction.kind_name }}</strong> toàn quốc.</p>
+                                        </div>
+                                        <div class="text-right sm:text-right">
+                                            <div class="text-sm font-extrabold text-gray-950">{{ formatMoney(price_prediction.base_price) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Province Multiplier -->
+                                <div class="relative">
+                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">2</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <div>
+                                            <h5 class="text-sm font-bold text-gray-900">Hệ số điều chỉnh theo khu vực ({{ plate.province?.name ?? 'Tỉnh khác' }})</h5>
+                                            <p class="text-xs text-gray-500 mt-0.5">Tính toán tự động dựa trên mức giá đấu trúng thực tế tại khu vực đăng ký so với cả nước.</p>
+                                        </div>
+                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3">
+                                            <span class="rounded bg-amber-50 border border-amber-150 px-2 py-0.5 text-xs font-bold text-amber-700">x{{ price_prediction.province_multiplier }}</span>
+                                            <div class="text-xs font-bold text-gray-400">$\rightarrow$ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Nut Multiplier -->
+                                <div class="relative">
+                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">3</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <div>
+                                            <h5 class="text-sm font-bold text-gray-900">Hệ số tổng nút số ({{ price_prediction.nut }} nút)</h5>
+                                            <p class="text-xs text-gray-500 mt-0.5">Hệ số khuyến khích cho các biển có tổng số nút cao mang năng lượng tốt (9 và 10 nút).</p>
+                                        </div>
+                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3">
+                                            <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.nut_multiplier > 1.0 ? 'bg-green-50 border border-green-150 text-green-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
+                                                x{{ price_prediction.nut_multiplier }}
+                                            </span>
+                                            <div class="text-xs font-bold text-gray-400">$\rightarrow$ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 4: Bad Numbers Multiplier -->
+                                <div class="relative">
+                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">4</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <div>
+                                            <h5 class="text-sm font-bold text-gray-900">Chiết khấu tránh số xấu (Số 4, 7)</h5>
+                                            <p class="text-xs text-gray-500 mt-0.5">Khấu trừ giá trị đối với các biển số có chứa chữ số Hán Việt không được ưu chuộng.</p>
+                                        </div>
+                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3">
+                                            <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.has_bad_numbers ? 'bg-red-50 border border-red-150 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
+                                                x{{ price_prediction.bad_multiplier }}
+                                            </span>
+                                            <div class="text-xs font-bold text-gray-400">$\rightarrow$ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 5: Market Trend Multiplier -->
+                                <div class="relative">
+                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">5</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <div>
+                                            <h5 class="text-sm font-bold text-gray-900">Hệ số xu hướng biến động sê-ri đuôi "{{ plate.serial_number }}"</h5>
+                                            <p class="text-xs text-gray-500 mt-0.5">Tính toán dựa trên chiều biến động giá lịch sử đấu giá của chính các biển số có cùng sê-ri số đuôi này.</p>
+                                        </div>
+                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3">
+                                            <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.trend.direction === 'up' ? 'bg-green-50 border border-green-150 text-green-700' : price_prediction.trend.direction === 'down' ? 'bg-red-50 border border-red-150 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
+                                                x{{ price_prediction.trend.multiplier }}
+                                            </span>
+                                            <div class="text-xs font-bold text-gray-400">$\rightarrow$ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier * price_prediction.trend.multiplier) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 6 / Final Expected Result block -->
+                            <div class="rounded-2xl border border-[#8C1E1E]/20 bg-[#8C1E1E]/5 p-6 text-center mt-8 shadow-inner relative overflow-hidden">
+                                <div class="absolute -right-10 -bottom-10 h-28 w-28 rounded-full bg-[#8C1E1E]/5 blur-xl"></div>
+                                <div class="absolute -left-10 -top-10 h-28 w-28 rounded-full bg-[#8C1E1E]/5 blur-xl"></div>
+                                
+                                <span class="relative z-10 text-[10px] text-[#8C1E1E] font-bold uppercase tracking-widest">Giá Trị Dự Kiến Đề Xuất Cuối Cùng</span>
+                                <div class="relative z-10 text-3xl sm:text-4xl font-black text-[#8C1E1E] my-2 tracking-tight">
+                                    {{ formatMoney(price_prediction.expected) }}
+                                </div>
+                                <div class="relative z-10 text-xs text-gray-500 font-medium">
+                                    Khoảng ước lượng an toàn: <strong class="text-gray-800">{{ formatMoney(price_prediction.min) }}</strong> - <strong class="text-gray-800">{{ formatMoney(price_prediction.max) }}</strong>
+                                </div>
+                                <div v-if="price_prediction.is_completed" class="relative z-10 mt-3 text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 inline-flex items-center gap-1 px-3 py-1 rounded-full">
+                                    <span class="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                    Biển số đã đấu giá thành công: Áp dụng giá trúng đấu giá chính thức
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 2: General formula explanation -->
+                        <div class="space-y-6">
+                            <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2 text-gray-700">Công thức định giá tổng quát</h4>
+                            <p class="leading-relaxed text-gray-600 text-sm">
+                                Giá trị dự kiến của biển số được tính bằng công thức tích hợp dựa trên thống kê lịch sử trúng đấu giá của hàng trăm ngàn biển số thực tế:
+                            </p>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <!-- Base Price table -->
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Mốc 1</span>
+                                        <span class="text-sm font-bold text-gray-950">Giá nền theo thế số</span>
+                                    </div>
+                                    <div class="space-y-2 text-xs sm:text-[13px] leading-relaxed">
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Ngũ quý</span>
+                                            <span class="font-bold text-gray-950">1.160.000.000đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Số gánh</span>
+                                            <span class="font-bold text-gray-950">289.000.000đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Sảnh tiến</span>
+                                            <span class="font-bold text-gray-950">265.000.000đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Tứ quý</span>
+                                            <span class="font-bold text-gray-950">145.000.000đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Lặp đôi</span>
+                                            <span class="font-bold text-gray-950">70.000.000đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Tam hoa</span>
+                                            <span class="font-bold text-gray-950">65.000.000đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Lộc phát (68/86)</span>
+                                            <span class="font-bold text-gray-950">55.000.000đ</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                            <span class="text-gray-600">Biển thường</span>
+                                            <span class="font-bold text-gray-950">40.000.000đ</span>
+                                        </div>
+                                        <div class="flex justify-between pt-0.5">
+                                            <span class="text-gray-600">Loại khác (Thần tài, Ông địa)</span>
+                                            <span class="font-bold text-gray-950">33.000.000đ - 39.000.000đ</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Regional coefficients & multipliers -->
+                                <div class="space-y-6">
+                                    <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Mốc 2</span>
+                                            <span class="text-sm font-bold text-gray-950">Hệ số nhân điều chỉnh</span>
+                                        </div>
+                                        <div class="space-y-3.5 text-xs sm:text-[13px] leading-relaxed">
+                                            <div class="space-y-2 border-b border-gray-100 pb-3">
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-605 font-semibold text-gray-700">Tỉnh thành đăng ký:</span>
+                                                </div>
+                                                <div class="flex justify-between pl-3 text-gray-500">
+                                                    <span>Hà Nội (01):</span>
+                                                    <span class="font-bold text-gray-950">x1.5</span>
+                                                </div>
+                                                <div class="flex justify-between pl-3 text-gray-500">
+                                                    <span>TP. Hồ Chí Minh (79):</span>
+                                                    <span class="font-bold text-gray-950">x1.15</span>
+                                                </div>
+                                                <div class="flex justify-between pl-3 text-gray-500">
+                                                    <span>Các tỉnh thành khác:</span>
+                                                    <span class="font-bold text-gray-950">x1.0</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="space-y-2 border-b border-gray-100 pb-3">
+                                                <div class="flex justify-between text-gray-600">
+                                                    <span class="font-semibold text-gray-700">Nút số (Tổng số % 10):</span>
+                                                    <span class="font-bold text-gray-950">x1.1</span>
+                                                </div>
+                                                <p class="text-[11px] text-gray-400 pl-3">Áp dụng khi tổng số nút đạt 9 hoặc 10 nút.</p>
+                                            </div>
+
+                                            <div class="space-y-2">
+                                                <div class="flex justify-between text-gray-650">
+                                                    <span class="font-semibold text-[#8C1E1E]">Tránh số xấu (Số 4, 7):</span>
+                                                    <span class="font-bold text-[#8C1E1E]">x0.85</span>
+                                                </div>
+                                                <p class="text-[11px] text-gray-400 pl-3">Áp dụng khi biển số có chứa chữ số 4 hoặc 7.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm">
+                                        <h5 class="text-xs font-bold text-gray-950 uppercase mb-1">* Quy tắc giá sàn & giới hạn</h5>
+                                        <p class="text-xs text-gray-500 leading-relaxed">
+                                            Giá dự kiến tối thiểu không dưới giá khởi điểm sàn <strong>40.000.000đ</strong>. Khoảng dao động giá trị tối thiểu là 80% (Dự kiến * 0.8) và tối đa là 130% (Dự kiến * 1.3).
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="px-8 py-5 border-t border-gray-100 flex justify-end bg-gray-50">
+                        <button @click="showPriceGuide = false" type="button" class="px-6 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-xs sm:text-sm font-bold transition-all shadow-sm focus:outline-none">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
 <style>
@@ -1489,5 +2188,26 @@ body,
 }
 .rotate-y-6 {
     transform: rotateY(6deg);
+}
+
+/* Modal transition animations */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+    opacity: 0;
+}
+
+.modal-fade-enter-active .relative,
+.modal-fade-leave-active .relative {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-fade-enter-from .relative,
+.modal-fade-leave-to .relative {
+    transform: scale(0.96) translateY(8px);
 }
 </style>

@@ -75,7 +75,7 @@ onMounted(() => {
 const getCategoryLabel = (cat: string) => {
     switch (cat) {
         case 'phong-thuy':
-            return 'Phong thủy';
+            return 'Ý nghĩa biển số';
         case 'huong-dan':
             return 'Hướng dẫn';
         case 'tin-tuc':
@@ -415,10 +415,10 @@ const formatDate = (dateStr: string | null) => {
                             <h3
                                 class="text-sm font-black tracking-wider text-gray-900 uppercase"
                             >
-                                Tra cứu biển số phong thủy
+                                Tra cứu ý nghĩa biển số
                             </h3>
                             <p class="mt-0.5 text-xs text-gray-400">
-                                Kiểm tra cát hung và ý nghĩa số xe của bạn
+                                Kiểm tra thế số đẹp xấu và ý nghĩa số xe của bạn
                             </p>
                         </div>
 
@@ -472,7 +472,7 @@ const formatDate = (dateStr: string | null) => {
                                 href="/bai-viet?category=phong-thuy"
                                 class="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50 hover:text-[#8C1E1E]"
                             >
-                                <span>Phong thủy biển số</span>
+                                <span>Ý nghĩa biển số</span>
                                 <svg
                                     class="h-3.5 w-3.5 text-gray-400"
                                     fill="none"

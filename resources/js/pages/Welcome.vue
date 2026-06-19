@@ -123,50 +123,50 @@ const isHomePath = computed(() => currentPath.value === '/');
 
 const pageTitle = computed(() => {
     if (isHomePath.value) {
-        return 'BISOXE.COM - Tra cứu Phong thủy Biển số xe & Kết quả Đấu giá';
+        return 'BISOXE.COM - Tra cứu Ý nghĩa Biển số xe & Kết quả Đấu giá';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'BISOXE.COM - Tra cứu Phong thủy Biển số xe máy, mô tô & Kết quả Đấu giá';
+        return 'BISOXE.COM - Tra cứu Ý nghĩa Biển số xe máy, mô tô & Kết quả Đấu giá';
     }
 
-    return 'BISOXE.COM - Tra cứu Phong thủy Biển số xe ô tô & Kết quả Đấu giá';
+    return 'BISOXE.COM - Tra cứu Ý nghĩa Biển số xe ô tô & Kết quả Đấu giá';
 });
 
 const pageDescription = computed(() => {
     if (isHomePath.value) {
-        return 'Xem ý nghĩa phong thủy biển số xe ô tô, xe máy chính xác nhất. Cập nhật danh sách biển số xe đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
+        return 'Xem ý nghĩa biển số xe ô tô, xe máy chính xác nhất. Cập nhật danh sách biển số xe đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Xem ý nghĩa phong thủy biển số xe máy, mô tô chính xác nhất. Cập nhật danh sách biển số xe máy đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
+        return 'Xem ý nghĩa biển số xe máy, mô tô chính xác nhất. Cập nhật danh sách biển số xe máy đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
     }
 
-    return 'Xem ý nghĩa phong thủy biển số xe ô tô chính xác nhất. Cập nhật danh sách biển số xe ô tô đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
+    return 'Xem ý nghĩa biển số xe ô tô chính xác nhất. Cập nhật danh sách biển số xe ô tô đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
 });
 
 const heroH1Html = computed(() => {
     if (isHomePath.value) {
-        return 'Tra Cứu Ý Nghĩa Phong Thủy <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô & Xe Máy</span>';
+        return 'Tra Cứu Ý Nghĩa & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô & Xe Máy</span>';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Tra Cứu Ý Nghĩa Phong Thủy <br /> <span class="text-[#8C1E1E]">Biển Số Xe Máy & Mô Tô</span>';
+        return 'Tra Cứu Ý Nghĩa & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Máy & Mô Tô</span>';
     }
 
-    return 'Tra Cứu Ý Nghĩa Phong Thủy <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô</span>';
+    return 'Tra Cứu Ý Nghĩa & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô</span>';
 });
 
 const heroDescription = computed(() => {
     if (isHomePath.value) {
-        return 'Hệ thống phân tích tự động giúp bạn luận giải ngũ hành cát hung, dịch nghĩa các cặp số phong thủy tài lộc cho mọi biển số xe ô tô, xe máy trên cả nước.';
+        return 'Hệ thống phân tích tự động giúp bạn dịch nghĩa các cặp số đẹp xấu, giải mã ý nghĩa tài lộc cho mọi biển số xe ô tô, xe máy trên cả nước.';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Hệ thống phân tích tự động giúp bạn luận giải ngũ hành cát hung, dịch nghĩa các cặp số phong thủy tài lộc cho mọi biển số xe máy, mô tô trên cả nước.';
+        return 'Hệ thống phân tích tự động giúp bạn dịch nghĩa các cặp số đẹp xấu, giải mã ý nghĩa tài lộc cho mọi biển số xe máy, mô tô trên cả nước.';
     }
 
-    return 'Hệ thống phân tích tự động giúp bạn luận giải ngũ hành cát hung, dịch nghĩa các cặp số phong thủy tài lộc cho mọi biển số xe ô tô trên cả nước.';
+    return 'Hệ thống phân tích tự động giúp bạn dịch nghĩa các cặp số đẹp xấu, giải mã ý nghĩa tài lộc cho mọi biển số xe ô tô trên cả nước.';
 });
 
 const tableTitle = computed(() => {
@@ -183,14 +183,14 @@ const tableTitle = computed(() => {
 
 const tableDescription = computed(() => {
     if (isHomePath.value) {
-        return 'Lọc nhanh hoặc nhập số xe cần tra ý nghĩa phong thủy';
+        return 'Lọc nhanh hoặc nhập số xe cần tra ý nghĩa biển số';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Lọc nhanh hoặc nhập số xe máy cần tra ý nghĩa phong thủy';
+        return 'Lọc nhanh hoặc nhập số xe máy cần tra ý nghĩa biển số';
     }
 
-    return 'Lọc nhanh hoặc nhập số xe ô tô cần tra ý nghĩa phong thủy';
+    return 'Lọc nhanh hoặc nhập số xe ô tô cần tra ý nghĩa biển số';
 });
 
 // Định dạng tiền tệ VND
@@ -342,7 +342,7 @@ const schemaStructuredData = computed(() => {
             'query-input': 'required name=search_term_string',
         },
         description:
-            'Cổng tra cứu kết quả danh sách biển số xe và công cụ giải mã phong thủy biển số xe tự động chính xác nhất.',
+            'Cổng tra cứu kết quả danh sách biển số xe và công cụ giải mã ý nghĩa biển số xe tự động chính xác nhất.',
     };
 });
 
@@ -400,7 +400,7 @@ onUnmounted(() => {
                 class="relative z-10 mx-auto max-w-[1440px] px-4 text-center sm:px-6 lg:px-8"
             >
                 <h1
-                    class="mb-6 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl"
+                    class="mb-6 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl leading-tight"
                     v-html="heroH1Html"
                 ></h1>
 
@@ -881,9 +881,9 @@ onUnmounted(() => {
                                         <td class="px-6 py-4 text-center">
                                             <Link
                                                 :href="`/bien-so/${plate.slug}`"
-                                                class="inline-block rounded-md border border-[#8C1E1E] px-3 py-1 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
+                                                class="inline-block rounded-md border border-[#8C1E1E] px-3 py-2 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
                                             >
-                                                Luận phong thủy
+                                                Phân tích biển số
                                             </Link>
                                         </td>
                                     </tr>
@@ -1123,11 +1123,10 @@ onUnmounted(() => {
                     <h2
                         class="text-3xl font-extrabold tracking-tight text-gray-900"
                     >
-                        Giải Mã Ý Nghĩa Phong Thủy Các Con Số
+                        Ý nghĩa của các con số trong biển số xe
                     </h2>
                     <p class="mt-2 text-gray-500">
-                        Theo quan niệm phong thủy phương Đông và khoa học dịch
-                        số
+                        Theo quan niệm dân gian phương Đông và cách luận số đẹp xấu
                     </p>
                 </header>
 
@@ -1256,7 +1255,7 @@ onUnmounted(() => {
                         Câu Hỏi Thường Gặp
                     </h2>
                     <p class="mt-2 text-gray-500">
-                        Giải đáp thắc mắc phổ biến về phong thủy biển số xe
+                        Giải đáp thắc mắc phổ biến về ý nghĩa biển số xe
                     </p>
                 </header>
 
@@ -1268,9 +1267,7 @@ onUnmounted(() => {
                         <summary
                             class="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-gray-900 sm:text-base"
                         >
-                            <span
-                                >Thế nào là một biển số xe hợp phong thủy?</span
-                            >
+                            <span>Thế nào là một biển số xe đẹp?</span>
                             <span
                                 class="text-gray-400 transition group-open:rotate-180"
                                 >▼</span
@@ -1279,12 +1276,7 @@ onUnmounted(() => {
                         <p
                             class="mt-3 text-xs leading-relaxed text-gray-600 sm:text-sm"
                         >
-                            Một biển số xe hợp phong thủy là biển số có sự tương
-                            sinh giữa ngũ hành của các con số với bản mệnh của
-                            chủ xe (ví dụ người mệnh Hỏa hợp số 9 thuộc hành
-                            Hỏa). Ngoài ra, biển số đó cần có tổng nút cao hoặc
-                            chứa các cặp số mang ý nghĩa cát tường như Phát tài
-                            (86), Song hỷ (22)...
+                            Một biển số xe đẹp theo quan niệm dân gian thường là những biển số có các con số sắp xếp dễ nhớ, độc đáo hoặc chứa những cặp số mang ý nghĩa may mắn, phát đạt như Phát tài (86), Song hỷ (22), Lộc phát (68/86), Thần tài (79). Ngoài ra, tổng số nút cao (9 hoặc 10 nút) cũng là một yếu tố đánh giá biển số xe đẹp.
                         </p>
                     </details>
 
@@ -1296,7 +1288,7 @@ onUnmounted(() => {
                             class="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-gray-900 sm:text-base"
                         >
                             <span
-                                >Mô hình giải mã phong thủy biển số tự động dựa
+                                >Mô hình giải mã ý nghĩa biển số tự động dựa
                                 trên yếu tố nào?</span
                             >
                             <span
@@ -1307,12 +1299,7 @@ onUnmounted(() => {
                         <p
                             class="mt-3 text-xs leading-relaxed text-gray-600 sm:text-sm"
                         >
-                            Hệ thống của chúng tôi tự động phân tích biển số xe
-                            dựa trên 3 yếu tố cốt lõi: Thứ nhất là ý nghĩa của
-                            các con số theo quan niệm phong thủy số học phương
-                            Đông; Thứ hai là sự kết hợp của các cặp số tiến lùi;
-                            Thứ ba là ngũ hành tương sinh tương khắc giữa các
-                            con số đại diện và niên mệnh của người dùng.
+                            Hệ thống của chúng tôi tự động phân tích biển số xe dựa trên các yếu tố cốt lõi: Thứ nhất là ý nghĩa của các con số theo quan niệm dân gian; Thứ hai là các thế số đẹp như sảnh tiến, tứ quý, ngũ quý, lặp đôi, số gánh; Thứ ba là độ dễ nhớ, cân đối và mức độ được ưa chuộng của biển số trên thị trường.
                         </p>
                     </details>
                 </div>

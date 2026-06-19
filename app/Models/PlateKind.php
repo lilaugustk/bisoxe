@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PlateKind extends Model
 {
-
     protected $table = 'plate_kinds';
 
     // Khóa chính là id do VPA định nghĩa sẵn

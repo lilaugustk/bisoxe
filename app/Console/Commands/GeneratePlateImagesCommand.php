@@ -33,6 +33,7 @@ class GeneratePlateImagesCommand extends Command
 
         if ($total === 0) {
             $this->info('Không có bài viết nào cần sinh ảnh.');
+
             return self::SUCCESS;
         }
 
@@ -49,6 +50,7 @@ class GeneratePlateImagesCommand extends Command
             if (! $plate) {
                 $failed++;
                 $bar->advance();
+
                 continue;
             }
 
@@ -66,7 +68,7 @@ class GeneratePlateImagesCommand extends Command
 
         $bar->finish();
         $this->newLine();
-        $this->info("✅ Thành công: {$success} | ❌ Thất bại: {$failed}");
+        $this->info("Thành công: {$success} | Thất bại: {$failed}");
 
         return self::SUCCESS;
     }

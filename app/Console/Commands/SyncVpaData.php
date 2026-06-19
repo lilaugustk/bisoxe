@@ -39,7 +39,7 @@ class SyncVpaData extends Command
             $this->info("Chỉ cào tệp: {$fileOption}");
         }
         if ($noImport) {
-            $this->info("Chế độ song song: Sẽ không chạy import database sau khi cào xong.");
+            $this->info('Chế độ song song: Sẽ không chạy import database sau khi cào xong.');
         }
 
         $vpaDataPath = database_path('vpa_data');
@@ -101,7 +101,7 @@ class SyncVpaData extends Command
 
         foreach ($configs as $config) {
             $this->info('--------------------------------------------------');
-            $this->info("Bắt đầu cào: {$config['filename']} (Loại xe: {$config['vehicle']}, Trạng thái API: " . ($config['status'] ?? 'results') . ")");
+            $this->info("Bắt đầu cào: {$config['filename']} (Loại xe: {$config['vehicle']}, Trạng thái API: ".($config['status'] ?? 'results').')');
 
             $newRecords = [];
             $page = 1;
@@ -173,14 +173,14 @@ class SyncVpaData extends Command
                     // Giãn cách thời gian tránh bị block IP
                     usleep(rand(300000, 800000)); // Delay từ 0.3s đến 0.8s
                 } catch (\Exception $e) {
-                    $this->error("\nGặp lỗi ngoại lệ ở trang {$page}: " . $e->getMessage());
+                    $this->error("\nGặp lỗi ngoại lệ ở trang {$page}: ".$e->getMessage());
                     break;
                 }
             }
 
             if (! empty($newRecords)) {
                 $filePath = $vpaDataPath.DIRECTORY_SEPARATOR.$config['filename'];
-                $this->info('Đang gộp ' . count($newRecords) . " bản ghi mới vào tệp tin: {$filePath} ...");
+                $this->info('Đang gộp '.count($newRecords)." bản ghi mới vào tệp tin: {$filePath} ...");
                 $this->mergeAndSave($newRecords, $filePath);
             } else {
                 $this->info('Không tìm thấy bản ghi mới nào.');
@@ -212,7 +212,7 @@ class SyncVpaData extends Command
     /**
      * Xác định xem các bản ghi trên trang hiện tại đã được đồng bộ trong database chưa.
      *
-     * @param array<int, array<string, mixed>> $records
+     * @param  array<int, array<string, mixed>>  $records
      */
     private function shouldStopCrawling(array $records): bool
     {
@@ -292,7 +292,7 @@ class SyncVpaData extends Command
     /**
      * Hợp nhất các bản ghi mới cào được vào tệp JSON cũ để bảo toàn dữ liệu lịch sử.
      *
-     * @param array<int, array<string, mixed>> $newRecords
+     * @param  array<int, array<string, mixed>>  $newRecords
      */
     private function mergeAndSave(array $newRecords, string $filePath): void
     {
@@ -310,7 +310,7 @@ class SyncVpaData extends Command
 
         // Đánh chỉ mục bản ghi cũ theo id để tối ưu hiệu suất ghép nối (dùng array_pop để giảm tải bộ nhớ)
         $indexed = [];
-        while (!empty($existingRecords)) {
+        while (! empty($existingRecords)) {
             $record = array_pop($existingRecords);
             $key = $record['id'] ?? $this->getRecordFullNumber($record);
             if ($key) {
@@ -320,7 +320,7 @@ class SyncVpaData extends Command
         unset($existingRecords);
 
         // Ghi đè hoặc thêm mới các bản ghi cào mới (dùng array_pop để giảm tải bộ nhớ)
-        while (!empty($newRecords)) {
+        while (! empty($newRecords)) {
             $record = array_pop($newRecords);
             $key = $record['id'] ?? $this->getRecordFullNumber($record);
             if ($key) {
@@ -341,13 +341,14 @@ class SyncVpaData extends Command
     /**
      * Lấy chuỗi biển số dạng đầy đủ từ bản ghi thô.
      *
-     * @param array<string, mixed> $record
+     * @param  array<string, mixed>  $record
      */
     private function getRecordFullNumber(array $record): string
     {
         $localSymbol = $record['localSymbol'] ?? '';
         $serialLetter = $record['serialLetter'] ?? '';
         $serialNumber = $record['serialNumber'] ?? '';
+
         return $record['fullNumber'] ?? ($localSymbol.$serialLetter.$serialNumber);
     }
 }

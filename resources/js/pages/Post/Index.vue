@@ -38,7 +38,7 @@ const activeCategory = ref(props.filters.category || '');
 
 const categories = [
     { label: 'Tất cả bài viết', value: '' },
-    { label: 'Phong thủy', value: 'phong-thuy' },
+    { label: 'Ý nghĩa biển số', value: 'phong-thuy' },
     { label: 'Hướng dẫn', value: 'huong-dan' },
     { label: 'Tin tức & Thị trường', value: 'tin-tuc' },
 ];
@@ -46,7 +46,7 @@ const categories = [
 const getCategoryLabel = (cat: string) => {
     switch (cat) {
         case 'phong-thuy':
-            return 'Phong thủy';
+            return 'Ý nghĩa biển số';
         case 'huong-dan':
             return 'Hướng dẫn';
         case 'tin-tuc':
@@ -105,10 +105,10 @@ const formatDate = (dateStr: string | null) => {
 
 <template>
     <Head>
-        <title>Bài viết & Cẩm nang - Giải mã Phong thủy Biển số xe</title>
+        <title>Bài viết & Cẩm nang - Giải mã Ý nghĩa Biển số xe</title>
         <meta
             name="description"
-            content="Khám phá cẩm nang đấu giá biển số xe, tin tức thị trường biển số đẹp và bài viết giải mã phong thủy biển số mới nhất tại BISOXE.COM"
+            content="Khám phá cẩm nang đấu giá biển số xe, tin tức thị trường biển số đẹp và bài viết giải mã ý nghĩa biển số mới nhất tại BISOXE.COM"
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -143,7 +143,7 @@ const formatDate = (dateStr: string | null) => {
                 class="relative z-10 mx-auto max-w-[1440px] px-4 text-center sm:px-6 lg:px-8"
             >
                 <h1
-                    class="mb-4 text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl"
+                    class="mb-4 text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl leading-tight"
                 >
                     Bài Viết &
                     <span class="text-[#8C1E1E]">Cẩm Nang Biển Số</span>
@@ -151,8 +151,8 @@ const formatDate = (dateStr: string | null) => {
                 <p
                     class="mx-auto max-w-2xl text-base leading-relaxed font-normal text-gray-600 sm:text-lg"
                 >
-                    Khám phá cẩm nang đấu giá, quy luật tính nút biển số phong
-                    thủy và tin tức cập nhật mới nhất từ thị trường đấu giá biển
+                    Khám phá cẩm nang đấu giá, quy luật tính nút biển số
+                    và tin tức cập nhật mới nhất từ thị trường đấu giá biển
                     số xe Việt Nam.
                 </p>
             </div>

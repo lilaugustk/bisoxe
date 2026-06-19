@@ -10,6 +10,7 @@ use App\Models\SeoArticle;
 use App\Services\PlatePricePredictorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,6 +22,7 @@ class LicensePlateController extends Controller
     public function carIndex(Request $request): Response
     {
         $request->merge(['vehicle' => 'car']);
+
         return $this->index($request);
     }
 
@@ -30,6 +32,7 @@ class LicensePlateController extends Controller
     public function motorcycleIndex(Request $request): Response
     {
         $request->merge(['vehicle' => 'motorcycle']);
+
         return $this->index($request);
     }
 
@@ -92,7 +95,7 @@ class LicensePlateController extends Controller
             if (! empty($kindIds)) {
                 $query->whereHas('kinds', function ($q) use ($kindIds) {
                     $q->whereIn('plate_kinds.id', $kindIds)
-                      ->whereRaw('plate_kinds.priority = (
+                        ->whereRaw('plate_kinds.priority = (
                           SELECT MIN(pk2.priority)
                           FROM license_plate_kinds lpk2
                           JOIN plate_kinds pk2 ON pk2.id = lpk2.kind_id
@@ -140,9 +143,9 @@ class LicensePlateController extends Controller
             $query->select('license_plates.*')
                 ->selectSub(function ($q) {
                     $q->selectRaw('MIN(pk.priority)')
-                      ->from('plate_kinds as pk')
-                      ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
-                      ->whereColumn('lpk.plate_id', 'license_plates.id');
+                        ->from('plate_kinds as pk')
+                        ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
+                        ->whereColumn('lpk.plate_id', 'license_plates.id');
                 }, 'min_kind_priority')
                 ->orderBy('auction_start_time', 'asc')
                 ->orderByRaw('COALESCE(min_kind_priority, 9999) asc')
@@ -151,14 +154,13 @@ class LicensePlateController extends Controller
             $query->select('license_plates.*')
                 ->selectSub(function ($q) {
                     $q->selectRaw('MIN(pk.priority)')
-                      ->from('plate_kinds as pk')
-                      ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
-                      ->whereColumn('lpk.plate_id', 'license_plates.id');
+                        ->from('plate_kinds as pk')
+                        ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
+                        ->whereColumn('lpk.plate_id', 'license_plates.id');
                 }, 'min_kind_priority')
                 ->orderByRaw('COALESCE(min_kind_priority, 9999) asc')
                 ->latest();
         }
-
 
         $limit = (int) $request->input('limit', 20);
         if (! in_array($limit, [10, 20, 50, 100])) {
@@ -201,7 +203,7 @@ class LicensePlateController extends Controller
     }
 
     /**
-     * Hiển thị trang chi tiết biển số xe và bài viết phong thủy tự động.
+     * Hiển thị trang chi tiết biển số xe và bài viết giải mã ý nghĩa tự động.
      */
     public function show(string $slug, PlatePricePredictorService $predictorService): Response|RedirectResponse
     {
@@ -210,14 +212,55 @@ class LicensePlateController extends Controller
             ->with(['licensePlate.province', 'licensePlate.kinds'])
             ->first();
 
+        $plate = null;
         if ($article) {
             $plate = $article->licensePlate;
-            if (! $plate instanceof LicensePlate) {
-                abort(404, 'Biển số xe không tồn tại.');
-            }
-            $prediction = $predictorService->predict($plate);
-            $trend = $predictorService->getTrendData($plate);
+        } else {
+            // 2. Nếu không tìm thấy slug bài viết, thử tìm theo số biển gốc (ví dụ: 30K99999 hoặc 30K-999.99)
+            $cleanNumber = strtoupper(str_replace(['-', '.'], '', $slug));
+            $plate = LicensePlate::where('full_number', $cleanNumber)
+                ->with(['province', 'kinds'])
+                ->first();
+        }
 
+        if (! $plate instanceof LicensePlate) {
+            abort(404, 'Biển số xe không tồn tại.');
+        }
+
+        // Thực hiện các tính toán định giá và chấm điểm
+        $prediction = $predictorService->predict($plate);
+        $trend = $predictorService->getTrendData($plate);
+        $score = $predictorService->calculateScore($plate);
+
+        // Truy vấn 6 biển số liên quan cùng loại phương tiện
+        $kindIds = $plate->kinds->pluck('id')->toArray();
+        $relatedQuery = LicensePlate::with(['province', 'kinds', 'seoArticle'])
+            ->where('id', '!=', $plate->id)
+            ->where('vehicle_type', $plate->vehicle_type);
+
+        if (! empty($kindIds)) {
+            $relatedQuery->where(function ($q) use ($plate, $kindIds) {
+                $q->whereHas('kinds', function ($qk) use ($kindIds) {
+                    $qk->whereIn('plate_kinds.id', $kindIds);
+                })->orWhere('province_code', $plate->province_code);
+            });
+        } else {
+            $relatedQuery->where('province_code', $plate->province_code);
+        }
+
+        $relatedPlates = $relatedQuery
+            ->inRandomOrder()
+            ->limit(6)
+            ->get()
+            ->map(fn ($p) => $this->transformPlate($p))
+            ->toArray();
+
+        // Kiểm tra xem thực ra có bài viết chưa (phòng hờ tìm theo số biển nhưng bài viết đã có)
+        if (! $article) {
+            $article = $plate->seoArticle;
+        }
+
+        if ($article) {
             return Inertia::render('Plate/Detail', [
                 'article' => [
                     'title' => $article->title,
@@ -234,72 +277,35 @@ class LicensePlateController extends Controller
                 'is_pending' => false,
                 'price_prediction' => $prediction,
                 'price_trend' => $trend,
+                'plate_score' => $score,
+                'related_plates' => $relatedPlates,
             ]);
         }
 
-        // 2. Nếu không tìm thấy slug bài viết, thử tìm theo số biển gốc (ví dụ: 30K99999 hoặc 30K-999.99)
-        // để hỗ trợ trường hợp link trực tiếp hoặc khi tool cào vừa add biển số vào
-        $cleanNumber = strtoupper(str_replace(['-', '.'], '', $slug));
-        $plate = LicensePlate::where('full_number', $cleanNumber)
-            ->with(['province', 'kinds'])
-            ->first();
-
-        if ($plate instanceof LicensePlate) {
-            // Kiểm tra xem thực ra có bài viết chưa (phòng hờ tìm theo số biển nhưng bài viết đã có slug khác)
-            $existingArticle = $plate->seoArticle;
-            if ($existingArticle) {
-                $prediction = $predictorService->predict($plate);
-                $trend = $predictorService->getTrendData($plate);
-
-                return Inertia::render('Plate/Detail', [
-                    'article' => [
-                        'title' => $existingArticle->title,
-                        'meta_title' => $existingArticle->meta_title,
-                        'meta_description' => $existingArticle->meta_description,
-                        'content' => $existingArticle->content,
-                        'video_script' => $existingArticle->video_script,
-                        'slug' => $existingArticle->slug,
-                        'generation_model' => $existingArticle->generation_model,
-                        'generated_at' => $existingArticle->generated_at ? $existingArticle->generated_at->toISOString() : null,
-                        'image_url' => $existingArticle->image_path ? asset($existingArticle->image_path) : null,
-                    ],
-                    'plate' => $this->transformPlate($plate),
-                    'is_pending' => false,
-                    'price_prediction' => $prediction,
-                    'price_trend' => $trend,
-                ]);
-            }
-
-            // Nếu chưa có bài viết, tự động kích hoạt job sinh bài viết chạy ngầm ngay lập tức!
-            // Sử dụng Cache Lock để tránh đẩy nhiều job trùng lặp khi polling
-            $cacheKey = "generating_article_{$plate->id}";
-            if (! \Illuminate\Support\Facades\Cache::has($cacheKey)) {
-                \Illuminate\Support\Facades\Cache::put($cacheKey, true, 300); // Khóa trong 5 phút
-                GenerateSeoArticleJob::dispatch($plate);
-            }
-
-            $prediction = $predictorService->predict($plate);
-            $trend = $predictorService->getTrendData($plate);
-
-            return Inertia::render('Plate/Detail', [
-                'article' => [
-                    'title' => "Giải mã phong thủy biển số {$plate->display_number}",
-                    'meta_title' => "Ý nghĩa biển số {$plate->display_number} - Phong thủy biển số xe",
-                    'meta_description' => "Xem ý nghĩa phong thủy và kết quả đấu giá của biển số {$plate->display_number} tại tỉnh {$plate->province->name}.",
-                    'content' => null,
-                    'video_script' => null,
-                    'slug' => $slug,
-                    'image_url' => null,
-                ],
-                'plate' => $this->transformPlate($plate),
-                'is_pending' => true, // Báo cho frontend hiển thị trạng thái đang phân tích
-                'price_prediction' => $prediction,
-                'price_trend' => $trend,
-            ]);
+        // Nếu chưa có bài viết, tự động kích hoạt job sinh bài viết chạy ngầm ngay lập tức!
+        $cacheKey = "generating_article_{$plate->id}";
+        if (! Cache::has($cacheKey)) {
+            Cache::put($cacheKey, true, 300); // Khóa trong 5 phút
+            GenerateSeoArticleJob::dispatch($plate);
         }
 
-        // 3. Không tìm thấy biển số nào phù hợp
-        abort(404, 'Biển số xe không tồn tại.');
+        return Inertia::render('Plate/Detail', [
+            'article' => [
+                'title' => "Giải mã ý nghĩa biển số {$plate->display_number}",
+                'meta_title' => "Ý nghĩa biển số {$plate->display_number} - Định giá biển số xe",
+                'meta_description' => "Xem ý nghĩa chi tiết, định giá và kết quả đấu giá của biển số {$plate->display_number} tại tỉnh {$plate->province->name}.",
+                'content' => null,
+                'video_script' => null,
+                'slug' => $slug,
+                'image_url' => null,
+            ],
+            'plate' => $this->transformPlate($plate),
+            'is_pending' => true,
+            'price_prediction' => $prediction,
+            'price_trend' => $trend,
+            'plate_score' => $score,
+            'related_plates' => $relatedPlates,
+        ]);
     }
 
     /**

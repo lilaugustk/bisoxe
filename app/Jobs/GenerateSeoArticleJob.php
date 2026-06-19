@@ -12,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -43,7 +44,7 @@ class GenerateSeoArticleJob implements ShouldQueue
         // Giải phóng cache lock nếu bài viết đã tồn tại
         $existingArticle = $this->plate->seoArticle;
         if ($existingArticle) {
-            \Illuminate\Support\Facades\Cache::forget("generating_article_{$this->plate->id}");
+            Cache::forget("generating_article_{$this->plate->id}");
             // Nếu bài viết đã có nhưng chưa có ảnh (ví dụ: job bị rate limit và retry),
             // thì vẫn sinh ảnh để đảm bảo đầy đủ
             if (! $existingArticle->image_path) {
@@ -67,7 +68,7 @@ class GenerateSeoArticleJob implements ShouldQueue
                 $data = $geminiService->generateForLicensePlate($this->plate);
             } catch (\Exception $e) {
                 Log::warning('Gemini API failed, falling back to Groq API for plate: '.$this->plate->full_number, [
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
                 $groqService = app(GroqApiService::class);
                 $data = $groqService->generateForLicensePlate($this->plate);
@@ -116,14 +117,14 @@ class GenerateSeoArticleJob implements ShouldQueue
             }
 
             // Giải phóng cache lock khi thành công
-            \Illuminate\Support\Facades\Cache::forget("generating_article_{$this->plate->id}");
+            Cache::forget("generating_article_{$this->plate->id}");
 
             // Tạm thời bỏ qua việc gửi index lên Google
             // SubmitToGoogleIndexingJob::dispatch($article);
 
         } catch (\Exception $e) {
             // Giải phóng cache lock khi thất bại để có thể thử lại
-            \Illuminate\Support\Facades\Cache::forget("generating_article_{$this->plate->id}");
+            Cache::forget("generating_article_{$this->plate->id}");
             Log::error('Failed to execute GenerateSeoArticleJob for plate: '.$this->plate->full_number, [
                 'message' => $e->getMessage(),
             ]);

@@ -100,9 +100,8 @@
                     </Link>
                     <p class="text-xs leading-relaxed font-light text-gray-400">
                         Cổng tra cứu danh sách biển số xe đấu giá toàn quốc và
-                        công cụ phân tích ý nghĩa phong thủy biển số tự động dựa
-                        trên học thuyết ngũ hành, bát quái và dịch số học phương
-                        Đông.
+                        công cụ phân tích ý nghĩa biển số tự động dựa
+                        trên quan niệm dân gian, phân loại biển đẹp xấu và định giá biển số.
                     </p>
                     <!-- Social Icons -->
                     <div class="flex gap-4 pt-1">
@@ -206,7 +205,7 @@
                     <h4
                         class="border-l-2 border-[#8C1E1E] pl-2.5 text-xs font-black tracking-wider text-white uppercase"
                     >
-                        Phong thủy & Tin tức
+                        Ý nghĩa & Tin tức
                     </h4>
                     <ul class="space-y-2.5 text-xs font-medium">
                         <li>
@@ -220,7 +219,7 @@
                             <Link
                                 href="/bai-viet?category=phong-thuy"
                                 class="transition-colors duration-200 hover:text-[#F5B800]"
-                                >Ý nghĩa phong thủy</Link
+                                >Ý nghĩa biển số</Link
                             >
                         </li>
                         <li>
@@ -296,9 +295,9 @@
                 <p
                     class="text-justify text-[11px] leading-relaxed font-light text-gray-500 md:text-left"
                 >
-                    * Khước từ trách nhiệm: Nội dung giải luận, phân tích ngũ
-                    hành cát hung mang tính chất tham khảo, tổng hợp theo các lý
-                    thuyết phong thủy số học truyền thống, được hỗ trợ tổng hợp
+                    * Khước từ trách nhiệm: Nội dung giải luận, phân tích biển
+                    số xe đẹp xấu mang tính chất tham khảo, tổng hợp theo các quan
+                    niệm số học dân gian truyền thống, được hỗ trợ tổng hợp
                     và tính toán tự động qua AI. Khách hàng tự chịu trách nhiệm
                     khi tham khảo các thông tin này trong quyết định đấu giá
                     hoặc mua bán.

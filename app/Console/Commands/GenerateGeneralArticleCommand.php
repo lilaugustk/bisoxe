@@ -6,8 +6,8 @@ use App\Models\Post;
 use App\Services\GeminiApiService;
 use App\Services\PostImageService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class GenerateGeneralArticleCommand extends Command
 {
@@ -31,7 +31,7 @@ class GenerateGeneralArticleCommand extends Command
     public function handle(GeminiApiService $geminiService, PostImageService $postImageService): int
     {
         $this->info('Bắt đầu quy trình tự động đề xuất chủ đề và sinh bài viết...');
-        
+
         try {
             // Lấy danh sách tiêu đề bài viết cũ để tránh viết trùng
             $existingTitles = Post::latest()->limit(50)->pluck('title')->toArray();
@@ -41,6 +41,7 @@ class GenerateGeneralArticleCommand extends Command
 
             if (empty($data['title']) || empty($data['content'])) {
                 $this->error('Dữ liệu trả về từ Gemini bị thiếu thông tin.');
+
                 return Command::FAILURE;
             }
 
@@ -49,13 +50,13 @@ class GenerateGeneralArticleCommand extends Command
             $originalSlug = $slug;
             $counter = 1;
             while (Post::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $counter;
+                $slug = $originalSlug.'-'.$counter;
                 $counter++;
             }
 
             // Sinh ảnh đại diện (Featured Image) bằng AI
             $featuredImagePath = null;
-            if (!empty($data['image_prompt'])) {
+            if (! empty($data['image_prompt'])) {
                 $this->info('Đang sinh ảnh đại diện (featured image) bằng AI...');
                 $featuredImagePath = $postImageService->generateFeatured($data['image_prompt'], $slug);
             }
@@ -68,10 +69,11 @@ class GenerateGeneralArticleCommand extends Command
                 // Làm sạch các dấu nháy hoặc ký tự đặc biệt còn sót lại trong prompt
                 $prompt = trim($matches[1]);
                 $prompt = str_replace(['"', "'", '&quot;', '&#34;', '&apos;', '&#39;'], '', $prompt);
-                
+
                 $this->info("Đang sinh ảnh minh họa lồng ghép số {$index} cho bài viết...");
                 $inlinePath = $postImageService->generateInline($prompt, $slug, $index);
                 $index++;
+
                 return $inlinePath ?: '/images/placeholder.webp'; // Fallback nếu lỗi
             }, $content);
 
@@ -90,21 +92,22 @@ class GenerateGeneralArticleCommand extends Command
                 'generated_at' => now(),
             ]);
 
-            $this->info("Sinh bài viết thành công!");
-            $this->line("Tiêu đề: " . $post->title);
-            $this->line("Chuyên mục: " . $post->category);
-            $this->line("Slug: " . $post->slug);
-            $this->line("Ảnh đại diện: " . ($featuredImagePath ?: 'Không có'));
+            $this->info('Sinh bài viết thành công!');
+            $this->line('Tiêu đề: '.$post->title);
+            $this->line('Chuyên mục: '.$post->category);
+            $this->line('Slug: '.$post->slug);
+            $this->line('Ảnh đại diện: '.($featuredImagePath ?: 'Không có'));
 
             Log::info("Successfully generated general article: {$post->title} [Category: {$post->category}]");
 
             return Command::SUCCESS;
 
         } catch (\Exception $e) {
-            $this->error('Đã xảy ra lỗi khi sinh bài viết: ' . $e->getMessage());
-            Log::error('GenerateGeneralArticleCommand error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            $this->error('Đã xảy ra lỗi khi sinh bài viết: '.$e->getMessage());
+            Log::error('GenerateGeneralArticleCommand error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return Command::FAILURE;
         }
     }

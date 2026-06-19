@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -15,17 +16,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $content
  * @property string|null $video_script
  * @property string|null $generation_model
- * @property \Illuminate\Support\Carbon|null $generated_at
- * @property \Illuminate\Support\Carbon|null $google_indexed_at
+ * @property Carbon|null $generated_at
+ * @property Carbon|null $google_indexed_at
  * @property string|null $image_path
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * 
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property LicensePlate|null $licensePlate
  */
 class SeoArticle extends Model
 {
-
     protected $table = 'seo_articles';
 
     protected $fillable = [

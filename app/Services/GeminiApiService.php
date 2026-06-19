@@ -22,7 +22,7 @@ class GeminiApiService
     }
 
     /**
-     * Sinh nội dung bài viết SEO phong thủy cho một biển số cụ thể.
+     * Sinh nội dung bài viết SEO giải mã ý nghĩa cho một biển số cụ thể.
      *
      * @return array{title: string, meta_title: string, meta_description: string, content: string, video_script: string}
      *
@@ -57,7 +57,7 @@ class GeminiApiService
         };
 
         // Thiết lập prompt
-        $prompt = "Bạn là một chuyên gia phong thủy xe cộ và chuyên gia tối ưu hóa SEO. Hãy phân tích biển số xe sau đây và tạo nội dung phong thủy độc bản, hấp dẫn để thu hút traffic cho website.
+        $prompt = "Bạn là một chuyên gia phân tích biển số xe và chuyên gia tối ưu hóa SEO. Hãy phân tích biển số xe sau đây và tạo nội dung phân tích ý nghĩa, định giá độc bản, hấp dẫn để thu hút traffic cho website.
         
 Thông tin biển số xe:
 - Biển số: {$plate->full_number} (Hiển thị dạng: {$plate->display_number})
@@ -68,14 +68,15 @@ Thông tin biển số xe:
 - Thông tin tài chính: {$priceStr}
 
 Nhiệm vụ của bạn là trả về một đối tượng JSON chứa chính xác các trường sau:
-1. 'title': Tiêu đề bài viết hấp dẫn, chứa biển số xe (Ví dụ: 'Giải mã phong thủy biển số ngũ quý 9 {$plate->display_number} mang lại ý nghĩa tài lộc vượt trội'). Tiêu đề nên dài khoảng 50-70 ký tự. Tuyệt đối không sử dụng dấu hai chấm (:) hoặc dấu gạch ngang (-) trong tiêu đề bài viết.
+1. 'title': Tiêu đề bài viết hấp dẫn, chứa biển số xe (Ví dụ: 'Ý nghĩa biển số ngũ quý 9 {$plate->display_number} và đánh giá giá trị đấu giá thực tế'). Tiêu đề nên dài khoảng 50-70 ký tự. Tuyệt đối không sử dụng dấu hai chấm (:) hoặc dấu gạch ngang (-) trong tiêu đề bài viết.
 2. 'meta_title': Tiêu đề meta tối ưu SEO cho kết quả tìm kiếm Google (dưới 60 ký tự).
 3. 'meta_description': Mô tả ngắn meta description thu hút người đọc click từ Google (dưới 160 ký tự).
 4. 'content': Bài viết chi tiết định dạng HTML (sử dụng các thẻ h2, h3, p, strong, ul, li). Bài viết cần tối thiểu 600 từ, chia làm các phần hợp lý:
    - Giới thiệu về biển số {$plate->display_number} và thông tin đấu giá nổi bật.
-   - Phân tích ý nghĩa phong thủy chi tiết theo quan niệm phương Đông (phân tích từng con số trong {$plate->serial_number}, sự kết hợp các số, đầu số {$plate->local_symbol} và ký tự seri {$plate->serial_letter}).
-   - Luận giải biển số này hợp với người mệnh gì, tuổi gì theo ngũ hành của các con số.
+   - Phân tích thế số và tổng số nút chi tiết (phân tích sự cân đối, dễ nhớ, dễ đọc của các con số trong {$plate->serial_number}, sự kết hợp các số, đầu số {$plate->local_symbol} và ký tự seri {$plate->serial_letter}, xác định biển số này là biển đẹp hay biển số bình thường/biển xấu).
+   - Luận giải ý nghĩa các con số theo quan niệm dân gian truyền thống (như các cặp số lộc phát 68/86, thần tài 39/79, ông địa 38/78 hoặc các số cần tránh theo dân gian như 49, 53, 4, 7).
    - Đánh giá giá trị thực tế, độ độc lạ và cơ hội đầu tư của biển số này trên thị trường xe.
+   - Đánh giá chấm điểm biển số: Đưa ra nhận định chấm điểm cụ thể cho biển số này trên thang điểm 10 (Ví dụ: Chấm điểm: 8.5/10 hoặc 9.0/10) kèm theo tóm tắt ngắn gọn các ưu điểm/nhược điểm chính của biển số để người đọc dễ theo dõi.
 5. 'video_script': Kịch bản video ngắn (TikTok/Reels/Shorts) dài khoảng 30-45 giây để giới thiệu về biển số này, bao gồm: Lời thoại thuyết minh (Voiceover) tiếng Việt và gợi ý hình ảnh/video minh họa tương ứng.
 
 Yêu cầu quan trọng:
@@ -152,7 +153,7 @@ Yêu cầu quan trọng:
     /**
      * Tự động đề xuất chủ đề mới và viết bài viết SEO chung.
      *
-     * @param array<int, string> $existingTitles Danh sách tiêu đề các bài viết đã tồn tại để tránh trùng lặp
+     * @param  array<int, string>  $existingTitles  Danh sách tiêu đề các bài viết đã tồn tại để tránh trùng lặp
      * @return array{title: string, category: string, summary: string, meta_title: string, meta_description: string, content: string, image_prompt: string}
      *
      * @throws \Exception
@@ -163,9 +164,9 @@ Yêu cầu quan trọng:
             throw new \Exception('Gemini API key is not configured.');
         }
 
-        $existingTitlesStr = empty($existingTitles) ? "Chưa có bài viết nào." : implode("\n- ", $existingTitles);
+        $existingTitlesStr = empty($existingTitles) ? 'Chưa có bài viết nào.' : implode("\n- ", $existingTitles);
 
-        $prompt = "Bạn là một Tổng biên tập chuyên nghiệp, chuyên gia phong thủy xe cộ và chuyên gia tối ưu hóa SEO. 
+        $prompt = "Bạn là một Tổng biên tập chuyên nghiệp, chuyên gia phân tích biển số xe cộ và chuyên gia tối ưu hóa SEO. 
 Nhiệm vụ của bạn là tự đề xuất 1 chủ đề độc đáo, mới lạ và viết một bài viết SEO chất lượng cao liên quan đến lĩnh vực biển số xe ở Việt Nam.
 
 Danh sách các tiêu đề bài viết ĐÃ CÓ (HÃY TRÁNH viết về các chủ đề tương tự):
@@ -173,7 +174,7 @@ Danh sách các tiêu đề bài viết ĐÃ CÓ (HÃY TRÁNH viết về các c
 
 Yêu cầu về chủ đề và nội dung:
 1. Chủ đề phải thuộc một trong 3 chuyên mục sau, và hãy đa dạng hóa các khía cạnh khai thác:
-   - 'phong-thuy': Phân tích phong thủy biển số, cách chọn biển hợp tuổi/hợp mệnh, ngũ hành các con số. Hãy mở rộng sang các khía cạnh: phân tích ý nghĩa cặp số đặc biệt (ví dụ: 39-79 Thần Tài, 38-78 Thổ Địa, 68-86 Lộc Phát, 562-562...), cách tính điểm phong thủy biển số xe (theo công thức chia 80, theo tổng nút, theo kinh dịch), sự phối hợp màu sắc xe và biển số xe hợp mệnh (Kim, Mộc, Thủy, Hỏa, Thổ) kết hợp với các con số may mắn, hoặc các quan niệm dân gian về số 'xấu' (thất bát 78, tử 4, thất 7...) và góc nhìn khoa học/tâm lý hiện đại để hóa giải.
+   - 'phong-thuy': Phân tích ý nghĩa biển số, cách nhìn nhận biển đẹp biển xấu, thế số và tổng nút các con số. Hãy mở rộng sang các khía cạnh: phân tích ý nghĩa cặp số đặc biệt theo dân gian (ví dụ: 39-79 Thần Tài, 38-78 Thổ Địa, 68-86 Lộc Phát...), cách tính tổng nút của biển số xe, sự phối hợp màu sắc xe và biển số xe kết hợp với các con số may mắn, hoặc các quan niệm dân gian về số 'xấu' (thất bát 78, tử 4, thất 7, 49, 53) và góc nhìn thực tế, khoa học/tâm lý hiện đại để hóa giải.
    - 'huong-dan': Hướng dẫn các quy trình liên quan đến đăng ký tài khoản, nộp tiền đặt trước, quy trình tham gia đấu giá trên trang VPA, thủ tục nhận biển số trúng đấu giá. Hãy mở rộng sang: hướng dẫn sang tên, di chuyển biển số trúng đấu giá theo Thông tư mới nhất (Thông tư 24...), cách xử lý lỗi thường gặp khi đấu giá (lỗi chuyển khoản muộn, không nhận được OTP), quy trình tích hợp biển số trúng đấu giá lên xe mới hoặc xe cũ đang lưu hành, chiến thuật đặt giá hiệu quả (cách bấm giá giây cuối, theo dõi lịch sử giá), hoặc quy trình thu hồi và đăng ký biển định danh mới.
    - 'tin-tuc': Cập nhật thông tin thị trường biển số đẹp, phân tích kỷ lục giá biển số, xu hướng sưu tầm biển số xe. Hãy mở rộng sang: điểm tin và thống kê xu hướng đấu giá biển số nổi bật trong tuần/tháng, những câu chuyện thú vị về giới sưu tầm biển số xe đẹp tại Việt Nam (biển số theo sảnh tiến, biển trùng ngày sinh, biển gánh, biển đối), so sánh thị trường đấu giá biển số xe Việt Nam với thế giới (Dubai, Anh, Thái Lan, Trung Quốc) về mức giá và luật lệ, hoặc phân tích tính thanh khoản và giá trị đầu tư của biển số định danh trên thị trường xe cũ.
 2. Bài viết chi tiết phải dài tối thiểu 800 từ, định dạng HTML phong phú (sử dụng các thẻ h2, h3, p, strong, ul, li).
@@ -182,15 +183,15 @@ Yêu cầu về chủ đề và nội dung:
    - TUYỆT ĐỐI CẤM (BAN):
      + KHÔNG vẽ người nhìn vào/sử dụng các màn hình thiết bị (như điện thoại, laptop, máy tính bảng, máy tính để bàn).
      + KHÔNG vẽ bàn tay cầm/giơ chìa khóa xe.
-     + KHÔNG vẽ các loại giấy tờ pháp lý, đăng ký xe (cavet xe), đăng kiểm, hay quốc huy Việt Nam.
-     Những hình ảnh trên bị cấm hoàn toàn vì rập khuôn, nhàm chán và không mang lại giá trị thể hiện cho nội dung bài viết.
-   - CẤM TUYỆT ĐỐI việc xuất hiện bất kỳ chữ viết, chữ cái, từ ngữ, số hiệu hay ký tự nào trên ảnh để tránh lỗi vẽ chữ sai chính tả, méo mó của AI (ngoại trừ biển số xe được mô tả cụ thể dưới đây). Luôn bắt buộc phải có các từ khóa phủ định trong prompt tiếng Anh như: 'no text, no words, no letters, no characters, no signs, no banners, no writing, no labels'. Nếu trong ảnh bắt buộc phải có bảng biểu, bản đồ hoặc màn hình hiển thị, màn hình đó CHỈ ĐƯỢC hiển thị các biểu đồ hình khối màu sắc trừu tượng, đồ họa nghệ thuật phẳng hoặc phong cảnh, tuyệt đối không chứa bất kỳ chữ viết hay số nào.
-   - HƯỚNG DẪN ĐA DẠNG HÓA VÀ SÁNG TẠO HÌNH ẢNH:
-     Hãy sáng tạo đa dạng hóa các bối cảnh, góc chụp, ánh sáng và chủ thể tùy theo nội dung cụ thể của bài viết bằng cách kết hợp ngẫu nhiên các biến số sau:
-     + Góc máy (Camera angles): macro close-up (cận cảnh chi tiết), wide-angle (góc rộng toàn cảnh), low-angle (góc chụp từ dưới lên tạo sự sang trọng), bird's-eye view (góc nhìn từ trên cao xuống).
-     + Ánh sáng/Thời gian (Lighting/Time): golden hour (sunset/sunrise với tông màu ấm áp), bright sunny afternoon (nắng chiều rực rỡ), neon-lit rainy night (đường phố mưa đêm lấp lánh ánh đèn neon), moody twilight (hoàng hôn đầy tâm trạng), soft morning mist (sương mù buổi sáng mềm mại).
-     + Địa điểm/Bối cảnh Việt Nam (Locations): Đường phố hiện đại ở Hà Nội/Sài Gòn với các tòa nhà chọc trời, các cung đường đèo hùng vĩ ở Việt Nam (đèo Hải Vân, đèo Mã Pí Lèng), đường ven biển miền Trung lúc hoàng hôn, rừng thông Đà Lạt xanh mướt, bối cảnh bên trong showroom ô tô siêu sang hiện đại, sảnh đón khách sang trọng của tòa nhà văn phòng, phòng hội nghị cao cấp, góc làm việc tối giản có bình trà xanh truyền thống, hoặc một góc vườn đá phong thủy thiền định.
-     + Chủ thể chính (Subjects): Ô tô điện hiện đại, siêu xe thể thao cổ điển, chiếc SUV mạnh mẽ vượt địa hình, vệt đèn xe kéo dài (light trails) trên cao tốc lúc ban đêm, một chiếc búa gỗ đấu giá đặt sang trọng trên mặt bàn đá marble hoặc gỗ sồi đen bên cạnh một cuốn sổ da và bút máy nghệ thuật, nghệ thuật trừu tượng đại diện cho dòng chảy năng lượng phong thủy ngũ hành (tranh thủy mặc, sơn mài Việt Nam truyền thống hiển thị các dòng chảy nước, lửa, kim loại lấp lánh mà không có chữ), một người Việt Nam lịch sự đang thảo luận nhiệt tình hoặc ký kết văn kiện (không nhìn thấy màn hình máy tính, máy tính nếu có phải gập lại hoặc quay lưng).
+      + KHÔNG vẽ các loại giấy tờ pháp lý, đăng ký xe (cavet xe), đăng kiểm, hay quốc huy Việt Nam.
+      Những hình ảnh trên bị cấm hoàn toàn vì rập khuôn, nhàm chán và không mang lại giá trị thể hiện cho nội dung bài viết.
+    - CẤM TUYỆT ĐỐI việc xuất hiện bất kỳ chữ viết, chữ cái, từ ngữ, số hiệu hay ký tự nào trên ảnh để tránh lỗi vẽ chữ sai chính tả, méo mó của AI (ngoại trừ biển số xe được mô tả cụ thể dưới đây). Luôn bắt buộc phải có các từ khóa phủ định trong prompt tiếng Anh như: 'no text, no words, no letters, no characters, no signs, no banners, no writing, no labels'. Nếu trong ảnh bắt buộc phải có bảng biểu, bản đồ hoặc màn hình hiển thị, màn hình đó CHỈ ĐƯỢC hiển thị các biểu đồ hình khối màu sắc trừu tượng, đồ họa nghệ thuật phẳng hoặc phong cảnh, tuyệt đối không chứa bất kỳ chữ viết hay số nào.
+    - HƯỚNG DẪN ĐA DẠNG HÓA VÀ SÁNG TẠO HÌNH ẢNH:
+      Hãy sáng tạo đa dạng hóa các bối cảnh, góc chụp, ánh sáng và chủ thể tùy theo nội dung cụ thể của bài viết bằng cách kết hợp ngẫu nhiên các biến số sau:
+      + Góc máy (Camera angles): macro close-up (cận cảnh chi tiết), wide-angle (góc rộng toàn cảnh), low-angle (góc chụp từ dưới lên tạo sự sang trọng), bird's-eye view (góc nhìn từ trên cao xuống).
+      + Ánh sáng/Thời gian (Lighting/Time): golden hour (sunset/sunrise với tông màu ấm áp), bright sunny afternoon (nắng chiều rực rỡ), neon-lit rainy night (đường phố mưa đêm lấp lánh ánh đèn neon), moody twilight (hoàng hôn đầy tâm trạng), soft morning mist (sương mù buổi sáng mềm mại).
+      + Địa điểm/Bối cảnh Việt Nam (Locations): Đường phố hiện đại ở Hà Nội/Sài Gòn với các tòa nhà chọc trời, các cung đường đèo hùng vĩ ở Việt Nam (đèo Hải Vân, đèo Mã Pí Lèng), đường ven biển miền Trung lúc hoàng hôn, rừng thông Đà Lạt xanh mướt, bối cảnh bên trong showroom ô tô siêu sang hiện đại, sảnh đón khách sang trọng của tòa nhà văn phòng, phòng hội nghị cao cấp, góc làm việc tối giản có bình trà xanh truyền thống, hoặc một góc vườn thiền Nhật Bản thanh tịnh.
+      + Chủ thể chính (Subjects): Ô tô điện hiện đại, siêu xe thể thao cổ điển, chiếc SUV mạnh mẽ vượt địa hình, vệt đèn xe kéo dài (light trails) trên cao tốc lúc ban đêm, một chiếc búa gỗ đấu giá đặt sang trọng trên mặt bàn đá marble hoặc gỗ sồi đen bên cạnh một cuốn sổ da và bút máy nghệ thuật, nghệ thuật trừu tượng hiển thị các dòng chảy nước, lửa, kim loại lấp lánh nghệ thuật mà không có chữ (tranh thủy mặc, sơn mài Việt Nam truyền thống), một người Việt Nam lịch sự đang thảo luận nhiệt tình hoặc ký kết văn kiện (không nhìn thấy màn hình máy tính, máy tính nếu có phải gập lại hoặc quay lưng).
    - CẤM TUYỆT ĐỐI việc lặp lại cùng một chủ thể/bối cảnh cho các bức ảnh khác nhau trong cùng một bài viết. Mỗi bức ảnh bắt buộc phải có chủ thể và bối cảnh khác biệt hoàn toàn để bổ trợ lẫn nhau.
    - Nếu vẽ xe cộ có biển số, biển số xe bắt buộc phải tuân thủ định dạng biển số xe Việt Nam thực tế (nền trắng chữ đen, dạng hình chữ nhật, ví dụ: 30K-999.99 hoặc 51A-888.88). Tuyệt đối không sinh biển số có định dạng lạ, không chứa chữ vô nghĩa ngoài biển số (luôn thêm no text hoặc no gibberish text trong prompt tiếng Anh).
    - TUYỆT ĐỐI KHÔNG sinh ảnh chân dung người nước ngoài. Nếu bối cảnh có người xuất hiện, bắt buộc phải là người Việt Nam (search terms: Vietnamese people, Vietnamese man/woman/officer) với trang phục lịch sự, bối cảnh thực tế tại Việt Nam.
