@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PlateKind extends Model
 {
-    use HasFactory;
 
     protected $table = 'plate_kinds';
 
@@ -34,6 +32,8 @@ class PlateKind extends Model
 
     /**
      * Lấy các biển số xe thuộc loại này.
+     *
+     * @return BelongsToMany<LicensePlate, $this>
      */
     public function licensePlates(): BelongsToMany
     {

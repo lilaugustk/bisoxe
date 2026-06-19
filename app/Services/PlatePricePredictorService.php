@@ -92,6 +92,8 @@ class PlatePricePredictorService
 
     /**
      * Lấy dữ liệu lịch sử giá trúng đấu giá thực tế của các biển số cùng số đuôi (serial_number) trên toàn quốc, nhóm theo tỉnh thành.
+     *
+     * @return array<string, array{province_name: string, plates: array<int, array{plate_number: string, winning_price: int, auction_date: string}>}>
      */
     public function getTrendData(LicensePlate $plate): array
     {
@@ -114,7 +116,8 @@ class PlatePricePredictorService
             if (empty($provinceCode)) {
                 continue;
             }
-            $provinceName = $items->first()->province?->name ?? 'Tỉnh khác';
+            $firstItem = $items->first();
+            $provinceName = ($firstItem instanceof LicensePlate && $firstItem->province) ? $firstItem->province->name : 'Tỉnh khác';
             $plateTrends = [];
             foreach ($items as $p) {
                 $plateTrends[] = [

@@ -2,13 +2,29 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $plate_id
+ * @property string $slug
+ * @property string $title
+ * @property string $meta_title
+ * @property string $meta_description
+ * @property string $content
+ * @property string|null $video_script
+ * @property string|null $generation_model
+ * @property \Illuminate\Support\Carbon|null $generated_at
+ * @property \Illuminate\Support\Carbon|null $google_indexed_at
+ * @property string|null $image_path
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * 
+ * @property LicensePlate|null $licensePlate
+ */
 class SeoArticle extends Model
 {
-    use HasFactory;
 
     protected $table = 'seo_articles';
 
@@ -33,6 +49,8 @@ class SeoArticle extends Model
 
     /**
      * Lấy thông tin biển số xe tương ứng với bài viết này.
+     *
+     * @return BelongsTo<LicensePlate, $this>
      */
     public function licensePlate(): BelongsTo
     {

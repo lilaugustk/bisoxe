@@ -15,7 +15,7 @@ class FixPlateKinds extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         ini_set('memory_limit', '2048M');
         set_time_limit(0);

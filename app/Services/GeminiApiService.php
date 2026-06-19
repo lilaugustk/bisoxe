@@ -16,8 +16,8 @@ class GeminiApiService
 
     public function __construct()
     {
-        $this->apiKey = config('services.gemini.key', env('GEMINI_API_KEY', ''));
-        $this->model = config('services.gemini.model', env('GEMINI_MODEL', 'gemini-1.5-flash'));
+        $this->apiKey = config('services.gemini.key', '');
+        $this->model = config('services.gemini.model', 'gemini-1.5-flash');
         $this->apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent";
     }
 
@@ -152,8 +152,8 @@ Yêu cầu quan trọng:
     /**
      * Tự động đề xuất chủ đề mới và viết bài viết SEO chung.
      *
-     * @param array $existingTitles Danh sách tiêu đề các bài viết đã tồn tại để tránh trùng lặp
-     * @return array{title: string, category: string, summary: string, meta_title: string, meta_description: string, content: string}
+     * @param array<int, string> $existingTitles Danh sách tiêu đề các bài viết đã tồn tại để tránh trùng lặp
+     * @return array{title: string, category: string, summary: string, meta_title: string, meta_description: string, content: string, image_prompt: string}
      *
      * @throws \Exception
      */

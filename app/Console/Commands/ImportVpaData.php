@@ -18,7 +18,7 @@ class ImportVpaData extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         // Tối ưu hóa cấu hình PHP cho việc xử lý tệp dữ liệu lớn
         ini_set('memory_limit', '4096M');
@@ -101,6 +101,11 @@ class ImportVpaData extends Command
 
             // Đọc toàn bộ nội dung JSON
             $jsonContent = file_get_contents($filePath);
+            if ($jsonContent === false) {
+                $this->error("Không thể đọc tệp {$fileConfig['filename']}.");
+
+                continue;
+            }
             $items = json_decode($jsonContent, true);
             unset($jsonContent); // Giải phóng bộ nhớ ngay lập tức
 
@@ -279,7 +284,7 @@ class ImportVpaData extends Command
                         } else {
                             // Logic mặc định bảo vệ trạng thái
                             $existingPrecedence = $statusPrecedence[$existingStatus] ?? 0;
-                            $newPrecedence = $statusPrecedence[$newStatus] ?? 0;
+                            $newPrecedence = $statusPrecedence[$newStatus];
 
                             if ($existingPrecedence > $newPrecedence) {
                                 $newStatus = $existingStatus;

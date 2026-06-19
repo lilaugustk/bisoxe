@@ -16,7 +16,7 @@ class SyncVpaData extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         // Tối ưu hóa bộ nhớ cho quá trình xử lý dữ liệu lớn
         ini_set('memory_limit', '4096M');
@@ -121,7 +121,7 @@ class SyncVpaData extends Command
                     'vehicle' => $config['vehicle'],
                 ];
 
-                if (! $config['is_result'] && $config['status'] !== null) {
+                if (! $config['is_result']) {
                     $params['status'] = $config['status'];
                 }
 
@@ -211,6 +211,8 @@ class SyncVpaData extends Command
 
     /**
      * Xác định xem các bản ghi trên trang hiện tại đã được đồng bộ trong database chưa.
+     *
+     * @param array<int, array<string, mixed>> $records
      */
     private function shouldStopCrawling(array $records): bool
     {
@@ -289,8 +291,10 @@ class SyncVpaData extends Command
 
     /**
      * Hợp nhất các bản ghi mới cào được vào tệp JSON cũ để bảo toàn dữ liệu lịch sử.
+     *
+     * @param array<int, array<string, mixed>> $newRecords
      */
-    private function mergeAndSave(array $newRecords, string $filePath)
+    private function mergeAndSave(array $newRecords, string $filePath): void
     {
         $existingRecords = [];
         if (file_exists($filePath)) {
@@ -336,6 +340,8 @@ class SyncVpaData extends Command
 
     /**
      * Lấy chuỗi biển số dạng đầy đủ từ bản ghi thô.
+     *
+     * @param array<string, mixed> $record
      */
     private function getRecordFullNumber(array $record): string
     {

@@ -16,9 +16,9 @@ class GroqApiService
 
     public function __construct()
     {
-        $this->apiKey = env('GROQ_API_KEY', '');
-        $this->model = env('GROQ_MODEL', 'llama-3.3-70b-versatile');
-        $this->apiUrl = rtrim(env('GROQ_API_BASE_URL', 'https://api.groq.com/openai/v1'), '/').'/chat/completions';
+        $this->apiKey = config('services.groq.key', '');
+        $this->model = config('services.groq.model', 'llama-3.3-70b-versatile');
+        $this->apiUrl = rtrim(config('services.groq.api_base_url', 'https://api.groq.com/openai/v1'), '/').'/chat/completions';
     }
 
     /**

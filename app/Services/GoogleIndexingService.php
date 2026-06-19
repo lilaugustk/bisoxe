@@ -33,7 +33,7 @@ class GoogleIndexingService
      * Gửi yêu cầu lập chỉ mục hoặc cập nhật URL lên Google Indexing API.
      *
      * @param  string  $url  URL bài viết/biển số cần index
-     * @param  string  $type  Loại thông báo (URL_UPDATED - cập nhật/thêm mới, URL_DELETED - xóa bỏ)
+     * @param  'URL_UPDATED'|'URL_DELETED'  $type  Loại thông báo (URL_UPDATED - cập nhật/thêm mới, URL_DELETED - xóa bỏ)
      */
     public function submitUrl(string $url, string $type = 'URL_UPDATED'): bool
     {

@@ -212,6 +212,9 @@ class LicensePlateController extends Controller
 
         if ($article) {
             $plate = $article->licensePlate;
+            if (! $plate instanceof LicensePlate) {
+                abort(404, 'Biển số xe không tồn tại.');
+            }
             $prediction = $predictorService->predict($plate);
             $trend = $predictorService->getTrendData($plate);
 
@@ -241,7 +244,7 @@ class LicensePlateController extends Controller
             ->with(['province', 'kinds'])
             ->first();
 
-        if ($plate) {
+        if ($plate instanceof LicensePlate) {
             // Kiểm tra xem thực ra có bài viết chưa (phòng hờ tìm theo số biển nhưng bài viết đã có slug khác)
             $existingArticle = $plate->seoArticle;
             if ($existingArticle) {
@@ -301,6 +304,8 @@ class LicensePlateController extends Controller
 
     /**
      * Chuẩn hóa dữ liệu biển số gửi sang frontend.
+     *
+     * @return array<string, mixed>
      */
     protected function transformPlate(LicensePlate $plate): array
     {

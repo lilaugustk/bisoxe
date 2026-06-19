@@ -62,7 +62,7 @@ class GenerateSeoArticleJob implements ShouldQueue
 
         try {
             // Dùng Gemini làm AI chính để sinh nội dung, tự động fallback sang Groq nếu lỗi
-            $generationModel = env('GEMINI_MODEL', 'gemini-2.5-flash');
+            $generationModel = config('services.gemini.model', 'gemini-2.5-flash');
             try {
                 $data = $geminiService->generateForLicensePlate($this->plate);
             } catch (\Exception $e) {
@@ -71,7 +71,7 @@ class GenerateSeoArticleJob implements ShouldQueue
                 ]);
                 $groqService = app(GroqApiService::class);
                 $data = $groqService->generateForLicensePlate($this->plate);
-                $generationModel = env('GROQ_MODEL', 'groq/compound-mini');
+                $generationModel = config('services.groq.model', 'groq/compound-mini');
             }
 
             // Tạo slug chuẩn SEO cho trang chi tiết biển số
@@ -88,7 +88,7 @@ class GenerateSeoArticleJob implements ShouldQueue
             }
 
             // Loại bỏ dấu hai chấm và dấu gạch ngang phân tách nếu AI tự ý sinh ra trong tiêu đề
-            $title = $data['title'] ?? '';
+            $title = $data['title'];
             $title = str_replace(':', ' ', $title);
             $title = preg_replace('/\s+[-\–\—]\s+/', ' ', $title);
             $title = preg_replace('/\s+/', ' ', $title);

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 class Post extends Model
 {
-    use HasFactory;
 
     protected $table = 'posts';
 
@@ -35,6 +33,9 @@ class Post extends Model
 
     /**
      * Scope lọc bài viết đã xuất bản.
+     *
+     * @param Builder<Post> $query
+     * @return Builder<Post>
      */
     public function scopePublished(Builder $query): Builder
     {
@@ -43,6 +44,10 @@ class Post extends Model
 
     /**
      * Scope lọc bài viết theo chuyên mục.
+     *
+     * @param Builder<Post> $query
+     * @param string $category
+     * @return Builder<Post>
      */
     public function scopeByCategory(Builder $query, string $category): Builder
     {

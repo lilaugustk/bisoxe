@@ -86,7 +86,7 @@ class GenerateGeneralArticleCommand extends Command
                 'content' => $content,
                 'image_path' => $featuredImagePath,
                 'is_published' => true,
-                'generation_model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+                'generation_model' => config('services.gemini.model', 'gemini-2.5-flash'),
                 'generated_at' => now(),
             ]);
 
