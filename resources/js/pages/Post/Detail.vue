@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, onMounted, nextTick } from 'vue';
 import BackToTop from '../../components/BackToTop.vue';
 import Footer from '../../components/Footer.vue';
 import Header from '../../components/Header.vue';
@@ -25,7 +25,6 @@ defineProps<{
     relatedPosts: Post[];
 }>();
 
-const currentPath = computed(() => usePage().url.split('?')[0]);
 const plateSearchQuery = ref('');
 
 const searchPlates = () => {

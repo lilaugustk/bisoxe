@@ -18,16 +18,30 @@ const closeMobileMenu = () => {
 
 // Unified active navigation checking logic
 const isCarActive = computed(() => {
-    if (currentPath.value === '/bien-so-xe-o-to') return true;
+    if (currentPath.value === '/bien-so-xe-o-to') {
+return true;
+}
+
     const plate = page.props.plate as any;
-    if (plate && plate.vehicle_type === 'car') return true;
+
+    if (plate && plate.vehicle_type === 'car') {
+return true;
+}
+
     return false;
 });
 
 const isMotorcycleActive = computed(() => {
-    if (currentPath.value === '/bien-so-xe-may') return true;
+    if (currentPath.value === '/bien-so-xe-may') {
+return true;
+}
+
     const plate = page.props.plate as any;
-    if (plate && plate.vehicle_type === 'motorcycle') return true;
+
+    if (plate && plate.vehicle_type === 'motorcycle') {
+return true;
+}
+
     return false;
 });
 
@@ -40,7 +54,8 @@ const isPostActive = computed(() => {
     <header class="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
         <div class="mx-auto flex h-18 max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
             <div class="flex w-full items-center justify-between">
-                <div class="flex items-center gap-8">
+                <!-- Logo Container -->
+                <div class="flex flex-1 justify-start">
                     <!-- Logo -->
                     <Link href="/" class="flex items-center gap-3" @click="closeMobileMenu">
                         <svg
@@ -107,109 +122,111 @@ const isPostActive = computed(() => {
                             <span class="text-lg leading-none font-black text-[#8C1E1E]">BISOXE.COM</span>
                         </div>
                     </Link>
-
-                    <!-- Desktop Navigation Menu -->
-                    <nav class="hidden items-center gap-6 text-sm font-semibold text-gray-600 lg:flex">
-                        <Link
-                            href="/"
-                            :class="
-                                isHomePath
-                                    ? 'text-[#8C1E1E]'
-                                    : 'transition hover:text-[#8C1E1E]'
-                            "
-                        >
-                            Trang chủ
-                        </Link>
-                        <Link
-                            href="/bien-so-xe-o-to"
-                            :class="
-                                isCarActive
-                                    ? 'text-[#8C1E1E]'
-                                    : 'transition hover:text-[#8C1E1E]'
-                            "
-                        >
-                            Biển số xe ô tô
-                        </Link>
-                        <Link
-                            href="/bien-so-xe-may"
-                            :class="
-                                isMotorcycleActive
-                                    ? 'text-[#8C1E1E]'
-                                    : 'transition hover:text-[#8C1E1E]'
-                            "
-                        >
-                            Biển số xe máy, mô tô
-                        </Link>
-                        <Link
-                            href="/bai-viet"
-                            :class="
-                                isPostActive
-                                    ? 'text-[#8C1E1E]'
-                                    : 'transition hover:text-[#8C1E1E]'
-                            "
-                        >
-                            Bài viết & Tin tức
-                        </Link>
-                        <a
-                            v-if="isHomePath"
-                            href="#meanings-section"
-                            class="transition hover:text-[#8C1E1E]"
-                        >
-                            Ý nghĩa phong thủy
-                        </a>
-                        <Link
-                            v-else
-                            href="/#meanings-section"
-                            class="transition hover:text-[#8C1E1E]"
-                        >
-                            Ý nghĩa phong thủy
-                        </Link>
-                        <a
-                            v-if="isHomePath"
-                            href="#faq-section"
-                            class="transition hover:text-[#8C1E1E]"
-                        >
-                            Hỏi đáp
-                        </a>
-                        <Link
-                            v-else
-                            href="/#faq-section"
-                            class="transition hover:text-[#8C1E1E]"
-                        >
-                            Hỏi đáp
-                        </Link>
-                    </nav>
                 </div>
 
-                <!-- Hamburger Button (Mobile & Tablet) -->
-                <div class="flex items-center lg:hidden">
-                    <button
-                        type="button"
-                        @click="toggleMobileMenu"
-                        class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none"
-                        aria-label="Toggle Menu"
+                <!-- Desktop Navigation Menu -->
+                <nav class="hidden items-center gap-6 text-sm font-semibold text-gray-600 lg:flex">
+                    <Link
+                        href="/"
+                        :class="
+                            isHomePath
+                                ? 'text-[#8C1E1E]'
+                                : 'transition hover:text-[#8C1E1E]'
+                        "
                     >
-                        <svg
-                            v-if="!isMobileMenuOpen"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
+                        Trang chủ
+                    </Link>
+                    <Link
+                        href="/bien-so-xe-o-to"
+                        :class="
+                            isCarActive
+                                ? 'text-[#8C1E1E]'
+                                : 'transition hover:text-[#8C1E1E]'
+                        "
+                    >
+                        Biển số xe ô tô
+                    </Link>
+                    <Link
+                        href="/bien-so-xe-may"
+                        :class="
+                            isMotorcycleActive
+                                ? 'text-[#8C1E1E]'
+                                : 'transition hover:text-[#8C1E1E]'
+                        "
+                    >
+                        Biển số xe máy, mô tô
+                    </Link>
+                    <Link
+                        href="/bai-viet"
+                        :class="
+                            isPostActive
+                                ? 'text-[#8C1E1E]'
+                                : 'transition hover:text-[#8C1E1E]'
+                        "
+                    >
+                        Bài viết & Tin tức
+                    </Link>
+                    <a
+                        v-if="isHomePath"
+                        href="#meanings-section"
+                        class="transition hover:text-[#8C1E1E]"
+                    >
+                        Ý nghĩa phong thủy
+                    </a>
+                    <Link
+                        v-else
+                        href="/#meanings-section"
+                        class="transition hover:text-[#8C1E1E]"
+                    >
+                        Ý nghĩa phong thủy
+                    </Link>
+                    <a
+                        v-if="isHomePath"
+                        href="#faq-section"
+                        class="transition hover:text-[#8C1E1E]"
+                    >
+                        Hỏi đáp
+                    </a>
+                    <Link
+                        v-else
+                        href="/#faq-section"
+                        class="transition hover:text-[#8C1E1E]"
+                    >
+                        Hỏi đáp
+                    </Link>
+                </nav>
+
+                <!-- Hamburger Button Container (Mobile & Tablet) -->
+                <div class="flex flex-1 justify-end">
+                    <div class="flex items-center lg:hidden">
+                        <button
+                            type="button"
+                            @click="toggleMobileMenu"
+                            class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none"
+                            aria-label="Toggle Menu"
                         >
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                        <svg
-                            v-else
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                            <svg
+                                v-if="!isMobileMenuOpen"
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <svg
+                                v-else
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
