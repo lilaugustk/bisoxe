@@ -220,6 +220,8 @@ const statusLabel = computed(() => {
             return 'Đã công bố lịch';
         case 'completed':
             return 'Đã hoàn thành';
+        case 'custom_valuation':
+            return 'Biển tự định giá';
         default:
             return 'Đang cập nhật';
     }
@@ -233,8 +235,41 @@ const statusColorClass = computed(() => {
             return 'bg-amber-50 text-amber-700 border border-amber-100';
         case 'completed':
             return 'bg-green-50 text-green-700 border border-green-100';
+        case 'custom_valuation':
+            return 'bg-purple-50 text-purple-700 border border-purple-100';
         default:
             return 'bg-gray-50 text-gray-700 border border-gray-100';
+    }
+});
+
+// So sánh giá tự định giá và định giá hệ thống
+const valuationComparison = computed(() => {
+    if (props.plate.status !== 'custom_valuation' || !props.plate.winning_price) {
+        return null;
+    }
+
+    const asking = props.plate.winning_price;
+    const min = props.price_prediction.min;
+    const max = props.price_prediction.max;
+    
+    if (asking >= min && asking <= max) {
+        return {
+            text: 'Hợp lý',
+            desc: 'sát định giá thực tế',
+            colorClass: 'text-green-700 bg-green-50 border-green-200'
+        };
+    } else if (asking > max) {
+        return {
+            text: 'Hơi cao',
+            desc: 'cao hơn định giá hệ thống',
+            colorClass: 'text-amber-700 bg-amber-50 border-amber-200'
+        };
+    } else {
+        return {
+            text: 'Hơi thấp',
+            desc: 'thấp hơn định giá hệ thống',
+            colorClass: 'text-blue-700 bg-blue-50 border-blue-200'
+        };
     }
 });
 
@@ -660,17 +695,16 @@ watch(showPriceGuide, (newVal) => {
                     <!-- Label plate type -->
                     <div class="relative z-10 mb-4 flex gap-2">
                         <span
-                            v-for="kind in plate.kinds"
-                            :key="kind.id"
+                            v-if="plate.kinds.length > 0"
                             class="rounded-full border border-red-100/50 bg-red-50 px-2.5 py-0.5 text-xs font-bold text-[#8C1E1E]"
                         >
-                            {{ kind.name }}
+                            {{ plate.kinds[0].name }}
                         </span>
                         <span
                             v-if="plate.kinds.length === 0"
                             class="rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600"
                         >
-                            Biển số đấu giá
+                            {{ plate.status === 'custom_valuation' ? 'Biển số cá nhân' : 'Biển số đấu giá' }}
                         </span>
                     </div>
 
@@ -918,10 +952,32 @@ watch(showPriceGuide, (newVal) => {
                             >
                                 <span class="text-xs text-gray-500"
                                     >Giá khởi điểm:</span
-                                >
+                                  >
                                 <span class="text-sm font-bold text-gray-800">{{
                                     formatMoney(plate.starting_price)
                                 }}</span>
+                            </div>
+                            <div
+                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                v-if="plate.status === 'custom_valuation'"
+                            >
+                                <span class="text-xs text-gray-500"
+                                    >Nguồn dữ liệu:</span
+                                >
+                                <span class="text-sm font-bold text-purple-600"
+                                    >Thành viên tự định giá</span
+                                >
+                            </div>
+                            <div
+                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                v-if="plate.status === 'custom_valuation'"
+                            >
+                                <span class="text-xs text-gray-500"
+                                    >Định giá tham khảo:</span
+                                >
+                                <span class="text-sm font-bold text-[#8C1E1E]">
+                                    {{ formatMoney(price_prediction.expected) }}
+                                </span>
                             </div>
                             <div
                                 class="flex justify-between border-b border-gray-100/50 py-1.5"
@@ -945,7 +1001,7 @@ watch(showPriceGuide, (newVal) => {
                         class="mt-6 rounded-xl border p-4"
                         :class="
                             plate.winning_price > 0
-                                ? 'border-[#8C1E1E]/10 bg-[#8C1E1E]/5'
+                                ? (plate.status === 'custom_valuation' ? 'border-purple-100 bg-purple-50/50' : 'border-[#8C1E1E]/10 bg-[#8C1E1E]/5')
                                 : 'border-gray-100 bg-gray-50'
                         "
                     >
@@ -953,34 +1009,42 @@ watch(showPriceGuide, (newVal) => {
                             class="text-[10px] font-bold tracking-wider uppercase"
                             :class="
                                 plate.winning_price > 0
-                                    ? 'text-[#8C1E1E]'
+                                    ? (plate.status === 'custom_valuation' ? 'text-purple-700' : 'text-[#8C1E1E]')
                                     : 'text-gray-500'
                             "
                         >
-                            Giá Trúng Đấu Giá
+                            {{ plate.status === 'custom_valuation' ? 'Mức Giá Đề Xuất' : 'Giá Trúng Đấu Giá' }}
                         </span>
                         <div
                             class="mt-1"
                             :class="
                                 plate.winning_price > 0
-                                    ? 'text-2xl font-black text-[#8C1E1E]'
+                                    ? (plate.status === 'custom_valuation' ? 'text-2xl font-black text-purple-700' : 'text-2xl font-black text-[#8C1E1E]')
                                     : 'text-sm font-bold text-gray-600'
                             "
                         >
                             {{
                                 plate.winning_price > 0
                                     ? formatMoney(plate.winning_price)
-                                    : 'Chưa diễn ra / Đang cập nhật'
+                                    : (plate.status === 'custom_valuation' ? 'Không đề xuất giá' : 'Chưa diễn ra / Đang cập nhật')
                             }}
                         </div>
+                    </div>
+
+                    <!-- Caution/Info Banner for Custom Valuation -->
+                    <div 
+                        v-if="plate.status === 'custom_valuation'"
+                        class="mt-4 rounded-xl border border-amber-100 bg-amber-50/70 p-3.5 text-xs text-amber-800 leading-relaxed shadow-sm"
+                    >
+                        <strong>Lưu ý:</strong> Đây là biển số xe cá nhân do thành viên tự nhập để định giá. Khoảng định giá tham khảo của hệ thống chỉ mang tính chất tham khảo dựa trên dữ liệu lịch sử đấu giá VPA.
                     </div>
                 </div>
             </div>
 
             <!-- Section: Scoring & Predictions -->
-            <div class="mb-8 grid grid-cols-1 gap-6" :class="plate.status !== 'completed' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
-                <!-- Left: Score Card -->
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div class="mb-8 grid grid-cols-1 gap-6" :class="plate.status !== 'completed' && plate.status !== 'custom_valuation' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
+                <!-- Left: Score Card (Ẩn nếu là biển tự định giá) -->
+                <div v-if="plate.status !== 'custom_valuation'" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="mb-5 border-b border-gray-100 pb-3 flex items-center justify-between">
                         <h3 class="text-base font-bold text-gray-900">Chấm điểm & Phân tích thế số</h3>
                         <div class="flex items-center gap-2 select-none">
@@ -1073,7 +1137,7 @@ watch(showPriceGuide, (newVal) => {
                     <div>
                         <!-- Predicted Price Range display -->
                         <div class="rounded-xl bg-gray-50 p-5 border border-gray-100 text-center">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Giá trị dự kiến</span>
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Giá giá trị dự kiến</span>
                             <div class="text-3xl font-extrabold text-[#8C1E1E] tracking-tight leading-none my-2.5">
                                 {{ formatMoney(price_prediction.expected) }}
                             </div>
@@ -1106,6 +1170,15 @@ watch(showPriceGuide, (newVal) => {
                                     <span>{{ price_prediction.trend.label }} ({{ price_prediction.trend.percentage >= 0 ? '+' : '' }}{{ price_prediction.trend.percentage }}%)</span>
                                 </span>
                             </div>
+
+                            <!-- Valuation Comparison (if custom valuation and has asking price) -->
+                            <div v-if="valuationComparison" class="mt-4 border-t border-gray-200/50 pt-3.5 flex flex-col items-center">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Đánh giá mức giá đề xuất</span>
+                                <div class="mt-1.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold border shadow-sm" :class="valuationComparison.colorClass">
+                                    <span class="h-1.5 w-1.5 rounded-full" :class="valuationComparison.text === 'Hợp lý' ? 'bg-green-500' : (valuationComparison.text === 'Hơi cao' ? 'bg-amber-500' : 'bg-blue-500')"></span>
+                                    <span>{{ valuationComparison.text }} - {{ valuationComparison.desc }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1118,7 +1191,8 @@ watch(showPriceGuide, (newVal) => {
                 <!-- Price Fluctuation Chart (Displayed whether loading or completed, if there is historical data) -->
                 <div
                     v-if="availableProvinces.length > 0"
-                    class="mb-12 border-b border-gray-200 pb-8"
+                    :class="plate.status === 'custom_valuation' ? 'mb-0 pb-0' : 'mb-12 border-b border-gray-200 pb-8'"
+                    class="relative w-full"
                 >
                     <div class="relative w-full">
                         <div
@@ -1541,9 +1615,9 @@ watch(showPriceGuide, (newVal) => {
                     </div>
                 </div>
 
-                <!-- Loading state: If content is still generating -->
+                <!-- Loading state: If content is still generating (Ẩn nếu là biển tự định giá) -->
                 <div
-                    v-if="is_pending"
+                    v-if="is_pending && plate.status !== 'custom_valuation'"
                     class="flex flex-col items-center justify-center py-16 text-center"
                 >
                     <div class="relative mb-6 h-16 w-16">
@@ -1563,8 +1637,8 @@ watch(showPriceGuide, (newVal) => {
                     </p>
                 </div>
 
-                <!-- Main Article Content -->
-                <div v-else class="prose max-w-none">
+                <!-- Main Article Content (Ẩn nếu là biển tự định giá) -->
+                <div v-else-if="plate.status !== 'custom_valuation'" class="prose max-w-none">
                     <h1
                         class="mb-6 border-b border-gray-100 pb-4 font-sans text-2xl font-extrabold tracking-tight text-gray-900 lg:text-3xl leading-tight"
                     >
@@ -1678,8 +1752,8 @@ watch(showPriceGuide, (newVal) => {
                     >
                         <div class="flex items-start justify-between">
                             <div class="flex flex-wrap gap-1">
-                                <span v-for="kind in relPlate.kinds" :key="kind.id" class="rounded-full border border-red-100/50 bg-red-50 px-2 py-0.5 text-[9px] font-bold text-[#8C1E1E] uppercase">
-                                    {{ kind.name }}
+                                <span v-if="relPlate.kinds.length > 0" class="rounded-full border border-red-100/50 bg-red-50 px-2 py-0.5 text-[9px] font-bold text-[#8C1E1E] uppercase">
+                                    {{ relPlate.kinds[0].name }}
                                 </span>
                                 <span v-if="relPlate.kinds.length === 0" class="rounded-full border border-gray-200 bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-650 uppercase">
                                     Biển thường

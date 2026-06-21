@@ -7,6 +7,7 @@ use App\Models\LicensePlate;
 use App\Models\PlateKind;
 use App\Models\Province;
 use App\Models\SeoArticle;
+use App\Models\UserValuation;
 use App\Services\PlatePricePredictorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -224,7 +225,44 @@ class LicensePlateController extends Controller
         }
 
         if (! $plate instanceof LicensePlate) {
-            abort(404, 'Biển số xe không tồn tại.');
+            // Thử tìm trong bảng user_valuations
+            $cleanNumber = strtoupper(str_replace(['-', '.'], '', $slug));
+            $userValuation = UserValuation::where('full_number', $cleanNumber)->first();
+
+            if ($userValuation) {
+                // Tạo một instance LicensePlate giả lập từ dữ liệu của UserValuation
+                $plate = new LicensePlate([
+                    'vehicle_type' => $userValuation->vehicle_type,
+                    'local_symbol' => $userValuation->local_symbol,
+                    'serial_letter' => $userValuation->serial_letter,
+                    'serial_number' => $userValuation->serial_number,
+                    'full_number' => $userValuation->full_number,
+                    'display_number' => $userValuation->display_number,
+                    'province_code' => $userValuation->province_code,
+                    'color' => $userValuation->color,
+                    'status' => 'custom_valuation',
+                    'starting_price' => 0,
+                    'winning_price' => $userValuation->asking_price,
+                ]);
+                $plate->id = -1; // ID âm cho biển giả lập
+
+                // Thiết lập quan hệ tỉnh thành tĩnh
+                $province = Province::where('code', $userValuation->province_code)->first();
+                $plate->setRelation('province', $province);
+
+                // Nhận dạng kinds động từ regex
+                $kindsCollection = collect();
+                foreach ($userValuation->kinds as $k) {
+                    $kindsCollection->push(new PlateKind([
+                        'id' => $k->id,
+                        'name' => $k->name,
+                        'priority' => $k->priority,
+                    ]));
+                }
+                $plate->setRelation('kinds', $kindsCollection);
+            } else {
+                abort(404, 'Biển số xe không tồn tại.');
+            }
         }
 
         // Thực hiện các tính toán định giá và chấm điểm
@@ -233,19 +271,19 @@ class LicensePlateController extends Controller
         $score = $predictorService->calculateScore($plate);
 
         // Truy vấn 6 biển số liên quan cùng loại phương tiện
-        $kindIds = $plate->kinds->pluck('id')->toArray();
+        $primaryKind = $plate->kinds->where('priority', '<', 1000)->sortBy('priority')->first();
         $relatedQuery = LicensePlate::with(['province', 'kinds', 'seoArticle'])
             ->where('id', '!=', $plate->id)
             ->where('vehicle_type', $plate->vehicle_type);
 
-        if (! empty($kindIds)) {
-            $relatedQuery->where(function ($q) use ($plate, $kindIds) {
-                $q->whereHas('kinds', function ($qk) use ($kindIds) {
-                    $qk->whereIn('plate_kinds.id', $kindIds);
-                })->orWhere('province_code', $plate->province_code);
+        if ($primaryKind) {
+            $relatedQuery->whereHas('kinds', function ($qk) use ($primaryKind) {
+                $qk->where('plate_kinds.id', $primaryKind->id);
             });
         } else {
-            $relatedQuery->where('province_code', $plate->province_code);
+            $relatedQuery->whereDoesntHave('kinds', function ($qk) {
+                $qk->where('plate_kinds.priority', '<', 1000);
+            });
         }
 
         $relatedPlates = $relatedQuery
@@ -272,6 +310,27 @@ class LicensePlateController extends Controller
                     'generation_model' => $article->generation_model,
                     'generated_at' => $article->generated_at ? $article->generated_at->toISOString() : null,
                     'image_url' => $article->image_path ? asset($article->image_path) : null,
+                ],
+                'plate' => $this->transformPlate($plate),
+                'is_pending' => false,
+                'price_prediction' => $prediction,
+                'price_trend' => $trend,
+                'plate_score' => $score,
+                'related_plates' => $relatedPlates,
+            ]);
+        }
+
+        // Nếu là biển tự định giá, không sinh bài viết SEO bằng AI
+        if ($plate->status === 'custom_valuation') {
+            return Inertia::render('Plate/Detail', [
+                'article' => [
+                    'title' => "Thông tin định giá biển số {$plate->display_number}",
+                    'meta_title' => "Biển số {$plate->display_number} - Định giá tự do",
+                    'meta_description' => "Xem thông tin tự định giá của biển số {$plate->display_number} đăng ký tại tỉnh " . ($plate->province ? $plate->province->name : 'Chưa rõ') . ".",
+                    'content' => null,
+                    'video_script' => null,
+                    'slug' => $slug,
+                    'image_url' => null,
                 ],
                 'plate' => $this->transformPlate($plate),
                 'is_pending' => false,

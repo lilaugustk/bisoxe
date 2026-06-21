@@ -48,6 +48,10 @@ return true;
 const isPostActive = computed(() => {
     return currentPath.value.startsWith('/bai-viet');
 });
+
+const isValuationActive = computed(() => {
+    return currentPath.value === '/dinh-gia';
+});
 </script>
 
 <template>
@@ -166,6 +170,16 @@ const isPostActive = computed(() => {
                     >
                         Bài viết & Tin tức
                     </Link>
+                    <Link
+                        href="/dinh-gia"
+                        :class="
+                            isValuationActive
+                                ? 'text-[#8C1E1E]'
+                                : 'transition hover:text-[#8C1E1E]'
+                        "
+                    >
+                        Định giá biển số
+                    </Link>
                     <a
                         v-if="isHomePath"
                         href="#meanings-section"
@@ -276,6 +290,14 @@ const isPostActive = computed(() => {
                         @click="closeMobileMenu"
                     >
                         Bài viết & Tin tức
+                    </Link>
+                    <Link
+                        href="/dinh-gia"
+                        class="py-3 transition hover:text-[#8C1E1E]"
+                        :class="{ 'text-[#8C1E1E]': isValuationActive }"
+                        @click="closeMobileMenu"
+                    >
+                        Định giá biển số
                     </Link>
                     <a
                         v-if="isHomePath"
