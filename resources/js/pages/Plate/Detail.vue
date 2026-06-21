@@ -236,7 +236,7 @@ const statusColorClass = computed(() => {
         case 'completed':
             return 'bg-green-50 text-green-700 border border-green-100';
         case 'custom_valuation':
-            return 'bg-purple-50 text-purple-700 border border-purple-100';
+            return 'bg-red-50 text-[#8C1E1E] border border-red-100';
         default:
             return 'bg-gray-50 text-gray-700 border border-gray-100';
     }
@@ -964,20 +964,9 @@ watch(showPriceGuide, (newVal) => {
                                 <span class="text-xs text-gray-500"
                                     >Nguồn dữ liệu:</span
                                 >
-                                <span class="text-sm font-bold text-purple-600"
+                                <span class="text-sm font-bold text-[#8C1E1E]"
                                     >Thành viên tự định giá</span
                                 >
-                            </div>
-                            <div
-                                class="flex justify-between border-b border-gray-100/50 py-1.5"
-                                v-if="plate.status === 'custom_valuation'"
-                            >
-                                <span class="text-xs text-gray-500"
-                                    >Định giá tham khảo:</span
-                                >
-                                <span class="text-sm font-bold text-[#8C1E1E]">
-                                    {{ formatMoney(price_prediction.expected) }}
-                                </span>
                             </div>
                             <div
                                 class="flex justify-between border-b border-gray-100/50 py-1.5"
@@ -998,35 +987,53 @@ watch(showPriceGuide, (newVal) => {
 
                     <!-- Highlighted Winning Price block -->
                     <div
+                        v-if="plate.status === 'custom_valuation'"
+                        class="mt-6 rounded-xl border border-red-100 bg-red-50/50 p-4"
+                    >
+                        <div class="grid grid-cols-2 gap-4 divide-x divide-red-200/50">
+                            <!-- Left: User's price -->
+                            <div class="pr-2">
+                                <span class="text-[10px] font-bold tracking-wider uppercase text-[#8C1E1E]/80">
+                                    Thành viên định giá
+                                </span>
+                                <div class="mt-1 text-lg font-black text-[#8C1E1E]">
+                                    {{ plate.winning_price > 0 ? formatMoney(plate.winning_price) : 'Chưa định giá' }}
+                                </div>
+                            </div>
+                            <!-- Right: System's price -->
+                            <div class="pl-4">
+                                <span class="text-[10px] font-bold tracking-wider uppercase text-gray-500">
+                                    Hệ thống định giá
+                                </span>
+                                <div class="mt-1 text-lg font-black text-gray-900">
+                                    {{ formatMoney(price_prediction.expected) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        v-else
                         class="mt-6 rounded-xl border p-4"
                         :class="
                             plate.winning_price > 0
-                                ? (plate.status === 'custom_valuation' ? 'border-purple-100 bg-purple-50/50' : 'border-[#8C1E1E]/10 bg-[#8C1E1E]/5')
+                                ? 'border-[#8C1E1E]/10 bg-[#8C1E1E]/5'
                                 : 'border-gray-100 bg-gray-50'
                         "
                     >
                         <span
                             class="text-[10px] font-bold tracking-wider uppercase"
-                            :class="
-                                plate.winning_price > 0
-                                    ? (plate.status === 'custom_valuation' ? 'text-purple-700' : 'text-[#8C1E1E]')
-                                    : 'text-gray-500'
-                            "
+                            :class="plate.winning_price > 0 ? 'text-[#8C1E1E]' : 'text-gray-500'"
                         >
-                            {{ plate.status === 'custom_valuation' ? 'Mức Giá Đề Xuất' : 'Giá Trúng Đấu Giá' }}
+                            Giá Trúng Đấu Giá
                         </span>
                         <div
                             class="mt-1"
-                            :class="
-                                plate.winning_price > 0
-                                    ? (plate.status === 'custom_valuation' ? 'text-2xl font-black text-purple-700' : 'text-2xl font-black text-[#8C1E1E]')
-                                    : 'text-sm font-bold text-gray-600'
-                            "
+                            :class="plate.winning_price > 0 ? 'text-2xl font-black text-[#8C1E1E]' : 'text-sm font-bold text-gray-600'"
                         >
                             {{
                                 plate.winning_price > 0
                                     ? formatMoney(plate.winning_price)
-                                    : (plate.status === 'custom_valuation' ? 'Không đề xuất giá' : 'Chưa diễn ra / Đang cập nhật')
+                                    : 'Chưa diễn ra / Đang cập nhật'
                             }}
                         </div>
                     </div>
@@ -1173,7 +1180,7 @@ watch(showPriceGuide, (newVal) => {
 
                             <!-- Valuation Comparison (if custom valuation and has asking price) -->
                             <div v-if="valuationComparison" class="mt-4 border-t border-gray-200/50 pt-3.5 flex flex-col items-center">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Đánh giá mức giá đề xuất</span>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Đánh giá mức giá tự định</span>
                                 <div class="mt-1.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold border shadow-sm" :class="valuationComparison.colorClass">
                                     <span class="h-1.5 w-1.5 rounded-full" :class="valuationComparison.text === 'Hợp lý' ? 'bg-green-500' : (valuationComparison.text === 'Hơi cao' ? 'bg-amber-500' : 'bg-blue-500')"></span>
                                     <span>{{ valuationComparison.text }} - {{ valuationComparison.desc }}</span>
@@ -2024,7 +2031,7 @@ watch(showPriceGuide, (newVal) => {
                             </div>
                             
                             <!-- Premium Vertical Calculation Steps Pipeline -->
-                            <div class="relative pl-6 sm:pl-8 border-l border-gray-200 space-y-8 select-none">
+                            <div class="relative pl-6 sm:pl-8 space-y-8 select-none">
                                 <!-- Step 1: Base Price -->
                                 <div class="relative">
                                     <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">1</span>
@@ -2033,8 +2040,8 @@ watch(showPriceGuide, (newVal) => {
                                             <h5 class="text-sm font-bold text-gray-900">Mốc giá nền theo thế số</h5>
                                             <p class="text-xs text-gray-500 mt-0.5">Dựa trên trung bình trúng đấu giá thực tế của nhóm thế số <strong class="text-gray-700 font-semibold">{{ price_prediction.kind_name }}</strong> toàn quốc.</p>
                                         </div>
-                                        <div class="text-right sm:text-right">
-                                            <div class="text-sm font-extrabold text-gray-950">{{ formatMoney(price_prediction.base_price) }}</div>
+                                        <div class="text-right sm:text-right flex-shrink-0">
+                                            <div class="text-sm font-extrabold text-gray-950 whitespace-nowrap">{{ formatMoney(price_prediction.base_price) }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2047,9 +2054,9 @@ watch(showPriceGuide, (newVal) => {
                                             <h5 class="text-sm font-bold text-gray-900">Hệ số điều chỉnh theo khu vực ({{ plate.province?.name ?? 'Tỉnh khác' }})</h5>
                                             <p class="text-xs text-gray-500 mt-0.5">Tính toán tự động dựa trên mức giá đấu trúng thực tế tại khu vực đăng ký so với cả nước.</p>
                                         </div>
-                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3">
+                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
                                             <span class="rounded bg-amber-50 border border-amber-150 px-2 py-0.5 text-xs font-bold text-amber-700">x{{ price_prediction.province_multiplier }}</span>
-                                            <div class="text-xs font-bold text-gray-400">$\rightarrow$ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier) }}</div>
+                                            <div class="text-xs font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier) }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2062,11 +2069,11 @@ watch(showPriceGuide, (newVal) => {
                                             <h5 class="text-sm font-bold text-gray-900">Hệ số tổng nút số ({{ price_prediction.nut }} nút)</h5>
                                             <p class="text-xs text-gray-500 mt-0.5">Hệ số khuyến khích cho các biển có tổng số nút cao mang năng lượng tốt (9 và 10 nút).</p>
                                         </div>
-                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3">
+                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
                                             <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.nut_multiplier > 1.0 ? 'bg-green-50 border border-green-150 text-green-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
                                                 x{{ price_prediction.nut_multiplier }}
                                             </span>
-                                            <div class="text-xs font-bold text-gray-400">$\rightarrow$ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier) }}</div>
+                                            <div class="text-xs font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier) }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2079,11 +2086,11 @@ watch(showPriceGuide, (newVal) => {
                                             <h5 class="text-sm font-bold text-gray-900">Chiết khấu tránh số xấu (Số 4, 7)</h5>
                                             <p class="text-xs text-gray-500 mt-0.5">Khấu trừ giá trị đối với các biển số có chứa chữ số Hán Việt không được ưu chuộng.</p>
                                         </div>
-                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3">
+                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
                                             <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.has_bad_numbers ? 'bg-red-50 border border-red-150 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
                                                 x{{ price_prediction.bad_multiplier }}
                                             </span>
-                                            <div class="text-xs font-bold text-gray-400">$\rightarrow$ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier) }}</div>
+                                            <div class="text-xs font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier) }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2096,11 +2103,11 @@ watch(showPriceGuide, (newVal) => {
                                             <h5 class="text-sm font-bold text-gray-900">Hệ số xu hướng biến động sê-ri đuôi "{{ plate.serial_number }}"</h5>
                                             <p class="text-xs text-gray-500 mt-0.5">Tính toán dựa trên chiều biến động giá lịch sử đấu giá của chính các biển số có cùng sê-ri số đuôi này.</p>
                                         </div>
-                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3">
+                                        <div class="text-right flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
                                             <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.trend.direction === 'up' ? 'bg-green-50 border border-green-150 text-green-700' : price_prediction.trend.direction === 'down' ? 'bg-red-50 border border-red-150 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
                                                 x{{ price_prediction.trend.multiplier }}
                                             </span>
-                                            <div class="text-xs font-bold text-gray-400">$\rightarrow$ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier * price_prediction.trend.multiplier) }}</div>
+                                            <div class="text-xs font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier * price_prediction.trend.multiplier) }}</div>
                                         </div>
                                     </div>
                                 </div>
