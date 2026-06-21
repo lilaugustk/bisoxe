@@ -128,12 +128,25 @@ class SyncVpaData extends Command
                 $this->output->write("Đang tải trang {$page}... ");
 
                 try {
-                    $response = Http::withoutVerifying()->withHeaders([
-                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
-                        'Referer' => 'https://vpa.com.vn/bien-so-oto',
-                        'Origin' => 'https://vpa.com.vn',
-                        'Accept' => 'application/json, text/plain, */*',
-                    ])->timeout(30)->get($url, $params);
+                    $httpOptions = [
+                        'curl' => [
+                            CURLOPT_SSL_CIPHER_LIST => 'DEFAULT@SECLEVEL=1',
+                        ],
+                    ];
+
+                    $proxy = env('VPA_PROXY');
+                    if ($proxy) {
+                        $httpOptions['proxy'] = $proxy;
+                    }
+
+                    $response = Http::withoutVerifying()
+                        ->withOptions($httpOptions)
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+                            'Referer' => 'https://vpa.com.vn/bien-so-oto',
+                            'Origin' => 'https://vpa.com.vn',
+                            'Accept' => 'application/json, text/plain, */*',
+                        ])->timeout(30)->get($url, $params);
 
                     if ($response->failed()) {
                         $this->error("\nLỗi HTTP {$response->status()} khi gọi API.");
