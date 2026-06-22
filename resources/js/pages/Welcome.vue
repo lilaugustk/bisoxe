@@ -91,13 +91,35 @@ const avoidNumbersOpen = ref(true);
 const isMobileFiltersOpen = ref(false);
 const activeFiltersCount = computed(() => {
     let count = 0;
-    if (selectedColor.value !== '') count++;
-    if (selectedProvince.value !== '') count++;
-    if (startDate.value !== '') count++;
-    if (endDate.value !== '') count++;
-    if (selectedKind.value.length > 0) count += selectedKind.value.length;
-    if (selectedBirthYears.value.length > 0) count += selectedBirthYears.value.length;
-    if (selectedAvoidNumbers.value.length > 0) count += selectedAvoidNumbers.value.length;
+
+    if (selectedColor.value !== '') {
+        count++;
+    }
+
+    if (selectedProvince.value !== '') {
+        count++;
+    }
+
+    if (startDate.value !== '') {
+        count++;
+    }
+
+    if (endDate.value !== '') {
+        count++;
+    }
+
+    if (selectedKind.value.length > 0) {
+        count += selectedKind.value.length;
+    }
+
+    if (selectedBirthYears.value.length > 0) {
+        count += selectedBirthYears.value.length;
+    }
+
+    if (selectedAvoidNumbers.value.length > 0) {
+        count += selectedAvoidNumbers.value.length;
+    }
+
     return count;
 });
 
