@@ -75,7 +75,7 @@ onMounted(() => {
 
 const getCategoryLabel = (cat: string) => {
     switch (cat) {
-        case 'phong-thuy':
+        case 'y-nghia-bien-so':
             return 'Ý nghĩa biển số';
         case 'huong-dan':
             return 'Hướng dẫn';
@@ -88,7 +88,7 @@ const getCategoryLabel = (cat: string) => {
 
 const getCategoryBg = (cat: string) => {
     switch (cat) {
-        case 'phong-thuy':
+        case 'y-nghia-bien-so':
             return 'bg-gradient-to-br from-[#8C1E1E] to-[#4A1010]';
         case 'huong-dan':
             return 'bg-gradient-to-br from-[#1E3A8A] to-[#1E1B4B]';
@@ -460,7 +460,7 @@ const formatDate = (dateStr: string | null) => {
                                 </svg>
                             </Link>
                             <Link
-                                href="/bai-viet?category=phong-thuy"
+                                href="/bai-viet?category=y-nghia-bien-so"
                                 class="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50 hover:text-[#8C1E1E]"
                             >
                                 <span>Ý nghĩa biển số</span>

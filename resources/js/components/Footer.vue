@@ -217,7 +217,7 @@
                         </li>
                         <li>
                             <Link
-                                href="/bai-viet?category=phong-thuy"
+                                href="/bai-viet?category=y-nghia-bien-so"
                                 class="transition-colors duration-200 hover:text-[#F5B800]"
                                 >Ý nghĩa biển số</Link
                             >

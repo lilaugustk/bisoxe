@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title', 500);
             $table->string('slug', 255)->unique();
-            $table->string('category', 100); // e.g. phong-thuy, huong-dan, tin-tuc
+            $table->string('category', 100); // e.g. y-nghia-bien-so, huong-dan, tin-tuc
             $table->text('summary')->nullable();
             $table->string('meta_title', 500)->nullable();
             $table->text('meta_description')->nullable();

@@ -194,14 +194,14 @@ const heroH1Html = computed(() => {
 
 const heroDescription = computed(() => {
     if (isHomePath.value) {
-        return 'Phân tích phong thủy, dịch nghĩa cát hung và định giá biển số xe ô tô, xe máy tự động.';
+        return 'Phân tích ý nghĩa con số, luận giải thế số và định giá biển số xe ô tô, xe máy tự động.';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Phân tích phong thủy, dịch nghĩa cát hung và định giá biển số xe máy, mô tô tự động.';
+        return 'Phân tích ý nghĩa con số, luận giải thế số và định giá biển số xe máy, mô tô tự động.';
     }
 
-    return 'Phân tích phong thủy, dịch nghĩa cát hung và định giá biển số xe ô tô tự động.';
+    return 'Phân tích ý nghĩa con số, luận giải thế số và định giá biển số xe ô tô tự động.';
 });
 
 const tableTitle = computed(() => {
@@ -1370,7 +1370,7 @@ onUnmounted(() => {
             </div>
         </section>
 
-        <!-- 5. SEO Text Section: Ý nghĩa các số phong thủy (Rất nhiều văn bản giá trị cho Google Bot đọc) -->
+        <!-- 5. SEO Text Section: Ý nghĩa các số theo quan niệm dân gian (Rất nhiều văn bản giá trị cho Google Bot đọc) -->
         <section
             id="meanings-section"
             class="scroll-mt-20 border-t border-b border-gray-200 bg-white py-16"

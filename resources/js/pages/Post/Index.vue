@@ -38,14 +38,14 @@ const activeCategory = ref(props.filters.category || '');
 
 const categories = [
     { label: 'Tất cả bài viết', value: '' },
-    { label: 'Ý nghĩa biển số', value: 'phong-thuy' },
+    { label: 'Ý nghĩa biển số', value: 'y-nghia-bien-so' },
     { label: 'Hướng dẫn', value: 'huong-dan' },
     { label: 'Tin tức & Thị trường', value: 'tin-tuc' },
 ];
 
 const getCategoryLabel = (cat: string) => {
     switch (cat) {
-        case 'phong-thuy':
+        case 'y-nghia-bien-so':
             return 'Ý nghĩa biển số';
         case 'huong-dan':
             return 'Hướng dẫn';
@@ -58,7 +58,7 @@ const getCategoryLabel = (cat: string) => {
 
 const getCategoryBg = (cat: string) => {
     switch (cat) {
-        case 'phong-thuy':
+        case 'y-nghia-bien-so':
             return 'bg-gradient-to-br from-[#8C1E1E] to-[#4A1010]';
         case 'huong-dan':
             return 'bg-gradient-to-br from-[#1E3A8A] to-[#1E1B4B]';
@@ -287,7 +287,7 @@ const formatDate = (dateStr: string | null) => {
                                 :href="`/bai-viet/${post.slug}`"
                                 class="text-xs font-bold text-[#8C1E1E] hover:underline"
                             >
-                                Đọc bài viết →
+                                Đọc bài viết 
                             </Link>
 
                             <span
