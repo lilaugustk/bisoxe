@@ -56,6 +56,38 @@ class GeminiApiService
             default => 'Đang cập nhật'
         };
 
+        // Lấy danh sách biển số liên quan đã có bài viết để chèn liên kết nội bộ tự nhiên
+        $relatedPlates = LicensePlate::has('seoArticle')
+            ->where('id', '!=', $plate->id)
+            ->where('vehicle_type', $plate->vehicle_type)
+            ->inRandomOrder()
+            ->limit(3)
+            ->get();
+
+        // Nếu không đủ biển số có sẵn bài viết, lấy biển số ngẫu nhiên khác
+        if ($relatedPlates->count() < 2) {
+            $extraPlates = LicensePlate::where('id', '!=', $plate->id)
+                ->where('vehicle_type', $plate->vehicle_type)
+                ->inRandomOrder()
+                ->limit(3 - $relatedPlates->count())
+                ->get();
+            $relatedPlates = $relatedPlates->merge($extraPlates);
+        }
+
+        $internalLinksPrompt = '';
+        if ($relatedPlates->isNotEmpty()) {
+            $internalLinksPrompt = "\nYÊU CẦU CHÈN LIÊN KẾT NỘI BỘ (SEO INTERNAL LINKING):\n";
+            $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 2 liên kết từ danh sách dưới đây vào nội dung bài viết dưới dạng thẻ HTML <a href=\"/bien-so/slug\">biển số [display_number]</a>. Chỉ chèn link khi ngữ cảnh thực sự phù hợp (ví dụ: khi so sánh thế số, giá trị hoặc ý nghĩa của các con số tương tự):\n";
+            foreach ($relatedPlates as $rp) {
+                $rpSlug = $rp->seoArticle ? $rp->seoArticle->slug : \Illuminate\Support\Str::slug('bien-so-'.$rp->local_symbol.$rp->serial_letter.'-'.$rp->serial_number);
+                $internalLinksPrompt .= "- Biển số: {$rp->display_number} (Đường dẫn: /bien-so/{$rpSlug})\n";
+            }
+            $internalLinksPrompt .= "\nQuy tắc chèn link bắt buộc:\n";
+            $internalLinksPrompt .= "- KHÔNG được gom các liên kết thành một danh sách riêng biệt ở cuối bài viết. Hãy phân bổ chúng rải rác trong các đoạn phân tích thế số, ý nghĩa hoặc định giá khi có sự so sánh phù hợp.\n";
+            $internalLinksPrompt .= "- Anchor text phải là tên biển số hoặc diễn đạt tự nhiên chứa biển số (Ví dụ: \"giá trị của <a href='/bien-so/slug'>biển số [display_number]</a>\" hoặc \"so với <a href='/bien-so/slug'>phân tích biển số [display_number]</a>\").\n";
+            $internalLinksPrompt .= "- TUYỆT ĐỐI CẤM sử dụng các từ chung chung làm anchor text như: 'bấm vào đây', 'xem thêm', 'link', 'tại đây', 'đường dẫn này', 'chi tiết'.\n";
+        }
+
         // Thiết lập prompt
         $prompt = "Bạn là một chuyên gia phân tích biển số xe và chuyên gia tối ưu hóa SEO. Hãy phân tích biển số xe sau đây và tạo nội dung phân tích ý nghĩa, định giá độc bản, hấp dẫn để thu hút traffic cho website.
         
@@ -71,7 +103,7 @@ Nhiệm vụ của bạn là trả về một đối tượng JSON chứa chính
 1. 'title': Tiêu đề bài viết hấp dẫn, chứa biển số xe (Ví dụ: 'Ý nghĩa biển số ngũ quý 9 {$plate->display_number} và đánh giá giá trị đấu giá thực tế'). Tiêu đề nên dài khoảng 50-70 ký tự. Tuyệt đối không sử dụng dấu hai chấm (:) hoặc dấu gạch ngang (-) trong tiêu đề bài viết.
 2. 'meta_title': Tiêu đề meta tối ưu SEO cho kết quả tìm kiếm Google (dưới 60 ký tự).
 3. 'meta_description': Mô tả ngắn meta description thu hút người đọc click từ Google (dưới 160 ký tự).
-4. 'content': Bài viết chi tiết định dạng HTML (sử dụng các thẻ h2, h3, p, strong, ul, li). Bài viết cần tối thiểu 600 từ, chia làm các phần hợp lý:
+4. 'content': Bài viết chi tiết định dạng HTML (sử dụng các thẻ h2, h3, p, strong, ul, li, và thẻ a để chèn liên kết nội bộ). Bài viết cần tối thiểu 600 từ, chia làm các phần hợp lý, lồng ghép tự nhiên các liên kết nội bộ (SEO Internal Linking) được cung cấp ở mục bên dưới vào nội dung:
    - Giới thiệu về biển số {$plate->display_number} và thông tin đấu giá nổi bật.
    - Phân tích thế số và tổng số nút chi tiết (phân tích sự cân đối, dễ nhớ, dễ đọc của các con số trong {$plate->serial_number}, sự kết hợp các số, đầu số {$plate->local_symbol} và ký tự seri {$plate->serial_letter}, xác định biển số này là biển đẹp hay biển số bình thường/biển xấu).
    - Luận giải ý nghĩa các con số theo quan niệm dân gian truyền thống (như các cặp số lộc phát 68/86, thần tài 39/79, ông địa 38/78 hoặc các số cần tránh theo dân gian như 49, 53, 4, 7).
@@ -79,7 +111,10 @@ Nhiệm vụ của bạn là trả về một đối tượng JSON chứa chính
    - Đánh giá chấm điểm biển số: Đưa ra nhận định chấm điểm cụ thể cho biển số này trên thang điểm 10 (Ví dụ: Chấm điểm: 8.5/10 hoặc 9.0/10) kèm theo tóm tắt ngắn gọn các ưu điểm/nhược điểm chính của biển số để người đọc dễ theo dõi.
 5. 'video_script': Kịch bản video ngắn (TikTok/Reels/Shorts) dài khoảng 30-45 giây để giới thiệu về biển số này, bao gồm: Lời thoại thuyết minh (Voiceover) tiếng Việt và gợi ý hình ảnh/video minh họa tương ứng.
 
+{$internalLinksPrompt}
+
 Yêu cầu quan trọng:
+- TUYỆT ĐỐI KHÔNG sử dụng thẻ h1 trong nội dung bài viết (trường 'content'). Tiêu đề bài viết đã được hệ thống hiển thị bằng thẻ h1 ở ngoài. Việc lặp lại thẻ h1 trong content là lỗi cấu trúc SEO nghiêm trọng. Hãy bắt đầu trực tiếp bằng đoạn mở đầu (<p>) hoặc thẻ h2.
 - TUYỆT ĐỐI KHÔNG sử dụng từ khóa 'phong thủy' hoặc các cụm từ tương tự liên quan đến 'phong thủy' trong toàn bộ tiêu đề, mô tả và nội dung bài viết. Hãy thay thế bằng các diễn đạt trung tính hơn như 'ý nghĩa con số', 'theo quan niệm dân gian', 'thế số đẹp/xấu', 'phân tích thế số', 'tổng nút'.
 - Nội dung hoàn toàn bằng tiếng Việt, phong cách hành văn chuyên nghiệp, mạch lạc, lôi cuốn.
 - Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên. Không thêm bất kỳ văn bản giải thích nào ngoài JSON.";
@@ -165,6 +200,34 @@ Yêu cầu quan trọng:
             throw new \Exception('Gemini API key is not configured.');
         }
 
+        // Lấy danh sách các biển số đẹp/nổi bật đã có bài phân tích hoặc bất kỳ biển số nào để chèn vào bài viết chung
+        $featuredPlates = LicensePlate::has('seoArticle')
+            ->inRandomOrder()
+            ->limit(5)
+            ->get();
+
+        // Nếu không đủ biển số có bài viết, lấy thêm biển số khác
+        if ($featuredPlates->count() < 3) {
+            $extraPlates = LicensePlate::inRandomOrder()
+                ->limit(5 - $featuredPlates->count())
+                ->get();
+            $featuredPlates = $featuredPlates->merge($extraPlates);
+        }
+
+        $internalLinksPrompt = '';
+        if ($featuredPlates->isNotEmpty()) {
+            $internalLinksPrompt = "\nYÊU CẦU CHÈN LIÊN KẾT NỘI BỘ (SEO INTERNAL LINKING):\n";
+            $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 3 liên kết từ danh sách các biển số xe nổi bật dưới đây vào nội dung bài viết dưới dạng thẻ HTML <a href=\"/bien-so/slug\">biển số [display_number]</a>. Chỉ chèn link khi ngữ cảnh thực sự phù hợp (ví dụ: khi so sánh thế số, giá trị hoặc ý nghĩa của các con số tương tự hoặc khi lấy ví dụ cụ thể):\n";
+            foreach ($featuredPlates as $fp) {
+                $fpSlug = $fp->seoArticle ? $fp->seoArticle->slug : \Illuminate\Support\Str::slug('bien-so-'.$fp->local_symbol.$fp->serial_letter.'-'.$fp->serial_number);
+                $internalLinksPrompt .= "- Biển số: {$fp->display_number} (Đường dẫn: /bien-so/{$fpSlug})\n";
+            }
+            $internalLinksPrompt .= "\nQuy tắc chèn link bắt buộc:\n";
+            $internalLinksPrompt .= "- KHÔNG được gom các liên kết thành một danh sách riêng biệt ở cuối bài viết. Hãy phân bổ chúng rải rác trong các đoạn phân tích thế số, ý nghĩa hoặc định giá khi có sự so sánh phù hợp.\n";
+            $internalLinksPrompt .= "- Anchor text phải là tên biển số hoặc diễn đạt tự nhiên chứa biển số (Ví dụ: \"giá trị của <a href='/bien-so/slug'>biển số [display_number]</a>\" hoặc \"so với <a href='/bien-so/slug'>phân tích biển số [display_number]</a>\").\n";
+            $internalLinksPrompt .= "- TUYỆT ĐỐI CẤM sử dụng các từ chung chung làm anchor text như: 'bấm vào đây', 'xem thêm', 'link', 'tại đây', 'đường dẫn này', 'chi tiết'.\n";
+        }
+
         $existingTitlesStr = empty($existingTitles) ? 'Chưa có bài viết nào.' : implode("\n- ", $existingTitles);
 
         $prompt = "Bạn là một Tổng biên tập chuyên nghiệp, chuyên gia phân tích biển số xe cộ và chuyên gia tối ưu hóa SEO. 
@@ -213,10 +276,13 @@ Trả về một đối tượng JSON chứa chính xác các trường sau:
 3. 'summary': Tóm tắt ngắn nội dung bài viết (khoảng 150-200 ký tự).
 4. 'meta_title': Tiêu đề meta SEO (dưới 60 ký tự).
 5. 'meta_description': Mô tả meta SEO thu hút click (dưới 160 ký tự).
-6. 'content': Bài viết chi tiết định dạng HTML chứa thẻ <figure> minh họa có ghi chú ảnh (figcaption) và thuộc tính src đặc biệt như đã yêu cầu ở trên.
+6. 'content': Bài viết chi tiết định dạng HTML chứa thẻ <figure> minh họa có ghi chú ảnh (figcaption), thuộc tính src đặc biệt như đã yêu cầu ở trên, và các thẻ a chứa liên kết nội bộ (SEO Internal Linking) được lồng ghép tự nhiên từ danh sách được cung cấp bên dưới.
 7. 'image_prompt': Một prompt tiếng Anh chi tiết để tạo ảnh đại diện (featured image) cho bài viết bằng AI. Hãy đa dạng hóa bối cảnh ảnh đại diện tùy thuộc chủ đề và tuân thủ tuyệt đối quy tắc cấm chữ (phải có no text, no words, no letters), cấm các màn hình thiết bị và cấm bàn tay cầm chìa khóa xe. Yêu cầu mô tả ảnh thực tế (realistic photo), có bối cảnh xe cộ hoặc quy trình phù hợp với Việt Nam, góc máy và ánh sáng độc đáo. TUYỆT ĐỐI không vẽ ảnh các loại giấy tờ pháp lý, đăng ký xe (cavet xe), đăng kiểm. Nếu có xe cộ, biển số phải đúng định dạng Việt Nam (ví dụ 30K-999.99 hoặc 51A-888.88), sắc nét, chất lượng cao, mang phong cách đời thực chân thực (real photo style, avoid AI look).
 
+{$internalLinksPrompt}
+
 Yêu cầu quan trọng:
+- TUYỆT ĐỐI KHÔNG sử dụng thẻ h1 trong nội dung bài viết (trường 'content'). Tiêu đề bài viết đã được hệ thống hiển thị bằng thẻ h1 ở ngoài. Việc lặp lại thẻ h1 trong content là lỗi cấu trúc SEO nghiêm trọng. Hãy bắt đầu trực tiếp bằng đoạn mở đầu (<p>) hoặc thẻ h2.
 - TUYỆT ĐỐI KHÔNG sử dụng từ khóa 'phong thủy' hoặc các cụm từ liên quan đến 'phong thủy' trong toàn bộ tiêu đề, mô tả và nội dung bài viết. Hãy thay thế bằng các diễn đạt trung tính hơn như 'ý nghĩa con số', 'theo quan niệm dân gian', 'thế số đẹp/xấu', 'phân tích thế số', 'tổng nút'.
 - Nội dung hoàn toàn bằng tiếng Việt.
 - Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên. Không thêm bất kỳ văn bản giải thích nào ngoài JSON.";

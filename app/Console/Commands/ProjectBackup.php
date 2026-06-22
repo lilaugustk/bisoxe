@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\GoogleStorageService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -15,7 +16,7 @@ use Exception;
 #[Description('Sao lưu cơ sở dữ liệu và các tệp tải lên của dự án thành file ZIP')]
 class ProjectBackup extends Command
 {
-    public function handle(): int
+    public function handle(GoogleStorageService $storageService): int
     {
         $databaseOnly = $this->option('database-only');
         $filesOnly = $this->option('files-only');
@@ -94,9 +95,20 @@ class ProjectBackup extends Command
             $size = File::size($zipFilePath);
             $sizeFormatted = $this->formatBytes($size);
             $this->newLine();
-            $this->info("=== SAO LƯU THÀNH CÔNG ===");
+            $this->info("=== SAO LƯU CỤC BỘ THÀNH CÔNG ===");
             $this->info("Vị trí lưu: {$zipFilePath}");
             $this->info("Dung lượng: {$sizeFormatted}");
+
+            // Tải lên Google Cloud Storage nếu cấu hình
+            if ($storageService->isConfigured()) {
+                $this->info("Đang tải bản sao lưu lên Google Cloud Storage (Bucket: {$storageService->getBucketName()})...");
+                if ($storageService->uploadFile($zipFilePath, $zipFileName)) {
+                    $this->info("Tải lên Google Cloud Storage THÀNH CÔNG!");
+                } else {
+                    $this->error("Tải lên Google Cloud Storage THẤT BẠI. Vui lòng kiểm tra log.");
+                }
+            }
+
             $this->newLine();
             return self::SUCCESS;
         }

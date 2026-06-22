@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\GoogleStorageService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -16,42 +17,62 @@ use Exception;
 #[Description('Khôi phục cơ sở dữ liệu và các tệp tải lên từ file sao lưu ZIP')]
 class ProjectRestore extends Command
 {
-    public function handle(): int
+    public function handle(GoogleStorageService $storageService): int
     {
         $backupDir = storage_path('backups');
 
         if (!File::exists($backupDir)) {
-            $this->error("Thư mục sao lưu không tồn tại: {$backupDir}");
-            return self::FAILURE;
+            File::makeDirectory($backupDir, 0755, true);
         }
 
-        // Tìm các file ZIP sao lưu
-        $files = File::files($backupDir);
         $backups = [];
 
+        // 1. Tìm các file ZIP sao lưu cục bộ
+        $files = File::files($backupDir);
         foreach ($files as $file) {
             if ($file->getExtension() === 'zip' && str_starts_with($file->getFilename(), 'backup-')) {
-                $backups[] = $file;
+                $backups[] = [
+                    'source' => 'local',
+                    'name' => $file->getFilename(),
+                    'pathname' => $file->getPathname(),
+                    'size' => File::size($file->getPathname()),
+                    'mtime' => $file->getMTime(),
+                ];
+            }
+        }
+
+        // 2. Tìm các file ZIP sao lưu trên Google Cloud Storage
+        if ($storageService->isConfigured()) {
+            $this->info("Đang tải danh sách bản sao lưu từ Google Cloud Storage...");
+            $gcsFiles = $storageService->listFiles();
+            foreach ($gcsFiles as $gcsFile) {
+                $backups[] = [
+                    'source' => 'gcs',
+                    'name' => $gcsFile['name'],
+                    'pathname' => $gcsFile['name'],
+                    'size' => $gcsFile['size'],
+                    'mtime' => $gcsFile['mtime'],
+                ];
             }
         }
 
         if (empty($backups)) {
-            $this->error("Không tìm thấy bản sao lưu nào trong thư mục storage/backups/.");
+            $this->error("Không tìm thấy bản sao lưu nào cục bộ hoặc trên Google Cloud Storage.");
             return self::FAILURE;
         }
 
         // Sắp xếp bản mới nhất lên đầu
         usort($backups, function ($a, $b) {
-            return $b->getMTime() - $a->getMTime();
+            return $b['mtime'] - $a['mtime'];
         });
 
         // Tạo danh sách cho người dùng chọn
         $options = [];
-        foreach ($backups as $file) {
-            $size = File::size($file->getPathname());
-            $sizeFormatted = $this->formatBytes($size);
-            $date = date('Y-m-d H:i:s', $file->getMTime());
-            $options[$file->getFilename()] = "{$file->getFilename()} (Ngày tạo: {$date} | Dung lượng: {$sizeFormatted})";
+        foreach ($backups as $b) {
+            $sizeFormatted = $this->formatBytes($b['size']);
+            $date = date('Y-m-d H:i:s', $b['mtime']);
+            $sourceTag = $b['source'] === 'gcs' ? '[ĐÁM MÂY]' : '[CỤC BỘ]';
+            $options[$b['name']] = "{$sourceTag} {$b['name']} (Ngày tạo: {$date} | Dung lượng: {$sizeFormatted})";
         }
 
         $selectedName = $this->choice(
@@ -60,12 +81,29 @@ class ProjectRestore extends Command
             array_key_first($options)
         );
 
-        $selectedFile = collect($backups)->first(fn($file) => $file->getFilename() === $selectedName);
+        $selectedBackup = collect($backups)->first(fn($b) => $b['name'] === $selectedName);
 
         $this->warn("CẢNH BÁO: Quá trình khôi phục sẽ ghi đè lên Cơ sở dữ liệu và các Tệp tin tải lên hiện tại!");
         if (!$this->confirm("Bạn có chắc chắn muốn tiến hành khôi phục từ bản sao lưu [{$selectedName}] không?", false)) {
             $this->info("Đã hủy bỏ quá trình khôi phục.");
             return self::SUCCESS;
+        }
+
+        $zipFilePath = '';
+        $deleteLocalAfterRestore = false;
+
+        // Nếu là file trên Google Cloud, tiến hành tải về cục bộ trước
+        if ($selectedBackup['source'] === 'gcs') {
+            $zipFilePath = "{$backupDir}/{$selectedName}";
+            $this->info("Đang tải tệp sao lưu từ Google Cloud Storage về máy cục bộ...");
+            if (!$storageService->downloadFile($selectedName, $zipFilePath)) {
+                $this->error("Tải bản sao lưu từ đám mây thất bại.");
+                return self::FAILURE;
+            }
+            $this->info("Tải bản sao lưu về thành công.");
+            $deleteLocalAfterRestore = true;
+        } else {
+            $zipFilePath = $selectedBackup['pathname'];
         }
 
         $tempPath = "{$backupDir}/temp_restore_" . time();
@@ -74,7 +112,10 @@ class ProjectRestore extends Command
         // Giải nén file ZIP
         $this->info("Đang giải nén file sao lưu...");
         $zip = new ZipArchive();
-        if ($zip->open($selectedFile->getPathname()) !== true) {
+        if ($zip->open($zipFilePath) !== true) {
+            if ($deleteLocalAfterRestore && File::exists($zipFilePath)) {
+                File::delete($zipFilePath);
+            }
             File::deleteDirectory($tempPath);
             $this->error("Không thể giải nén file ZIP.");
             return self::FAILURE;
@@ -142,6 +183,11 @@ class ProjectRestore extends Command
         } finally {
             // Luôn dọn dẹp thư mục tạm
             File::deleteDirectory($tempPath);
+
+            // Xóa file ZIP tải từ GCS về để tránh rác dung lượng cục bộ
+            if (isset($deleteLocalAfterRestore) && $deleteLocalAfterRestore && isset($zipFilePath) && File::exists($zipFilePath)) {
+                File::delete($zipFilePath);
+            }
         }
 
         return self::SUCCESS;
@@ -223,6 +269,10 @@ class ProjectRestore extends Command
             $currentQuery = '';
             $queryCount = 0;
 
+            if (!$pdo->inTransaction()) {
+                $pdo->beginTransaction();
+            }
+
             while (($line = fgets($handle)) !== false) {
                 $trimmedLine = trim($line);
 
@@ -241,6 +291,12 @@ class ProjectRestore extends Command
                         if ($queryCount % 1000 === 0) {
                             $this->output->write('.');
                         }
+                        if ($queryCount % 5000 === 0) {
+                            if ($pdo->inTransaction()) {
+                                $pdo->commit();
+                            }
+                            $pdo->beginTransaction();
+                        }
                     } catch (Exception $e) {
                         // Tiếp tục chạy để khôi phục tối đa dữ liệu, log cảnh báo
                         $this->newLine();
@@ -250,12 +306,19 @@ class ProjectRestore extends Command
                 }
             }
 
+            if ($pdo->inTransaction()) {
+                $pdo->commit();
+            }
+
             fclose($handle);
             $this->newLine();
             $pdo->exec('SET FOREIGN_KEY_CHECKS=1;');
 
             return true;
         } catch (Exception $e) {
+            if (isset($pdo) && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             $this->newLine();
             $this->error("Lỗi phương thức dự phòng PDO: " . $e->getMessage());
             return false;

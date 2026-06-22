@@ -59,6 +59,18 @@ html {
     font-weight: 700;
 }
 
+.ai-content-body a {
+    color: #8c1e1e;
+    text-decoration: underline;
+    font-weight: 750;
+    transition: color 0.15s ease-in-out;
+}
+
+.ai-content-body a:hover {
+    color: #b91c1c;
+    text-decoration: none;
+}
+
 /* Table styles for AI-generated content */
 .ai-content-body table {
     width: 100%;
