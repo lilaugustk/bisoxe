@@ -81,6 +81,7 @@ Nhiệm vụ của bạn là trả về một JSON thuần túy có cấu trúc 
 }
 
 LƯU Ý QUAN TRỌNG ĐỂ TRÁNH DẬP KHUÔN:
+- TUYỆT ĐỐI KHÔNG sử dụng từ khóa 'phong thủy' hoặc các cụm từ tương tự liên quan đến 'phong thủy' trong toàn bộ tiêu đề, mô tả và nội dung bài viết. Hãy thay thế bằng các diễn đạt trung tính hơn như 'ý nghĩa con số', 'theo quan niệm dân gian', 'thế số đẹp/xấu', 'phân tích thế số', 'tổng nút'.
 - Cấu trúc bài viết phải linh hoạt. Tùy thuộc vào biển số thường hay biển VIP ({$plateKinds}), hãy nhấn mạnh khía cạnh khác nhau. Nếu là biển VIP (ngũ quý, tứ quý, sảnh tiến), hãy viết với sự ngợi ca hào nhoáng, xa xỉ. Nếu là biển thường, hãy tập trung vào tính 'dễ nhớ', 'thực dụng', 'bình dân' hoặc cách chọn số xe phù hợp với nhu cầu đi lại hàng ngày.
 - Đa dạng hóa các câu mở đầu của từng đoạn. Không dùng các câu nối cứng nhắc, dập khuôn.
 - Chỉ trả về chuỗi JSON hợp lệ không chứa markdown bao quanh. Không giải thích gì thêm.";

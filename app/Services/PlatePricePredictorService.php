@@ -204,7 +204,7 @@ class PlatePricePredictorService
 
         if ($nut >= 9) {
             $score += 10;
-            $reasons[] = "Tổng nút cực cao ($nut nút) mang lại năng lượng phong thủy cát tường";
+            $reasons[] = "Tổng nút cực cao ($nut nút) mang lại ý nghĩa may mắn, cát tường";
         } elseif ($nut >= 7) {
             $score += 5;
             $reasons[] = "Tổng nút khá tốt ($nut nút) đem lại sự suôn sẻ, thuận lợi";

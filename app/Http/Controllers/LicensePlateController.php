@@ -341,13 +341,41 @@ class LicensePlateController extends Controller
             ]);
         }
 
-        // Nếu chưa có bài viết, tự động kích hoạt job sinh bài viết chạy ngầm ngay lập tức!
-        $cacheKey = "generating_article_{$plate->id}";
-        if (! Cache::has($cacheKey)) {
-            Cache::put($cacheKey, true, 300); // Khóa trong 5 phút
-            GenerateSeoArticleJob::dispatch($plate);
+        // Nếu chưa có bài viết, tự động kích hoạt sinh bài viết đồng bộ ngay lập tức!
+        try {
+            set_time_limit(120); // Đảm bảo thời gian thực thi dài hơn cho API AI
+            GenerateSeoArticleJob::dispatchSync($plate);
+            
+            // Tải lại quan hệ để lấy bài viết vừa tạo
+            $plate->load('seoArticle');
+            $article = $plate->seoArticle;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Sinh bài viết đồng bộ thất bại cho biển {$plate->full_number}: " . $e->getMessage());
         }
 
+        if ($article) {
+            return Inertia::render('Plate/Detail', [
+                'article' => [
+                    'title' => $article->title,
+                    'meta_title' => $article->meta_title,
+                    'meta_description' => $article->meta_description,
+                    'content' => $article->content,
+                    'video_script' => $article->video_script,
+                    'slug' => $article->slug,
+                    'generation_model' => $article->generation_model,
+                    'generated_at' => $article->generated_at ? $article->generated_at->toISOString() : null,
+                    'image_url' => $article->image_path ? asset($article->image_path) : null,
+                ],
+                'plate' => $this->transformPlate($plate),
+                'is_pending' => false,
+                'price_prediction' => $prediction,
+                'price_trend' => $trend,
+                'plate_score' => $score,
+                'related_plates' => $relatedPlates,
+            ]);
+        }
+
+        // Trường hợp lỗi hoặc thất bại, hiển thị trang rỗng/chờ
         return Inertia::render('Plate/Detail', [
             'article' => [
                 'title' => "Giải mã ý nghĩa biển số {$plate->display_number}",

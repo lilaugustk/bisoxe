@@ -1790,21 +1790,36 @@ watch(showPriceGuide, (newVal) => {
                         <div class="my-4 flex justify-center">
                             <!-- Mini Long Plate Representation -->
                             <div
-                                class="relative flex aspect-[520/110] w-full max-w-[220px] items-center justify-center rounded border px-3 py-1 shadow-sm select-none"
+                                class="relative flex aspect-[520/110] w-full max-w-[220px] items-center justify-center rounded-md border shadow-[0_4px_10px_-1px_rgba(0,0,0,0.1),inset_0_1px_2px_rgba(255,255,255,0.8)] transition-all p-0.5"
                                 :class="
                                     relPlate.color === 1
-                                        ? 'border-black/50 bg-gradient-to-b from-amber-400 to-amber-500 text-black'
-                                        : 'border-gray-200 bg-gradient-to-b from-white to-gray-50 text-black'
+                                        ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black'
+                                        : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'
                                 "
                             >
-                                <div class="flex items-center justify-center font-sans font-black tracking-tight text-xs uppercase text-black">
-                                    <span>{{ relPlate.local_symbol }}{{ relPlate.serial_letter }}</span>
-                                    <span class="mx-1 font-bold text-black/85">-</span>
-                                    <span>
-                                        {{ relPlate.serial_number.slice(0, 3) }}
-                                        <span class="mx-0.5 mb-0.5 inline-block h-0.5 w-0.5 rounded-full bg-black"></span>
-                                        {{ relPlate.serial_number.slice(3) }}
-                                    </span>
+                                <!-- Acrylic shine layer -->
+                                <div
+                                    class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"
+                                ></div>
+
+                                <!-- Embossed inner border line -->
+                                <div
+                                    class="flex h-full w-full items-center justify-center rounded border px-3 select-none"
+                                    :class="
+                                        relPlate.color === 1
+                                            ? 'border-black/35'
+                                            : 'border-gray-300'
+                                    "
+                                >
+                                    <div class="flex items-center justify-center font-sans font-black tracking-tight text-sm uppercase text-black">
+                                        <span>{{ relPlate.local_symbol }}{{ relPlate.serial_letter }}</span>
+                                        <span class="mx-1 font-bold text-black/80">-</span>
+                                        <span class="flex items-center">
+                                            {{ relPlate.serial_number.slice(0, 3) }}
+                                            <span class="mx-0.5 mb-0.5 h-0.5 w-0.5 shrink-0 self-end rounded-full bg-black"></span>
+                                            {{ relPlate.serial_number.slice(3) }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

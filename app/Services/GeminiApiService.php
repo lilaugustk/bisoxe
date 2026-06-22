@@ -80,6 +80,7 @@ Nhiệm vụ của bạn là trả về một đối tượng JSON chứa chính
 5. 'video_script': Kịch bản video ngắn (TikTok/Reels/Shorts) dài khoảng 30-45 giây để giới thiệu về biển số này, bao gồm: Lời thoại thuyết minh (Voiceover) tiếng Việt và gợi ý hình ảnh/video minh họa tương ứng.
 
 Yêu cầu quan trọng:
+- TUYỆT ĐỐI KHÔNG sử dụng từ khóa 'phong thủy' hoặc các cụm từ tương tự liên quan đến 'phong thủy' trong toàn bộ tiêu đề, mô tả và nội dung bài viết. Hãy thay thế bằng các diễn đạt trung tính hơn như 'ý nghĩa con số', 'theo quan niệm dân gian', 'thế số đẹp/xấu', 'phân tích thế số', 'tổng nút'.
 - Nội dung hoàn toàn bằng tiếng Việt, phong cách hành văn chuyên nghiệp, mạch lạc, lôi cuốn.
 - Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên. Không thêm bất kỳ văn bản giải thích nào ngoài JSON.";
 
@@ -174,7 +175,7 @@ Danh sách các tiêu đề bài viết ĐÃ CÓ (HÃY TRÁNH viết về các c
 
 Yêu cầu về chủ đề và nội dung:
 1. Chủ đề phải thuộc một trong 3 chuyên mục sau, và hãy đa dạng hóa các khía cạnh khai thác:
-   - 'phong-thuy': Phân tích ý nghĩa biển số, cách nhìn nhận biển đẹp biển xấu, thế số và tổng nút các con số. Hãy mở rộng sang các khía cạnh: phân tích ý nghĩa cặp số đặc biệt theo dân gian (ví dụ: 39-79 Thần Tài, 38-78 Thổ Địa, 68-86 Lộc Phát...), cách tính tổng nút của biển số xe, sự phối hợp màu sắc xe và biển số xe kết hợp với các con số may mắn, hoặc các quan niệm dân gian về số 'xấu' (thất bát 78, tử 4, thất 7, 49, 53) và góc nhìn thực tế, khoa học/tâm lý hiện đại để hóa giải.
+   - 'phong-thuy' (Lưu ý: Mặc dù tên chuyên mục là 'phong-thuy' nhưng bài viết TUYỆT ĐỐI KHÔNG được dùng từ khóa 'phong thủy' hoặc các cụm từ tương tự liên quan đến 'phong thủy' trong bài viết, hãy dùng các từ thay thế như 'ý nghĩa con số', 'thế số đẹp/xấu', 'tổng nút'): Phân tích ý nghĩa biển số, cách nhìn nhận biển đẹp biển xấu, thế số và tổng nút các con số. Hãy mở rộng sang các khía cạnh: phân tích ý nghĩa cặp số đặc biệt theo dân gian (ví dụ: 39-79 Thần Tài, 38-78 Thổ Địa, 68-86 Lộc Phát...), cách tính tổng nút của biển số xe, sự phối hợp màu sắc xe và biển số xe kết hợp với các con số may mắn, hoặc các quan niệm dân gian về số 'xấu' (thất bát 78, tử 4, thất 7, 49, 53) và góc nhìn thực tế, khoa học/tâm lý hiện đại để hóa giải.
    - 'huong-dan': Hướng dẫn các quy trình liên quan đến đăng ký tài khoản, nộp tiền đặt trước, quy trình tham gia đấu giá trên trang VPA, thủ tục nhận biển số trúng đấu giá. Hãy mở rộng sang: hướng dẫn sang tên, di chuyển biển số trúng đấu giá theo Thông tư mới nhất (Thông tư 24...), cách xử lý lỗi thường gặp khi đấu giá (lỗi chuyển khoản muộn, không nhận được OTP), quy trình tích hợp biển số trúng đấu giá lên xe mới hoặc xe cũ đang lưu hành, chiến thuật đặt giá hiệu quả (cách bấm giá giây cuối, theo dõi lịch sử giá), hoặc quy trình thu hồi và đăng ký biển định danh mới.
    - 'tin-tuc': Cập nhật thông tin thị trường biển số đẹp, phân tích kỷ lục giá biển số, xu hướng sưu tầm biển số xe. Hãy mở rộng sang: điểm tin và thống kê xu hướng đấu giá biển số nổi bật trong tuần/tháng, những câu chuyện thú vị về giới sưu tầm biển số xe đẹp tại Việt Nam (biển số theo sảnh tiến, biển trùng ngày sinh, biển gánh, biển đối), so sánh thị trường đấu giá biển số xe Việt Nam với thế giới (Dubai, Anh, Thái Lan, Trung Quốc) về mức giá và luật lệ, hoặc phân tích tính thanh khoản và giá trị đầu tư của biển số định danh trên thị trường xe cũ.
 2. Bài viết chi tiết phải dài tối thiểu 800 từ, định dạng HTML phong phú (sử dụng các thẻ h2, h3, p, strong, ul, li).
@@ -216,6 +217,7 @@ Trả về một đối tượng JSON chứa chính xác các trường sau:
 7. 'image_prompt': Một prompt tiếng Anh chi tiết để tạo ảnh đại diện (featured image) cho bài viết bằng AI. Hãy đa dạng hóa bối cảnh ảnh đại diện tùy thuộc chủ đề và tuân thủ tuyệt đối quy tắc cấm chữ (phải có no text, no words, no letters), cấm các màn hình thiết bị và cấm bàn tay cầm chìa khóa xe. Yêu cầu mô tả ảnh thực tế (realistic photo), có bối cảnh xe cộ hoặc quy trình phù hợp với Việt Nam, góc máy và ánh sáng độc đáo. TUYỆT ĐỐI không vẽ ảnh các loại giấy tờ pháp lý, đăng ký xe (cavet xe), đăng kiểm. Nếu có xe cộ, biển số phải đúng định dạng Việt Nam (ví dụ 30K-999.99 hoặc 51A-888.88), sắc nét, chất lượng cao, mang phong cách đời thực chân thực (real photo style, avoid AI look).
 
 Yêu cầu quan trọng:
+- TUYỆT ĐỐI KHÔNG sử dụng từ khóa 'phong thủy' hoặc các cụm từ liên quan đến 'phong thủy' trong toàn bộ tiêu đề, mô tả và nội dung bài viết. Hãy thay thế bằng các diễn đạt trung tính hơn như 'ý nghĩa con số', 'theo quan niệm dân gian', 'thế số đẹp/xấu', 'phân tích thế số', 'tổng nút'.
 - Nội dung hoàn toàn bằng tiếng Việt.
 - Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên. Không thêm bất kỳ văn bản giải thích nào ngoài JSON.";
 
