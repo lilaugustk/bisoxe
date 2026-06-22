@@ -110,16 +110,6 @@ const formatDate = (dateStr: string | null) => {
             name="description"
             content="Khám phá cẩm nang đấu giá biển số xe, tin tức thị trường biển số đẹp và bài viết giải mã ý nghĩa biển số mới nhất tại BISOXE.COM"
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossorigin="anonymous"
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-            rel="stylesheet"
-        />
     </Head>
 
     <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
@@ -344,9 +334,10 @@ const formatDate = (dateStr: string | null) => {
             <!-- Pagination -->
             <div
                 v-if="posts.total > posts.per_page"
-                class="mt-8 flex justify-center rounded-2xl border border-gray-200 bg-white p-4 select-none"
+                class="mt-8 flex justify-between sm:justify-center rounded-2xl border border-gray-200 bg-white p-4 select-none"
             >
-                <nav class="flex w-full flex-wrap items-center justify-center gap-1.5">
+                <!-- Desktop Pagination (hidden sm:flex) -->
+                <nav class="hidden sm:flex w-full flex-wrap items-center justify-center gap-1.5">
                     <template v-for="(link, i) in posts.links" :key="i">
                         <!-- Previous / Next -->
                         <template v-if="link.label.includes('Previous')">
@@ -420,6 +411,92 @@ const formatDate = (dateStr: string | null) => {
                         </template>
                     </template>
                 </nav>
+
+                <!-- Mobile Pagination (flex sm:hidden) -->
+                <div class="flex sm:hidden items-center justify-between w-full px-2">
+                    <!-- Prev Button -->
+                    <span
+                        v-if="posts.links[0].url === null"
+                        class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300"
+                    >
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                    </span>
+                    <Link
+                        v-else
+                        :href="posts.links[0].url || '#'"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]"
+                    >
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                    </Link>
+
+                    <!-- Page text -->
+                    <span class="text-xs font-bold text-gray-600 px-1">
+                        <span class="min-[360px]:inline hidden">Trang </span>{{ posts.current_page }} / {{ posts.last_page }}
+                    </span>
+
+                    <!-- Next Button -->
+                    <span
+                        v-if="posts.links[posts.links.length - 1].url === null"
+                        class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300"
+                    >
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                    </span>
+                    <Link
+                        v-else
+                        :href="posts.links[posts.links.length - 1].url || '#'"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]"
+                    >
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                    </Link>
+                </div>
             </div>
         </main>
 

@@ -127,6 +127,8 @@ const generateToc = () => {
 let pollInterval: any = null;
 
 onMounted(() => {
+    isTocExpanded.value = window.innerWidth >= 768;
+
     // Nếu bài viết đã được gen xong và URL hiện tại chưa phải là URL chuẩn SEO (chứa slug)
     // thì dùng router.replace chuyển hướng để tránh lưu vết trong history (sửa lỗi nút Back)
     if (!props.is_pending && props.article && props.article.slug) {
@@ -637,16 +639,6 @@ watch(showPriceGuide, (newVal) => {
             name="twitter:image"
             :content="article.image_url"
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossorigin="anonymous"
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-            rel="stylesheet"
-        />
     </Head>
 
     <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
@@ -796,7 +788,7 @@ watch(showPriceGuide, (newVal) => {
 
                                     <!-- Embossed inner border line -->
                                     <div
-                                        class="flex h-full w-full flex-col items-center justify-between rounded border px-4 py-4 min-[380px]:px-6 min-[380px]:py-6 select-none"
+                                        class="flex h-full w-full flex-col items-center justify-center gap-y-2 min-[380px]:gap-y-3 rounded border px-4 py-4 min-[380px]:px-6 min-[380px]:py-6 select-none"
                                         :class="
                                             plate.color === 1
                                                 ? 'border-black/35'
@@ -805,7 +797,7 @@ watch(showPriceGuide, (newVal) => {
                                     >
                                         <!-- Row 1: Mã vùng + Seri -->
                                         <div
-                                            class="w-full text-center font-sans text-[2rem] min-[380px]:text-[2.4rem] md:text-[2.8rem] leading-none font-black uppercase"
+                                            class="w-full text-center font-sans text-[2.3rem] min-[380px]:text-[2.7rem] md:text-[3.1rem] leading-none font-black uppercase"
                                         >
                                             {{ plate.local_symbol
                                             }}{{ plate.serial_letter }}
@@ -813,7 +805,7 @@ watch(showPriceGuide, (newVal) => {
 
                                         <!-- Row 2: Dãy 5 số -->
                                         <div
-                                            class="flex w-full items-end justify-center text-center font-sans text-[2.4rem] min-[380px]:text-[2.8rem] md:text-[3.2rem] leading-none font-black"
+                                            class="flex w-full items-end justify-center text-center font-sans text-[2.3rem] min-[380px]:text-[2.7rem] md:text-[3.1rem] leading-none font-black"
                                         >
                                             <span>{{
                                                 plate.serial_number.slice(0, 3)

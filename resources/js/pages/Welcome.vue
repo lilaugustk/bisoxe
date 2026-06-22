@@ -88,6 +88,19 @@ const kindsOpen = ref(true);
 const birthYearsOpen = ref(true);
 const avoidNumbersOpen = ref(true);
 
+const isMobileFiltersOpen = ref(false);
+const activeFiltersCount = computed(() => {
+    let count = 0;
+    if (selectedColor.value !== '') count++;
+    if (selectedProvince.value !== '') count++;
+    if (startDate.value !== '') count++;
+    if (endDate.value !== '') count++;
+    if (selectedKind.value.length > 0) count += selectedKind.value.length;
+    if (selectedBirthYears.value.length > 0) count += selectedBirthYears.value.length;
+    if (selectedAvoidNumbers.value.length > 0) count += selectedAvoidNumbers.value.length;
+    return count;
+});
+
 const birthYearOptions = [
     { label: 'Năm sinh 196x', value: '196x' },
     { label: 'Năm sinh 197x', value: '197x' },
@@ -400,7 +413,7 @@ onUnmounted(() => {
                 class="relative z-10 mx-auto max-w-[1440px] px-4 text-center sm:px-6 lg:px-8"
             >
                 <h1
-                    class="mb-6 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl leading-tight"
+                    class="mb-6 text-3xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl leading-tight"
                     v-html="heroH1Html"
                 ></h1>
 
@@ -497,10 +510,42 @@ onUnmounted(() => {
                 </button>
             </div>
 
+            <!-- Mobile search & filter toggle (lg:hidden) -->
+            <div class="flex gap-3 lg:hidden mt-4 mb-2">
+                <div class="relative flex-1">
+                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        v-model="searchQuery"
+                        @keyup.enter="reload"
+                        @blur="reload"
+                        placeholder="Tìm kiếm biển số xe..."
+                        class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 placeholder-gray-400 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none"
+                    />
+                </div>
+                <button
+                    type="button"
+                    @click="isMobileFiltersOpen = true"
+                    class="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 shrink-0"
+                >
+                    <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <span>Bộ lọc</span>
+                    <span v-if="activeFiltersCount > 0" class="flex h-5 w-5 items-center justify-center rounded-full bg-[#8C1E1E] text-[10px] font-black text-white">
+                        {{ activeFiltersCount }}
+                    </span>
+                </button>
+            </div>
+
             <!-- Filters and Table Layout Grid -->
             <div class="mt-6 grid grid-cols-1 items-start gap-8 lg:grid-cols-4">
                 <!-- Left Sidebar Filters -->
-                <aside class="space-y-4 lg:col-span-1">
+                <aside class="hidden lg:block lg:col-span-1 space-y-4">
                     <!-- General Filters -->
                     <div
                         class="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
@@ -781,7 +826,7 @@ onUnmounted(() => {
                     <div
                         class="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
                     >
-                        <div class="overflow-x-auto">
+                        <div class="hidden md:block overflow-x-auto">
                             <table
                                 class="w-full min-w-[600px] border-collapse text-left text-sm"
                             >
@@ -891,10 +936,86 @@ onUnmounted(() => {
                             </table>
                         </div>
 
+                        <!-- Mobile/Tablet Card List -->
+                        <div class="block md:hidden divide-y divide-gray-100 bg-white">
+                            <div
+                                v-for="(plate, index) in filteredPlates"
+                                :key="'mobile-' + plate.id"
+                                class="p-4 space-y-3.5 transition duration-150 hover:bg-gray-50/50"
+                            >
+                                <!-- Card Header: STT, Province, Kind -->
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <span class="flex h-5 w-5 items-center justify-center rounded bg-gray-50 text-[10px] font-bold text-gray-400">
+                                            #{{ index + 1 }}
+                                        </span>
+                                        <span class="font-bold text-gray-800">
+                                            {{ plate.province ? plate.province.name : 'Chưa xác định' }}
+                                        </span>
+                                    </div>
+                                    <span
+                                        class="rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide border"
+                                        :class="plate.kinds.length > 0 ? 'bg-red-50 text-[#8C1E1E] border-red-100' : 'bg-gray-50 text-gray-500 border-gray-100'"
+                                    >
+                                        {{ plate.kinds.length > 0 ? plate.kinds[0].name : 'Biển thường' }}
+                                    </span>
+                                </div>
+
+                                <!-- Card Center: Simulated License Plate -->
+                                <div class="flex justify-center py-1 select-none">
+                                    <!-- A scaled down, premium license plate rendering -->
+                                    <div
+                                        class="relative flex aspect-[520/110] w-full max-w-[240px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102"
+                                        :class="plate.color === 1 
+                                            ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' 
+                                            : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
+                                    >
+                                        <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
+                                        <div class="flex h-full w-full items-center justify-center rounded border px-3 select-none"
+                                            :class="plate.color === 1 ? 'border-black/30' : 'border-gray-250'"
+                                        >
+                                            <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black text-[1.1rem]">
+                                                <span>{{ plate.display_number }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card Body: Price and Time -->
+                                <div class="flex justify-between items-center text-xs border-t border-gray-50 pt-2.5">
+                                    <div class="flex flex-col gap-0.5">
+                                        <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                            {{ activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}
+                                        </span>
+                                        <span class="text-sm font-black text-[#8C1E1E]">
+                                            {{ plate.winning_price > 0 ? formatMoney(plate.winning_price) : formatMoney(plate.starting_price) }}
+                                        </span>
+                                    </div>
+
+                                    <div v-if="activeTab !== 'announce' && plate.auction_start_time" class="flex flex-col items-end gap-0.5">
+                                        <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Ngày đấu</span>
+                                        <span class="text-[11px] font-bold text-gray-600">
+                                            {{ formatDate(plate.auction_start_time).split(' ')[0] }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Card Footer: Action -->
+                                <div class="pt-1">
+                                    <Link
+                                        :href="`/bien-so/${plate.slug}`"
+                                        class="flex w-full items-center justify-center rounded-xl border border-[#8C1E1E] bg-red-50/20 py-2.5 text-xs font-bold text-[#8C1E1E] shadow-xs transition hover:bg-[#8C1E1E] hover:text-white"
+                                    >
+                                        Phân tích chi tiết biển số →
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Phân trang (Pagination) -->
                         <div
                             v-if="props.plates.total > 0"
-                            class="flex flex-col gap-4 border-t border-gray-100 bg-white px-6 py-4 select-none sm:flex-row sm:items-center sm:justify-between"
+                            class="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-4 select-none sm:px-6"
                         >
                             <!-- Left side: Custom Limit dropdown selector -->
                             <div class="flex items-center gap-2">
@@ -967,10 +1088,11 @@ onUnmounted(() => {
                             <!-- Right side: Page navigation numbers without border grids -->
                             <div
                                 v-if="props.plates.last_page > 1"
-                                class="flex items-center justify-center sm:justify-end w-full sm:w-auto"
+                                class="flex items-center justify-end"
                             >
+                                <!-- Desktop Pagination (hidden sm:flex) -->
                                 <nav
-                                    class="flex w-full flex-wrap items-center justify-center gap-1.5"
+                                    class="hidden sm:flex flex-wrap items-center justify-center gap-1.5"
                                     aria-label="Pagination"
                                 >
                                     <template
@@ -1093,6 +1215,92 @@ onUnmounted(() => {
                                         </template>
                                     </template>
                                 </nav>
+
+                                <!-- Mobile Pagination (flex sm:hidden) -->
+                                <div class="flex sm:hidden items-center gap-2 select-none">
+                                    <!-- Prev Button -->
+                                    <span
+                                        v-if="props.plates.links[0].url === null"
+                                        class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300"
+                                    >
+                                        <svg
+                                            class="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            stroke-width="2.5"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M15 19l-7-7 7-7"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <Link
+                                        v-else
+                                        :href="props.plates.links[0].url || '#'"
+                                        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]"
+                                    >
+                                        <svg
+                                            class="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            stroke-width="2.5"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M15 19l-7-7 7-7"
+                                            />
+                                        </svg>
+                                    </Link>
+
+                                    <!-- Page text -->
+                                    <span class="text-xs font-bold text-gray-600 px-1">
+                                        <span class="min-[360px]:inline hidden">Trang </span>{{ props.plates.current_page }} / {{ props.plates.last_page }}
+                                    </span>
+
+                                    <!-- Next Button -->
+                                    <span
+                                        v-if="props.plates.links[props.plates.links.length - 1].url === null"
+                                        class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300"
+                                    >
+                                        <svg
+                                            class="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            stroke-width="2.5"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9 5l7 7-7 7"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <Link
+                                        v-else
+                                        :href="props.plates.links[props.plates.links.length - 1].url || '#'"
+                                        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]"
+                                    >
+                                        <svg
+                                            class="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            stroke-width="2.5"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9 5l7 7-7 7"
+                                            />
+                                        </svg>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
 
@@ -1121,7 +1329,7 @@ onUnmounted(() => {
             <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
                 <header class="mb-12 text-center">
                     <h2
-                        class="text-3xl font-extrabold tracking-tight text-gray-900"
+                        class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900"
                     >
                         Ý nghĩa của các con số trong biển số xe
                     </h2>
@@ -1250,7 +1458,7 @@ onUnmounted(() => {
             <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
                 <header class="mb-12 text-center">
                     <h2
-                        class="text-3xl font-extrabold tracking-tight text-gray-900"
+                        class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900"
                     >
                         Câu Hỏi Thường Gặp
                     </h2>

@@ -67,6 +67,7 @@ const generateToc = () => {
 };
 
 onMounted(() => {
+    isTocExpanded.value = window.innerWidth >= 768;
     nextTick(() => {
         generateToc();
     });
@@ -136,16 +137,6 @@ const formatDate = (dateStr: string | null) => {
             v-if="post.image_path"
             property="og:image"
             :content="post.image_path ?? undefined"
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossorigin="anonymous"
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-            rel="stylesheet"
         />
     </Head>
 

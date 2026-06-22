@@ -160,9 +160,6 @@ const submitValuation = () => {
     <Head>
         <title>Tự định giá biển số xe cá nhân - BISOXE.COM</title>
         <meta name="description" content="Nhập biển số xe ô tô hoặc xe máy của bạn để tự định giá, xem thông tin định giá tham khảo của hệ thống và đối chiếu lịch sử đấu giá." />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     </Head>
 
     <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
@@ -170,16 +167,7 @@ const submitValuation = () => {
 
         <!-- Giao diện công cụ chính -->
         <main class="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-            <!-- Header tiêu đề trang -->
-            <div class="mb-10 text-center">
 
-                <h1 class="mt-3 text-3xl font-black tracking-tight text-gray-900 sm:text-4xl">
-                    Định Giá Biển Số Xe Của Bạn
-                </h1>
-                <p class="mx-auto mt-3 max-w-2xl text-sm text-gray-500">
-                    Hãy đưa ra mức định giá của chính bạn cho biển số xe ô tô hoặc xe máy, hệ thống sẽ đối chiếu và cung cấp thêm khoảng định giá tham khảo từ lịch sử đấu giá thực tế.
-                </p>
-            </div>
 
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
                 
@@ -238,13 +226,13 @@ const submitValuation = () => {
                                             : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
                                     >
                                         <div class="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                                        <div class="flex h-full w-full flex-col items-center justify-between rounded border px-4 py-3 select-none"
+                                        <div class="flex h-full w-full flex-col items-center justify-center gap-y-1.5 min-[400px]:gap-y-2 rounded border px-4 py-3 select-none"
                                             :class="form.color === 1 ? 'border-black/30' : 'border-gray-250'"
                                         >
-                                            <div class="w-full text-center text-[1.8rem] min-[400px]:text-[2.1rem] leading-none font-black uppercase">
+                                            <div class="w-full text-center text-[2.0rem] min-[400px]:text-[2.3rem] leading-none font-black uppercase">
                                                 {{ parsedPlate.localSymbol || '30' }}{{ parsedPlate.serialLetter || (form.vehicle_type === 'car' ? 'K' : 'AA') }}
                                             </div>
-                                            <div class="flex w-full items-end justify-center text-center text-[2.1rem] min-[400px]:text-[2.4rem] leading-none font-black">
+                                            <div class="flex w-full items-end justify-center text-center text-[2.0rem] min-[400px]:text-[2.3rem] leading-none font-black">
                                                 <span>{{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(0, 3) : '999' }}</span>
                                                 <span class="mx-0.5 mb-0.5 h-1 w-1 shrink-0 rounded-full bg-black"></span>
                                                 <span>{{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(3) : '99' }}</span>
@@ -302,26 +290,19 @@ const submitValuation = () => {
                                 </label>
                                 <div class="grid grid-cols-2 gap-3">
                                     <button type="button" @click="form.vehicle_type = 'car'"
-                                        class="flex items-center justify-center gap-2 rounded-xl border-2 py-3.5 px-4 text-sm font-bold transition-all duration-200"
+                                        class="flex items-center justify-center gap-1.5 rounded-xl border-2 py-3.5 px-2 min-[375px]:px-4 text-xs min-[375px]:text-sm font-bold transition-all duration-200 whitespace-nowrap"
                                         :class="form.vehicle_type === 'car'
                                             ? 'border-[#8C1E1E] bg-red-50/20 text-[#8C1E1E]'
                                             : 'border-gray-200 hover:border-gray-300 text-gray-600'"
                                     >
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V15a1 1 0 01-1 1h-1.17" />
-                                        </svg>
                                         <span>Xe Ô tô</span>
                                     </button>
                                     <button type="button" @click="form.vehicle_type = 'motorcycle'"
-                                        class="flex items-center justify-center gap-2 rounded-xl border-2 py-3.5 px-4 text-sm font-bold transition-all duration-200"
+                                        class="flex items-center justify-center gap-1.5 rounded-xl border-2 py-3.5 px-2 min-[375px]:px-4 text-xs min-[375px]:text-sm font-bold transition-all duration-200 whitespace-nowrap"
                                         :class="form.vehicle_type === 'motorcycle'
                                             ? 'border-[#8C1E1E] bg-red-50/20 text-[#8C1E1E]'
                                             : 'border-gray-200 hover:border-gray-300 text-gray-600'"
                                     >
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                        </svg>
                                         <span>Xe Máy / Mô tô</span>
                                     </button>
                                 </div>
@@ -333,16 +314,16 @@ const submitValuation = () => {
                                     Nhập biển số xe của bạn <span class="text-red-500">*</span>
                                 </label>
                                 
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-start gap-2">
                                     <!-- Ô 1: Mã vùng (local_symbol) -->
-                                    <div class="w-24">
+                                    <div class="w-[70px] min-[380px]:w-20 min-[420px]:w-24 shrink-0">
                                         <input
                                             ref="localSymbolInputRef"
                                             type="text"
                                             v-model="form.local_symbol"
                                             @input="handleLocalSymbolInput"
                                             placeholder="30"
-                                            class="block w-full text-center rounded-xl border-gray-200 py-3.5 text-sm font-black focus:border-[#8C1E1E] focus:ring-[#8C1E1E]"
+                                            class="block w-full text-center rounded-xl border py-3.5 px-1 text-sm font-black focus:border-[#8C1E1E] focus:ring-[#8C1E1E]"
                                             :class="form.errors.plate_number ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-200'"
                                             maxlength="3"
                                             aria-label="Mã tỉnh thành"
@@ -351,26 +332,29 @@ const submitValuation = () => {
                                     </div>
 
                                     <!-- Ký tự nối -->
-                                    <span class="text-gray-300 font-bold">-</span>
+                                    <span class="text-gray-300 font-bold mt-3.5 select-none">-</span>
 
                                     <!-- Ô 2: Sê-ri chữ (serial_letter) -->
-                                    <div class="w-28">
+                                    <div class="w-[60px] min-[380px]:w-16 min-[420px]:w-20 shrink-0">
                                         <input
                                             ref="serialLetterInputRef"
                                             type="text"
                                             v-model="form.serial_letter"
                                             @input="handleSerialLetterInput"
                                             :placeholder="form.vehicle_type === 'car' ? 'K' : 'AA'"
-                                            class="block w-full text-center rounded-xl border-gray-200 py-3.5 text-sm font-black focus:border-[#8C1E1E] focus:ring-[#8C1E1E]"
+                                            class="block w-full text-center rounded-xl border py-3.5 px-1 text-sm font-black focus:border-[#8C1E1E] focus:ring-[#8C1E1E]"
                                             :class="form.errors.plate_number ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-200'"
                                             :maxlength="form.vehicle_type === 'car' ? 1 : 2"
                                             aria-label="Ký hiệu Seri"
                                         />
-                                        <span class="block text-[10px] text-gray-400 text-center mt-1">Sê-ri chữ</span>
+                                        <span class="block text-[10px] text-gray-400 text-center mt-1">
+                                            <span class="sm:inline hidden">Sê-ri chữ</span>
+                                            <span class="inline sm:hidden">Sê-ri</span>
+                                        </span>
                                     </div>
 
                                     <!-- Ký tự nối -->
-                                    <span class="text-gray-300 font-bold">-</span>
+                                    <span class="text-gray-300 font-bold mt-3.5 select-none">-</span>
 
                                     <!-- Ô 3: Số đuôi (serial_number) -->
                                     <div class="flex-1">
@@ -380,12 +364,15 @@ const submitValuation = () => {
                                             v-model="form.serial_number"
                                             @input="handleSerialNumberInput"
                                             placeholder="99999"
-                                            class="block w-full text-center rounded-xl border-gray-200 py-3.5 text-sm font-black focus:border-[#8C1E1E] focus:ring-[#8C1E1E]"
+                                            class="block w-full text-center rounded-xl border py-3.5 px-1 text-sm font-black focus:border-[#8C1E1E] focus:ring-[#8C1E1E]"
                                             :class="form.errors.plate_number ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-200'"
                                             maxlength="5"
                                             aria-label="5 số đuôi"
                                         />
-                                        <span class="block text-[10px] text-gray-400 text-center mt-1">Dãy số đuôi (ví dụ: 99999)</span>
+                                        <span class="block text-[10px] text-gray-400 text-center mt-1">
+                                            <span class="sm:inline hidden">Dãy số đuôi (ví dụ: 99999)</span>
+                                            <span class="inline sm:hidden">Số đuôi</span>
+                                        </span>
                                     </div>
                                 </div>
 
@@ -409,8 +396,8 @@ const submitValuation = () => {
                                             v-model="form.asking_price"
                                             @input="formatPriceInput"
                                             placeholder="Nhập mức giá bạn định giá"
-                                            class="block w-full rounded-xl py-3.5 pl-4 pr-12 text-sm font-semibold shadow-sm focus:border-[#8C1E1E] focus:ring-[#8C1E1E]"
-                                            :class="form.errors.asking_price ? 'border-red-355 border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-200'"
+                                            class="block w-full rounded-xl border py-3.5 pl-4 pr-12 text-sm font-semibold shadow-sm focus:border-[#8C1E1E] focus:ring-[#8C1E1E]"
+                                            :class="form.errors.asking_price ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-200'"
                                         />
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-4">
                                             <span class="text-xs font-bold text-gray-400">VND</span>
@@ -428,16 +415,16 @@ const submitValuation = () => {
                                     </label>
                                     <div class="flex rounded-xl border border-gray-200 p-1 bg-gray-50">
                                         <button type="button" @click="form.color = 0"
-                                            class="flex-1 rounded-lg py-2.5 text-xs font-bold transition"
-                                            :class="form.color === 0 ? 'bg-white text-gray-900 shadow-sm border border-gray-150' : 'text-gray-500 hover:text-gray-900'"
+                                            class="flex-1 rounded-lg py-2.5 text-[10px] min-[375px]:text-xs font-bold transition whitespace-nowrap"
+                                            :class="form.color === 0 ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-900'"
                                         >
-                                            Nền Trắng (Cá nhân)
+                                            Nền Trắng <span class="min-[380px]:inline hidden">(Cá nhân)</span>
                                         </button>
                                         <button type="button" @click="form.color = 1"
-                                            class="flex-1 rounded-lg py-2.5 text-xs font-bold transition"
-                                            :class="form.color === 1 ? 'bg-white text-gray-900 shadow-sm border border-gray-150' : 'text-gray-500 hover:text-gray-900'"
+                                            class="flex-1 rounded-lg py-2.5 text-[10px] min-[375px]:text-xs font-bold transition whitespace-nowrap"
+                                            :class="form.color === 1 ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-900'"
                                         >
-                                            Nền Vàng (Kinh doanh)
+                                            Nền Vàng <span class="min-[380px]:inline hidden">(Kinh doanh)</span>
                                         </button>
                                     </div>
                                 </div>
@@ -451,7 +438,7 @@ const submitValuation = () => {
                                 class="w-full rounded-xl bg-[#8C1E1E] py-4 px-6 text-sm font-bold text-white shadow-md hover:bg-[#721818] active:scale-98 transition disabled:opacity-50"
                             >
                                 <span v-if="form.processing">Đang lưu định giá...</span>
-                                <span v-else>Lưu Định Giá & Xem Kết Quả</span>
+                                <span v-else>Lưu & Xem Kết Quả</span>
                             </button>
 
                         </form>
