@@ -320,25 +320,9 @@ class LicensePlateController extends Controller
             ]);
         }
 
-        // Nếu là biển tự định giá, không sinh bài viết SEO bằng AI
+        // Nếu là biển tự định giá, không sinh bài viết SEO bằng AI và không có trang chi tiết
         if ($plate->status === 'custom_valuation') {
-            return Inertia::render('Plate/Detail', [
-                'article' => [
-                    'title' => "Thông tin định giá biển số {$plate->display_number}",
-                    'meta_title' => "Biển số {$plate->display_number} - Định giá tự do",
-                    'meta_description' => "Xem thông tin tự định giá của biển số {$plate->display_number} đăng ký tại tỉnh " . ($plate->province ? $plate->province->name : 'Chưa rõ') . ".",
-                    'content' => null,
-                    'video_script' => null,
-                    'slug' => $slug,
-                    'image_url' => null,
-                ],
-                'plate' => $this->transformPlate($plate),
-                'is_pending' => false,
-                'price_prediction' => $prediction,
-                'price_trend' => $trend,
-                'plate_score' => $score,
-                'related_plates' => $relatedPlates,
-            ]);
+            return redirect()->route('valuation.index')->with('error', 'Biển số tự định giá không có trang chi tiết.');
         }
 
         // Nếu chưa có bài viết, tự động kích hoạt sinh bài viết đồng bộ ngay lập tức!
@@ -392,6 +376,71 @@ class LicensePlateController extends Controller
             'price_trend' => $trend,
             'plate_score' => $score,
             'related_plates' => $relatedPlates,
+        ]);
+    }
+
+    /**
+     * API lấy thông tin định giá chi tiết của một biển số (cho popup).
+     */
+    public function getValuationApi(string $fullNumber, PlatePricePredictorService $predictorService): \Illuminate\Http\JsonResponse
+    {
+        $cleanNumber = strtoupper(str_replace(['-', '.'], '', $fullNumber));
+        
+        // 1. Thử tìm trong bảng license_plates
+        $plate = LicensePlate::where('full_number', $cleanNumber)
+            ->with(['province', 'kinds'])
+            ->first();
+
+        if (! $plate instanceof LicensePlate) {
+            // 2. Thử tìm trong bảng user_valuations
+            $userValuation = UserValuation::where('full_number', $cleanNumber)->first();
+
+            if ($userValuation) {
+                // Tạo một instance LicensePlate giả lập từ dữ liệu của UserValuation
+                $plate = new LicensePlate([
+                    'vehicle_type' => $userValuation->vehicle_type,
+                    'local_symbol' => $userValuation->local_symbol,
+                    'serial_letter' => $userValuation->serial_letter,
+                    'serial_number' => $userValuation->serial_number,
+                    'full_number' => $userValuation->full_number,
+                    'display_number' => $userValuation->display_number,
+                    'province_code' => $userValuation->province_code,
+                    'color' => $userValuation->color,
+                    'status' => 'custom_valuation',
+                    'starting_price' => 0,
+                    'winning_price' => $userValuation->asking_price,
+                ]);
+                $plate->id = -1; // ID âm cho biển giả lập
+
+                // Thiết lập quan hệ tỉnh thành tĩnh
+                $province = Province::where('code', $userValuation->province_code)->first();
+                $plate->setRelation('province', $province);
+
+                // Nhận dạng kinds động từ regex
+                $kindsCollection = collect();
+                foreach ($userValuation->kinds as $k) {
+                    $kindsCollection->push(new PlateKind([
+                        'id' => $k->id,
+                        'name' => $k->name,
+                        'priority' => $k->priority,
+                    ]));
+                }
+                $plate->setRelation('kinds', $kindsCollection);
+            } else {
+                return response()->json(['message' => 'Biển số không tồn tại.'], 404);
+            }
+        }
+
+        // Thực hiện các tính toán định giá và chấm điểm
+        $prediction = $predictorService->predict($plate);
+        $trend = $predictorService->getTrendData($plate);
+        $score = $predictorService->calculateScore($plate);
+
+        return response()->json([
+            'plate' => $this->transformPlate($plate),
+            'price_prediction' => $prediction,
+            'price_trend' => $trend,
+            'plate_score' => $score,
         ]);
     }
 

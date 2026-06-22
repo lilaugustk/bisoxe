@@ -2023,18 +2023,10 @@ watch(showPriceGuide, (newVal) => {
                         <!-- Part 1: Current Plate Calculation -->
                         <div class="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-150 pb-4 mb-6">
-                                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider text-[#8C1E1E] flex items-center gap-2">
-                                    <svg class="w-4.5 h-4.5 text-[#8C1E1E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                    </svg>
+                                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider text-[#8C1E1E]">
                                     Chi tiết các bước định giá biển: {{ plate.display_number }}
                                 </h4>
-                                <div class="mt-2 sm:mt-0 flex items-center gap-2">
-                                    <span class="text-xs text-gray-500 font-medium">Độ tin cậy:</span>
-                                    <span class="rounded-full bg-blue-50 border border-blue-150 px-2.5 py-0.5 text-[10px] font-bold text-blue-700">
-                                        {{ price_prediction.confidence }}
-                                    </span>
-                                </div>
+                                <div></div>
                             </div>
                             
                             <!-- Premium Vertical Calculation Steps Pipeline -->

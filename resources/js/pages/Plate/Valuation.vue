@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import Footer from '../../components/Footer.vue';
 import Header from '../../components/Header.vue';
@@ -128,7 +128,6 @@ const formatPriceInput = (e: Event) => {
     }
 };
 
-
 // Xử lý gửi form
 const submitValuation = () => {
     form.plate_number = `${form.local_symbol}${form.serial_letter}${form.serial_number}`;
@@ -153,6 +152,61 @@ const submitValuation = () => {
             }, 8000);
         },
     });
+};
+
+// Popup state
+const showValuationModal = ref(false);
+const loadingValuation = ref(false);
+const selectedValuation = ref<any>(null);
+const modalPlateStyle = ref<'long' | 'square'>('long');
+
+// Money formatting
+const formatMoney = (value: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        maximumFractionDigits: 0,
+    }).format(value);
+};
+
+const formatShortMoney = (value: number) => {
+    if (value >= 1000000000) {
+        return parseFloat((value / 1000000000).toFixed(2)) + ' Tỷ';
+    }
+
+    if (value >= 1000000) {
+        return parseFloat((value / 1000000).toFixed(2)) + ' Tr';
+    }
+
+    return value.toLocaleString('vi-VN') + ' đ';
+};
+
+// Open popup and fetch plate valuation detail
+const openValuationModal = async (recent: RecentValuation) => {
+    showValuationModal.value = true;
+    loadingValuation.value = true;
+    selectedValuation.value = null;
+    modalPlateStyle.value = 'long'; // Default to long style for preview
+
+    try {
+        const response = await fetch(`/api/bien-so/${recent.full_number}/dinh-gia`);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch valuation');
+        }
+
+        const data = await response.json();
+        selectedValuation.value = data;
+    } catch (error) {
+        console.error(error);
+    } finally {
+        loadingValuation.value = false;
+    }
+};
+
+const closeValuationModal = () => {
+    showValuationModal.value = false;
+    selectedValuation.value = null;
 };
 </script>
 
@@ -491,14 +545,14 @@ const submitValuation = () => {
                             <div v-for="recent in recent_valuations" :key="recent.id" class="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
                                 <div class="flex items-center gap-3">
                                     <!-- Biển số mini mô phỏng -->
-                                    <Link :href="`/bien-so/${recent.slug}`"
-                                        class="relative flex aspect-[280/100] w-20 shrink-0 items-center justify-center rounded border p-0.5 font-sans text-[10px] font-black tracking-tight text-black shadow-sm transition hover:scale-105"
+                                    <button @click="openValuationModal(recent)"
+                                        class="relative flex aspect-[280/100] w-20 shrink-0 items-center justify-center rounded border p-0.5 font-sans text-[10px] font-black tracking-tight text-black shadow-sm transition hover:scale-105 cursor-pointer"
                                         :class="recent.color === 1 
                                             ? 'border-black/50 bg-gradient-to-b from-amber-400 to-amber-500' 
                                             : 'border-gray-200 bg-white'"
                                     >
                                         {{ recent.display_number }}
-                                    </Link>
+                                    </button>
                                     <div class="flex flex-col gap-0.5">
                                         <span class="text-xs font-bold text-gray-800">{{ recent.province_name }}</span>
                                         <span class="text-[9px] font-bold text-gray-400">
@@ -511,9 +565,9 @@ const submitValuation = () => {
                                     <span v-if="recent.kinds.length > 0" class="rounded bg-red-50 px-1.5 py-0.5 text-[8px] font-black text-[#8C1E1E] uppercase">
                                         {{ recent.kinds[0].name }}
                                     </span>
-                                    <Link :href="`/bien-so/${recent.slug}`" class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 px-2.5 py-1 text-[10px] font-bold text-[#8C1E1E] hover:bg-red-50 hover:text-[#721818] shadow-sm transition">
-                                        Xem kết quả →
-                                    </Link>
+                                    <button @click="openValuationModal(recent)" class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 px-2.5 py-1 text-[10px] font-bold text-[#8C1E1E] hover:bg-red-50 hover:text-[#721818] shadow-sm transition cursor-pointer">
+                                        Xem kết quả
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -525,5 +579,168 @@ const submitValuation = () => {
         </main>
 
         <Footer />
+
+        <!-- Modal hiển thị kết quả định giá chi tiết -->
+        <Teleport to="body">
+            <div v-if="showValuationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" @click.self="closeValuationModal">
+                <div class="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl transition-all border border-gray-150 flex flex-col max-h-[90vh]">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Chi tiết định giá biển số</h3>
+                            <p class="text-xs text-gray-500">Thông tin phân tích và ước lượng giá trị từ hệ thống</p>
+                        </div>
+                        <button @click="closeValuationModal" class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                        <!-- Loading State -->
+                        <div v-if="loadingValuation" class="flex flex-col items-center justify-center py-12 space-y-4">
+                            <div class="relative h-12 w-12">
+                                <div class="absolute inset-0 animate-ping rounded-full border-4 border-[#8C1E1E]/20"></div>
+                                <div class="absolute inset-0 animate-spin rounded-full border-4 border-t-[#8C1E1E] border-r-transparent border-b-transparent border-l-transparent"></div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-500">Đang tải kết quả định giá...</span>
+                        </div>
+
+                        <!-- Data Loaded State -->
+                        <div v-else-if="selectedValuation" class="space-y-6">
+                            
+                            <!-- Top: Plate Simulation -->
+                            <div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-6 border border-gray-100">
+                                <div class="perspective-1000 w-full flex justify-center">
+                                    <div class="transform transition-transform duration-500 hover:scale-102 w-full flex justify-center">
+                                        <!-- 1. Biển dài -->
+                                        <div v-if="modalPlateStyle === 'long'"
+                                            class="relative flex aspect-[520/110] w-full max-w-[380px] items-center justify-center rounded-lg border p-1 shadow-[0_6px_12px_-2px_rgba(0,0,0,0.08)] transition-all"
+                                            :class="selectedValuation.plate.color === 1 
+                                                ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' 
+                                                : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
+                                        >
+                                            <div class="flex h-full w-full items-center justify-center rounded border px-6 select-none"
+                                                :class="selectedValuation.plate.color === 1 ? 'border-black/30' : 'border-gray-250'"
+                                            >
+                                                <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black">
+                                                    <span class="text-[1.6rem] min-[400px]:text-[1.9rem] leading-none uppercase">
+                                                        {{ selectedValuation.plate.local_symbol }}{{ selectedValuation.plate.serial_letter }}
+                                                    </span>
+                                                    <span class="mx-2 text-[1.4rem] min-[400px]:text-[1.7rem] leading-none text-black/75">-</span>
+                                                    <span class="flex items-center text-[1.6rem] min-[400px]:text-[1.9rem] leading-none">
+                                                        {{ selectedValuation.plate.serial_number.substring(0, 3) }}
+                                                        <span class="mx-0.5 mb-0.5 h-1 w-1 shrink-0 rounded-full bg-black"></span>
+                                                        {{ selectedValuation.plate.serial_number.substring(3) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 2. Biển vuông -->
+                                        <div v-else
+                                            class="relative flex aspect-[280/200] w-full max-w-[190px] items-center justify-center rounded-xl border p-1.5 shadow-[0_6px_12px_-2px_rgba(0,0,0,0.08)] transition-all"
+                                            :class="selectedValuation.plate.color === 1 
+                                                ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' 
+                                                : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
+                                        >
+                                            <div class="flex h-full w-full flex-col items-center justify-center gap-y-1 rounded border px-4 py-3 select-none"
+                                                :class="selectedValuation.plate.color === 1 ? 'border-black/30' : 'border-gray-250'"
+                                            >
+                                                <div class="w-full text-center text-[1.8rem] min-[400px]:text-[2.0rem] leading-none font-black uppercase">
+                                                    {{ selectedValuation.plate.local_symbol }}{{ selectedValuation.plate.serial_letter }}
+                                                </div>
+                                                <div class="flex w-full items-end justify-center text-center text-[1.8rem] min-[400px]:text-[2.0rem] leading-none font-black">
+                                                    <span>{{ selectedValuation.plate.serial_number.substring(0, 3) }}</span>
+                                                    <span class="mx-0.5 mb-0.5 h-1 w-1 shrink-0 rounded-full bg-black"></span>
+                                                    <span>{{ selectedValuation.plate.serial_number.substring(3) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Switch style -->
+                                <div class="mt-4 flex rounded-lg border border-gray-200 bg-gray-100 p-0.5">
+                                    <button @click="modalPlateStyle = 'long'"
+                                        class="rounded-md px-3 py-0.5 text-[10px] font-bold transition cursor-pointer"
+                                        :class="modalPlateStyle === 'long' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
+                                    >
+                                        Biển dài
+                                    </button>
+                                    <button @click="modalPlateStyle = 'square'"
+                                        class="rounded-md px-3 py-0.5 text-[10px] font-bold transition cursor-pointer"
+                                        :class="modalPlateStyle === 'square' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
+                                    >
+                                        Biển vuông
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Basic Info Fields -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-3">
+                                    <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <span class="text-xs text-gray-500">Tỉnh/Thành phố:</span>
+                                        <span class="text-xs font-bold text-gray-800">{{ selectedValuation.plate.province?.name || 'Chưa rõ' }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <span class="text-xs text-gray-500">Loại phương tiện:</span>
+                                        <span class="text-xs font-bold text-gray-800">{{ selectedValuation.plate.vehicle_type === 'car' ? 'Xe Ô tô' : 'Xe Máy' }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <span class="text-xs text-gray-500">Màu biển số:</span>
+                                        <span class="text-xs font-bold text-gray-800">{{ selectedValuation.plate.color === 1 ? 'Nền Vàng (Kinh doanh)' : 'Nền Trắng (Cá nhân)' }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <span class="text-xs text-gray-500">Nút số / Thế số:</span>
+                                        <span class="text-xs font-bold text-gray-800">
+                                            {{ selectedValuation.plate_score.nut }} nút / 
+                                            {{ selectedValuation.plate.kinds.length > 0 ? selectedValuation.plate.kinds[0].name : 'Biển thường' }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <span class="text-xs text-gray-500">Thành viên định giá:</span>
+                                        <span class="text-xs font-black text-[#8C1E1E]">
+                                            {{ selectedValuation.plate.winning_price > 0 ? formatMoney(selectedValuation.plate.winning_price) : 'Chưa định giá' }}
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <span class="text-xs text-gray-500">Hệ thống định giá:</span>
+                                        <span class="text-xs font-black text-gray-900">
+                                            {{ formatMoney(selectedValuation.price_prediction.expected) }}
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <span class="text-xs text-gray-500">Khoảng ước tính:</span>
+                                        <span class="text-xs font-bold text-gray-800">
+                                            {{ formatShortMoney(selectedValuation.price_prediction.min) }} - {{ formatShortMoney(selectedValuation.price_prediction.max) }}
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <span class="text-xs text-gray-500">Điểm số:</span>
+                                        <span class="text-xs font-bold text-green-700">
+                                            {{ selectedValuation.plate_score.score }} / 100 điểm
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex items-center justify-end border-t border-gray-100 px-6 py-4 bg-gray-50/50">
+                        <button @click="closeValuationModal" class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition cursor-pointer">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>

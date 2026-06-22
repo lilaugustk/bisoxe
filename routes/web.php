@@ -12,6 +12,7 @@ Route::get('/bien-so/{slug}', [LicensePlateController::class, 'show'])->name('pl
 
 Route::get('/dinh-gia', [ValuationController::class, 'index'])->name('valuation.index');
 Route::post('/dinh-gia', [ValuationController::class, 'store'])->name('valuation.store');
+Route::get('/api/bien-so/{full_number}/dinh-gia', [LicensePlateController::class, 'getValuationApi'])->name('plate.api_valuation');
 
 Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
 Route::get('/bai-viet/{slug}', [PostController::class, 'show'])->name('posts.show');

@@ -20,21 +20,42 @@ class PlatePricePredictorService
         $kindId = $primaryKind ? $primaryKind->id : 10; // 10 là Biển thường
         $kindName = $primaryKind ? $primaryKind->name : 'Biển thường';
 
-        // Giá trung bình nền theo từng loại biển (dựa trên thống kê thực tế DB)
-        $baseAverages = [
-            1 => 1160000000, // Ngũ quý
-            2 => 265000000,  // Sảnh tiến
-            3 => 145000000,  // Tứ quý
-            4 => 65000000,   // Tam hoa
-            5 => 39000000,   // Thần tài
-            6 => 55000000,   // Lộc phát
-            7 => 33000000,   // Ông địa
-            8 => 70000000,   // Lặp đôi
-            9 => 289000000,  // Số gánh
-            10 => 40000000,   // Biển thường
-        ];
+        // Giá trung bình nền theo từng loại biển, tách riêng ô tô và xe máy
+        $isMotorcycle = ($plate->vehicle_type === 'motorcycle');
 
-        $basePrice = $baseAverages[$kindId] ?? 40000000;
+        if ($isMotorcycle) {
+            // Giá nền xe máy (thấp hơn đáng kể so với ô tô)
+            $baseAverages = [
+                1  => 120000000, // Ngũ quý
+                2  => 28000000,  // Sảnh tiến
+                3  => 18000000,  // Tứ quý
+                4  => 8000000,   // Tam hoa
+                5  => 5000000,   // Thần tài
+                6  => 7000000,   // Lộc phát
+                7  => 4500000,   // Ông địa
+                8  => 9000000,   // Lặp đôi
+                9  => 35000000,  // Số gánh
+                10 => 3500000,   // Biển thường
+            ];
+            $minFloor = 3000000; // Sàn tối thiểu xe máy: 3 triệu
+        } else {
+            // Giá nền ô tô (dựa trên thống kê thực tế DB đấu giá VPA)
+            $baseAverages = [
+                1  => 1160000000, // Ngũ quý
+                2  => 265000000,  // Sảnh tiến
+                3  => 145000000,  // Tứ quý
+                4  => 65000000,   // Tam hoa
+                5  => 39000000,   // Thần tài
+                6  => 55000000,   // Lộc phát
+                7  => 33000000,   // Ông địa
+                8  => 70000000,   // Lặp đôi
+                9  => 289000000,  // Số gánh
+                10 => 40000000,   // Biển thường
+            ];
+            $minFloor = 40000000; // Sàn tối thiểu ô tô: 40 triệu
+        }
+
+        $basePrice = $baseAverages[$kindId] ?? ($isMotorcycle ? 3500000 : 40000000);
 
         // 2. Hệ số vùng miền (Tỉnh thành) - Tính động dựa trên thống kê cơ sở dữ liệu đấu giá thực tế
         $provinceMultiplier = $this->getProvinceMultiplier($plate->province_code ?? '');
@@ -66,10 +87,10 @@ class PlatePricePredictorService
         $trend = $this->calculatePriceTrend($plate);
         $expected = $expected * $trend['multiplier'];
 
-        // Giới hạn giá trị tối thiểu không dưới sàn đấu giá 40.000.000đ
-        $expected = max(40000000, (int) $expected);
-        $min = max(40000000, (int) ($expected * 0.8));
-        $max = max(45000000, (int) ($expected * 1.3));
+        // Giới hạn giá trị tối thiểu theo loại phương tiện
+        $expected = max($minFloor, (int) $expected);
+        $min = max($minFloor, (int) ($expected * 0.8));
+        $max = max((int) ($minFloor * 1.1), (int) ($expected * 1.3));
 
         // Mức độ tin cậy dựa trên lượng mẫu trong DB
         $confidence = 'Cao';

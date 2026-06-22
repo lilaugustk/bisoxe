@@ -182,26 +182,26 @@ const pageDescription = computed(() => {
 
 const heroH1Html = computed(() => {
     if (isHomePath.value) {
-        return 'Tra Cứu Ý Nghĩa & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô & Xe Máy</span>';
+        return 'Tra Cứu & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Toàn Quốc</span>';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Tra Cứu Ý Nghĩa & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Máy & Mô Tô</span>';
+        return 'Tra Cứu & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Máy & Mô Tô</span>';
     }
 
-    return 'Tra Cứu Ý Nghĩa & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô</span>';
+    return 'Tra Cứu & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô</span>';
 });
 
 const heroDescription = computed(() => {
     if (isHomePath.value) {
-        return 'Hệ thống phân tích tự động giúp bạn dịch nghĩa các cặp số đẹp xấu, giải mã ý nghĩa tài lộc cho mọi biển số xe ô tô, xe máy trên cả nước.';
+        return 'Phân tích phong thủy, dịch nghĩa cát hung và định giá biển số xe ô tô, xe máy tự động.';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Hệ thống phân tích tự động giúp bạn dịch nghĩa các cặp số đẹp xấu, giải mã ý nghĩa tài lộc cho mọi biển số xe máy, mô tô trên cả nước.';
+        return 'Phân tích phong thủy, dịch nghĩa cát hung và định giá biển số xe máy, mô tô tự động.';
     }
 
-    return 'Hệ thống phân tích tự động giúp bạn dịch nghĩa các cặp số đẹp xấu, giải mã ý nghĩa tài lộc cho mọi biển số xe ô tô trên cả nước.';
+    return 'Phân tích phong thủy, dịch nghĩa cát hung và định giá biển số xe ô tô tự động.';
 });
 
 const tableTitle = computed(() => {
@@ -316,6 +316,16 @@ const reload = () => {
             preserveScroll: true,
         },
     );
+};
+
+const submitHeroSearch = () => {
+    const el = document.getElementById('table-section');
+
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    reload();
 };
 
 // Theo dõi thay đổi của các bộ lọc để tải lại dữ liệu ngay lập tức
@@ -440,18 +450,35 @@ onUnmounted(() => {
                 ></h1>
 
                 <p
-                    class="mx-auto mb-10 max-w-2xl text-lg leading-relaxed font-normal text-gray-600"
+                    class="mx-auto mb-8 max-w-2xl text-base sm:text-lg leading-relaxed font-normal text-gray-600"
                 >
                     {{ heroDescription }}
                 </p>
 
-                <!-- Anchor link leading down to table -->
-                <a
-                    href="#table-section"
-                    class="inline-block rounded-xl bg-[#8C1E1E] px-8 py-3.5 text-sm font-bold text-white shadow-lg transition duration-200 hover:bg-[#731919]"
-                >
-                    Bắt đầu tra cứu số xe
-                </a>
+                <!-- Premium Search Bar in Hero -->
+                <div class="mx-auto max-w-lg px-2">
+                    <form @submit.prevent="submitHeroSearch" class="relative flex items-center gap-2 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-md focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
+                        <div class="relative flex-1">
+                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </span>
+                            <input
+                                type="text"
+                                v-model="searchQuery"
+                                placeholder="Nhập biển số (ví dụ: 30K-999.99)..."
+                                class="w-full border-0 bg-transparent py-2.5 pr-4 pl-9 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            class="rounded-xl bg-[#8C1E1E] px-6 py-2.5 text-sm font-bold text-white shadow-md transition duration-200 hover:bg-[#731919]"
+                        >
+                            Tra cứu
+                        </button>
+                    </form>
+                </div>
             </div>
         </section>
 
