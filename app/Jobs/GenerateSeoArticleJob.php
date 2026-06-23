@@ -6,7 +6,6 @@ use App\Models\LicensePlate;
 use App\Models\SeoArticle;
 use App\Services\GeminiApiService;
 use App\Services\GroqApiService;
-use App\Services\PlateImageService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -39,24 +38,13 @@ class GenerateSeoArticleJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(GeminiApiService $geminiService, PlateImageService $imageService): void
+    public function handle(GeminiApiService $geminiService): void
     {
         // Giải phóng cache lock nếu bài viết đã tồn tại
         $existingArticle = $this->plate->seoArticle;
         if ($existingArticle) {
             Cache::forget("generating_article_{$this->plate->id}");
-            // Nếu bài viết đã có nhưng chưa có ảnh (ví dụ: job bị rate limit và retry),
-            // thì vẫn sinh ảnh để đảm bảo đầy đủ
-            if (! $existingArticle->image_path) {
-                Log::info('SEO Article exists but has no image, generating image for: '.$this->plate->full_number);
-                $this->plate->load('kinds', 'province');
-                $imagePath = $imageService->generate($this->plate, $existingArticle->slug);
-                if ($imagePath) {
-                    $existingArticle->update(['image_path' => $imagePath]);
-                }
-            } else {
-                Log::info('SEO Article already exists for license plate: '.$this->plate->full_number);
-            }
+            Log::info('SEO Article already exists for license plate: '.$this->plate->full_number);
 
             return;
         }
@@ -108,13 +96,6 @@ class GenerateSeoArticleJob implements ShouldQueue
             ]);
 
             Log::info('Successfully generated SEO Article for license plate: '.$this->plate->full_number);
-
-            // Sinh ảnh WebP cho bài viết (chạy sau khi article đã được tạo)
-            $this->plate->load('kinds', 'province');
-            $imagePath = $imageService->generate($this->plate, $slug);
-            if ($imagePath) {
-                $article->update(['image_path' => $imagePath]);
-            }
 
             // Giải phóng cache lock khi thành công
             Cache::forget("generating_article_{$this->plate->id}");
