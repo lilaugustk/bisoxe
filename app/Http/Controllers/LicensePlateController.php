@@ -311,16 +311,15 @@ class LicensePlateController extends Controller
             return redirect()->route('valuation.index')->with('error', 'Biển số tự định giá không có trang chi tiết.');
         }
 
-        // Nếu chưa có bài viết, tự động kích hoạt sinh bài viết đồng bộ ngay lập tức!
+        // Nếu chưa có bài viết, kích hoạt sinh bài viết bất đồng bộ ngầm bằng AI!
         try {
-            set_time_limit(120); // Đảm bảo thời gian thực thi dài hơn cho API AI
-            GenerateSeoArticleJob::dispatchSync($plate);
-            
-            // Tải lại quan hệ để lấy bài viết vừa tạo
-            $plate->load('seoArticle');
-            $article = $plate->seoArticle;
+            $lockKey = "generating_article_{$plate->id}";
+            if (!Cache::has($lockKey)) {
+                Cache::put($lockKey, true, 300); // Khóa trong 5 phút để tránh dispatch trùng lặp
+                GenerateSeoArticleJob::dispatch($plate);
+            }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Sinh bài viết đồng bộ thất bại cho biển {$plate->full_number}: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error("Kích hoạt sinh bài viết ngầm thất bại cho biển {$plate->full_number}: " . $e->getMessage());
         }
 
         if ($article) {
