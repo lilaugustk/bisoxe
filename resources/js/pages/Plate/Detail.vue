@@ -229,20 +229,20 @@ const statusLabel = computed(() => {
     }
 });
 
-const statusColorClass = computed(() => {
-    switch (props.plate.status) {
-        case 'waiting_auction':
-            return 'bg-blue-50 text-blue-700 border border-blue-100';
-        case 'announced':
-            return 'bg-amber-50 text-amber-700 border border-amber-100';
-        case 'completed':
-            return 'bg-green-50 text-green-700 border border-green-100';
-        case 'custom_valuation':
-            return 'bg-red-50 text-[#8C1E1E] border border-red-100';
-        default:
-            return 'bg-gray-50 text-gray-700 border border-gray-100';
-    }
-});
+// const statusColorClass = computed(() => {
+//     switch (props.plate.status) {
+//         case 'waiting_auction':
+//             return 'bg-blue-50 text-blue-700 border border-blue-100';
+//         case 'announced':
+//             return 'bg-amber-50 text-amber-700 border border-amber-100';
+//         case 'completed':
+//             return 'bg-green-50 text-green-700 border border-green-100';
+//         case 'custom_valuation':
+//             return 'bg-red-50 text-[#8C1E1E] border border-red-100';
+//         default:
+//             return 'bg-gray-50 text-gray-700 border border-gray-100';
+//     }
+// });
 
 // So sánh giá tự định giá và định giá hệ thống
 const valuationComparison = computed(() => {
@@ -688,13 +688,13 @@ watch(showPriceGuide, (newVal) => {
                     <div class="relative z-10 mb-4 flex gap-2">
                         <span
                             v-if="plate.kinds.length > 0"
-                            class="rounded-full border border-red-100/50 bg-red-50 px-2.5 py-0.5 text-xs font-bold text-[#8C1E1E]"
+                            class="inline-flex items-center gap-1 rounded-md bg-[#8C1E1E]/5 px-2.5 py-1 text-xs font-extrabold uppercase tracking-wide text-[#8C1E1E] ring-1 ring-[#8C1E1E]/10"
                         >
                             {{ plate.kinds[0].name }}
                         </span>
                         <span
                             v-if="plate.kinds.length === 0"
-                            class="rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600"
+                            class="inline-flex items-center gap-1 rounded-md bg-gray-50 px-2.5 py-1 text-xs font-extrabold uppercase tracking-wide text-gray-600 ring-1 ring-gray-200"
                         >
                             {{ plate.status === 'custom_valuation' ? 'Biển số cá nhân' : 'Biển số đấu giá' }}
                         </span>
@@ -759,13 +759,7 @@ watch(showPriceGuide, (newVal) => {
                                                         0,
                                                         3,
                                                     )
-                                                }}
-                                                <span
-                                                    class="mx-0.5 md:mx-1 mb-0.5 md:mb-1 h-1 w-1 md:h-2 md:w-2 shrink-0 self-end rounded-full bg-black"
-                                                ></span>
-                                                {{
-                                                    plate.serial_number.slice(3)
-                                                }}
+                                                }}.{{ plate.serial_number.slice(3) }}
                                             </span>
                                         </div>
                                     </div>
@@ -810,9 +804,7 @@ watch(showPriceGuide, (newVal) => {
                                             <span>{{
                                                 plate.serial_number.slice(0, 3)
                                             }}</span>
-                                            <span
-                                                class="mx-0.5 mb-0.5 md:mb-1 h-1 w-1 md:h-1.5 md:w-1.5 shrink-0 rounded-full bg-black"
-                                            ></span>
+                                            .
                                             <span>{{
                                                 plate.serial_number.slice(3)
                                             }}</span>
@@ -881,12 +873,44 @@ watch(showPriceGuide, (newVal) => {
                                 class="text-[11px] font-bold tracking-wider text-gray-400 uppercase"
                                 >Thông tin biển số</span
                             >
-                            <span
-                                class="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase"
-                                :class="statusColorClass"
-                            >
-                                {{ statusLabel }}
-                            </span>
+                            
+                            <!-- Premium Status Badge with Pulse Indicator -->
+                            <div class="text-[11px] font-bold tracking-wider text-[#8C1E1E] uppercase">
+                                <!-- Đang chờ đấu giá -->
+                                <span
+                                    v-if="plate.status === 'waiting_auction'"
+                                >
+                                    {{ statusLabel }}
+                                </span>
+
+                                <!-- Đã công bố lịch -->
+                                <span
+                                    v-else-if="plate.status === 'announced'"
+                                >
+                                    {{ statusLabel }}
+                                </span>
+
+                                <!-- Đã hoàn thành -->
+                                <span
+                                    v-else-if="plate.status === 'completed'"
+                                >
+                                    {{ statusLabel }}
+                                </span>
+
+                                <!-- Biển tự định giá -->
+                                <span
+                                    v-else-if="plate.status === 'custom_valuation'"
+                                >
+                                    {{ statusLabel }}
+                                </span>
+
+                                <!-- Khác / Mặc định -->
+                                <span
+                                    v-else
+                                >
+                                    {{ statusLabel }}
+                                </span>
+                            </div>
                         </div>
 
                         <h2
@@ -1044,7 +1068,7 @@ watch(showPriceGuide, (newVal) => {
             <div class="mb-8 grid grid-cols-1 gap-6" :class="plate.status !== 'completed' && plate.status !== 'custom_valuation' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
                 <!-- Left: Score Card (Ẩn nếu là biển tự định giá) -->
                 <div v-if="plate.status !== 'custom_valuation'" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="mb-5 border-b border-gray-100 pb-3 flex items-center justify-between">
+                    <div class="mb-4 border-b border-gray-100 pb-2.5 flex items-center justify-between">
                         <h3 class="text-base font-bold text-gray-900">Chấm điểm & Phân tích thế số</h3>
                         <div class="flex items-center gap-2 select-none">
                             <span class="text-xs font-bold text-gray-500">Xem cách tính</span>
@@ -1063,9 +1087,9 @@ watch(showPriceGuide, (newVal) => {
                         </div>
                     </div>
                     
-                    <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+                    <div class="flex flex-col items-center gap-5 py-2 max-w-[300px] mx-auto">
                         <!-- Score Circular Gauge SVG -->
-                        <div class="relative flex items-center justify-center h-28 w-28 shrink-0 bg-gray-50/50 rounded-full border border-gray-100 p-1">
+                        <div class="relative flex items-center justify-center h-20 w-20 shrink-0 bg-gray-50/50 rounded-full border border-gray-100 p-1">
                             <svg class="h-full w-full transform -rotate-90" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <!-- Track circle -->
                                 <circle
@@ -1073,7 +1097,7 @@ watch(showPriceGuide, (newVal) => {
                                     cy="50"
                                     r="40"
                                     stroke="#E5E7EB"
-                                    stroke-width="5"
+                                    stroke-width="6"
                                     fill="none"
                                 />
                                 <!-- Progress circle -->
@@ -1082,7 +1106,7 @@ watch(showPriceGuide, (newVal) => {
                                     cy="50"
                                     r="40"
                                     :stroke="scoreColor"
-                                    stroke-width="5"
+                                    stroke-width="6"
                                     stroke-linecap="round"
                                     fill="none"
                                     :stroke-dasharray="2 * Math.PI * 40"
@@ -1092,19 +1116,26 @@ watch(showPriceGuide, (newVal) => {
                             </svg>
                             <!-- Center text overlay -->
                             <div class="absolute text-center flex flex-col items-center justify-center">
-                                <span class="text-3.5xl font-extrabold tracking-tight leading-none text-gray-900">{{ plate_score.score }}</span>
-                                <span class="text-gray-400 text-[8px] font-bold tracking-wider uppercase mt-1">ĐIỂM</span>
+                                <span class="text-2.5xl font-black tracking-tight leading-none text-gray-900">{{ plate_score.score }}</span>
+                                <span class="text-[8px] font-bold text-gray-400 tracking-wider uppercase mt-1">ĐIỂM</span>
                             </div>
                         </div>
 
-                        <div class="flex-1 w-full space-y-3">
-                            <div class="flex flex-wrap gap-2.5 pt-1">
-                                <span class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600 select-none">
-                                    Nút số: <strong class="text-gray-900 font-bold ml-1">{{ plate_score.nut }} nút</strong>
-                                </span>
-                                <span class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600 select-none">
-                                    Thế số: <strong class="text-gray-900 font-bold ml-1">{{ plate.kinds.length > 0 ? plate.kinds[0].name : 'Biển thường' }}</strong>
-                                </span>
+                        <!-- Metrics Display (Underneath) -->
+                        <div class="flex items-center justify-between w-full border-t border-gray-100 pt-4 px-2">
+                            <!-- Nút số -->
+                            <div class="text-center flex-1">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Tổng nút số</span>
+                                <span class="text-base font-black text-gray-900 mt-1 block">{{ plate_score.nut }} nút</span>
+                            </div>
+
+                            <!-- Vertical Divider -->
+                            <div class="h-8 w-px bg-gray-150 shrink-0"></div>
+
+                            <!-- Thế số -->
+                            <div class="text-center flex-1 min-w-0">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Thế số</span>
+                                <span class="text-base font-black text-[#8C1E1E] mt-1 block truncate px-2">{{ plate.kinds.length > 0 ? plate.kinds[0].name : 'Biển thường' }}</span>
                             </div>
                         </div>
                     </div>
@@ -1750,24 +1781,34 @@ watch(showPriceGuide, (newVal) => {
                         class="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md"
                     >
                         <div class="flex items-start justify-between">
-                            <div class="flex flex-wrap gap-1">
-                                <span v-if="relPlate.kinds.length > 0" class="rounded-full border border-red-100/50 bg-red-50 px-2 py-0.5 text-[9px] font-bold text-[#8C1E1E] uppercase">
+                            <div class="flex flex-wrap gap-1.5">
+                                <span v-if="relPlate.kinds.length > 0" class="inline-flex items-center rounded-md bg-[#8C1E1E]/5 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-[#8C1E1E] ring-1 ring-[#8C1E1E]/10">
                                     {{ relPlate.kinds[0].name }}
                                 </span>
-                                <span v-if="relPlate.kinds.length === 0" class="rounded-full border border-gray-200 bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-650 uppercase">
+                                <span v-if="relPlate.kinds.length === 0" class="inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-gray-600 ring-1 ring-gray-200">
                                     Biển thường
                                 </span>
                             </div>
                             <span
-                                class="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase"
+                                class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider"
                                 :class="
                                     relPlate.status === 'completed'
-                                        ? 'bg-green-50 text-green-700 border border-green-100'
+                                        ? 'bg-emerald-50 text-emerald-800'
                                         : relPlate.status === 'announced'
-                                        ? 'bg-amber-50 text-amber-700 border border-amber-100'
-                                        : 'bg-blue-50 text-blue-700 border border-blue-100'
+                                        ? 'bg-amber-50 text-amber-800'
+                                        : 'bg-blue-50 text-blue-800'
                                 "
                             >
+                                <span
+                                    class="h-1 w-1 rounded-full"
+                                    :class="
+                                        relPlate.status === 'completed'
+                                            ? 'bg-emerald-500'
+                                            : relPlate.status === 'announced'
+                                            ? 'bg-amber-500 animate-pulse'
+                                            : 'bg-blue-500 animate-pulse'
+                                    "
+                                ></span>
                                 {{
                                     relPlate.status === 'completed'
                                         ? 'Đã đấu giá'

@@ -25,3 +25,4 @@ return new class extends Migration
             ->update(['category' => 'phong-thuy']);
     }
 };
+    
