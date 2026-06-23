@@ -68,20 +68,27 @@ class UserValuation extends Model
             return collect();
         }
 
-        // Cache lại danh sách plate_kinds với key duy nhất để tránh xung đột cache cũ
+        // Cache lại danh sách plate_kinds dưới dạng array để tránh lỗi deserialize __PHP_Incomplete_Class
+        // do cấu hình 'serializable_classes' => false mặc định trong Laravel 11.
         $plateKinds = Cache::remember('user_valuations_plate_kinds_cache', 3600, function () {
-            return PlateKind::orderBy('priority')->get();
+            return PlateKind::orderBy('priority')->get()->map(fn ($kind) => [
+                'id' => $kind->id,
+                'name' => $kind->name,
+                'priority' => $kind->priority,
+                'regex' => $kind->regex,
+            ])->toArray();
         });
 
         $matchedKinds = collect();
         foreach ($plateKinds as $kind) {
-            if (is_object($kind) && isset($kind->regex) && $kind->regex) {
+            $regex = $kind['regex'] ?? null;
+            if ($regex) {
                 try {
-                    if (preg_match('#' . str_replace('#', '\#', $kind->regex) . '#', $serialNumber)) {
+                    if (preg_match('#' . str_replace('#', '\#', $regex) . '#', $serialNumber)) {
                         $matchedKinds->push((object)[
-                            'id' => $kind->id,
-                            'name' => $kind->name,
-                            'priority' => $kind->priority,
+                            'id' => $kind['id'],
+                            'name' => $kind['name'],
+                            'priority' => $kind['priority'],
                         ]);
                     }
                 } catch (\Exception $e) {
