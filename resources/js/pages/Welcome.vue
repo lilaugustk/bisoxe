@@ -1021,7 +1021,7 @@ onUnmounted(() => {
                                     >
                                         <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
                                         <div class="flex h-full w-full items-center justify-center rounded border px-3 select-none"
-                                            :class="plate.color === 1 ? 'border-black/30' : 'border-gray-250'"
+                                            :class="plate.color === 1 ? 'border-black/30' : 'border-gray-200'"
                                         >
                                             <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black text-[1.1rem]">
                                                 <span>{{ plate.display_number }}</span>

@@ -149,7 +149,7 @@ const formatDate = (dateStr: string | null) => {
             <div class="mb-6 flex items-center justify-between">
                 <Link
                     href="/bai-viet"
-                    class="text-gray-505 group flex items-center gap-1.5 text-sm font-bold text-gray-500 transition hover:text-[#8C1E1E]"
+                    class="group flex items-center gap-1.5 text-sm font-bold text-gray-500 transition hover:text-[#8C1E1E]"
                 >
                     <svg
                         class="h-4 w-4 transform transition-transform group-hover:-translate-x-0.5"

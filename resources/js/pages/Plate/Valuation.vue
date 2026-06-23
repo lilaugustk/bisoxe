@@ -256,7 +256,7 @@ const closeValuationModal = () => {
                                     >
                                         <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
                                         <div class="flex h-full w-full items-center justify-center rounded border px-6 select-none"
-                                            :class="form.color === 1 ? 'border-black/30' : 'border-gray-250'"
+                                            :class="form.color === 1 ? 'border-black/30' : 'border-gray-200'"
                                         >
                                             <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black">
                                                 <span class="text-[1.8rem] min-[400px]:text-[2.2rem] leading-none uppercase">
@@ -264,9 +264,7 @@ const closeValuationModal = () => {
                                                 </span>
                                                 <span class="mx-2 text-[1.6rem] min-[400px]:text-[2rem] leading-none text-black/75">-</span>
                                                 <span class="flex items-center text-[1.8rem] min-[400px]:text-[2.2rem] leading-none">
-                                                    {{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(0, 3) : '999' }}
-                                                    <span class="mx-0.5 mb-0.5 h-1 w-1 shrink-0 rounded-full bg-black"></span>
-                                                    {{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(3) : '99' }}
+                                                    {{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(0, 3) : '999' }}.{{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(3) : '99' }}
                                                 </span>
                                             </div>
                                         </div>
@@ -281,19 +279,16 @@ const closeValuationModal = () => {
                                     >
                                         <div class="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
                                         <div class="flex h-full w-full flex-col items-center justify-center gap-y-1.5 min-[400px]:gap-y-2 rounded border px-4 py-3 select-none"
-                                            :class="form.color === 1 ? 'border-black/30' : 'border-gray-250'"
+                                            :class="form.color === 1 ? 'border-black/30' : 'border-gray-200'"
                                         >
                                             <div class="w-full text-center text-[2.0rem] min-[400px]:text-[2.3rem] leading-none font-black uppercase">
                                                 {{ parsedPlate.localSymbol || '30' }}{{ parsedPlate.serialLetter || (form.vehicle_type === 'car' ? 'K' : 'AA') }}
                                             </div>
                                             <div class="flex w-full items-end justify-center text-center text-[2.0rem] min-[400px]:text-[2.3rem] leading-none font-black">
-                                                <span>{{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(0, 3) : '999' }}</span>
-                                                <span class="mx-0.5 mb-0.5 h-1 w-1 shrink-0 rounded-full bg-black"></span>
-                                                <span>{{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(3) : '99' }}</span>
+                                                <span>{{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(0, 3) : '999' }}</span>.<span>{{ parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(3) : '99' }}</span>
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -583,7 +578,7 @@ const closeValuationModal = () => {
         <!-- Modal hiển thị kết quả định giá chi tiết -->
         <Teleport to="body">
             <div v-if="showValuationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" @click.self="closeValuationModal">
-                <div class="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl transition-all border border-gray-150 flex flex-col max-h-[90vh]">
+                <div class="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl transition-all border border-gray-200 flex flex-col max-h-[90vh]">
                     <!-- Header -->
                     <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                         <div>
@@ -623,7 +618,7 @@ const closeValuationModal = () => {
                                                 : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
                                         >
                                             <div class="flex h-full w-full items-center justify-center rounded border px-6 select-none"
-                                                :class="selectedValuation.plate.color === 1 ? 'border-black/30' : 'border-gray-250'"
+                                                :class="selectedValuation.plate.color === 1 ? 'border-black/30' : 'border-gray-200'"
                                             >
                                                 <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black">
                                                     <span class="text-[1.6rem] min-[400px]:text-[1.9rem] leading-none uppercase">
@@ -631,9 +626,7 @@ const closeValuationModal = () => {
                                                     </span>
                                                     <span class="mx-2 text-[1.4rem] min-[400px]:text-[1.7rem] leading-none text-black/75">-</span>
                                                     <span class="flex items-center text-[1.6rem] min-[400px]:text-[1.9rem] leading-none">
-                                                        {{ selectedValuation.plate.serial_number.substring(0, 3) }}
-                                                        <span class="mx-0.5 mb-0.5 h-1 w-1 shrink-0 rounded-full bg-black"></span>
-                                                        {{ selectedValuation.plate.serial_number.substring(3) }}
+                                                        {{ selectedValuation.plate.serial_number.substring(0, 3) }}.{{ selectedValuation.plate.serial_number.substring(3) }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -643,19 +636,17 @@ const closeValuationModal = () => {
                                         <div v-else
                                             class="relative flex aspect-[280/200] w-full max-w-[190px] items-center justify-center rounded-xl border p-1.5 shadow-[0_6px_12px_-2px_rgba(0,0,0,0.08)] transition-all"
                                             :class="selectedValuation.plate.color === 1 
-                                                ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' 
+                                                ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' 
                                                 : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
                                         >
                                             <div class="flex h-full w-full flex-col items-center justify-center gap-y-1 rounded border px-4 py-3 select-none"
-                                                :class="selectedValuation.plate.color === 1 ? 'border-black/30' : 'border-gray-250'"
+                                                :class="selectedValuation.plate.color === 1 ? 'border-black/20' : 'border-gray-200'"
                                             >
                                                 <div class="w-full text-center text-[1.8rem] min-[400px]:text-[2.0rem] leading-none font-black uppercase">
                                                     {{ selectedValuation.plate.local_symbol }}{{ selectedValuation.plate.serial_letter }}
                                                 </div>
                                                 <div class="flex w-full items-end justify-center text-center text-[1.8rem] min-[400px]:text-[2.0rem] leading-none font-black">
-                                                    <span>{{ selectedValuation.plate.serial_number.substring(0, 3) }}</span>
-                                                    <span class="mx-0.5 mb-0.5 h-1 w-1 shrink-0 rounded-full bg-black"></span>
-                                                    <span>{{ selectedValuation.plate.serial_number.substring(3) }}</span>
+                                                    <span>{{ selectedValuation.plate.serial_number.substring(0, 3) }}</span>.<span>{{ selectedValuation.plate.serial_number.substring(3) }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -726,6 +717,38 @@ const closeValuationModal = () => {
                                         <span class="text-xs text-gray-500">Điểm số:</span>
                                         <span class="text-xs font-bold text-green-700">
                                             {{ selectedValuation.plate_score.score }} / 100 điểm
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Similar License Plates (Biển số tương tự) -->
+                            <div v-if="selectedValuation.related_plates && selectedValuation.related_plates.length > 0" class="mt-6 border-t border-gray-100 pt-5">
+                                <h4 class="text-xs font-bold text-gray-700 mb-3">
+                                    Biển số tương tự từ hệ thống để so sánh:
+                                </h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div 
+                                        v-for="relPlate in selectedValuation.related_plates" 
+                                        :key="relPlate.id"
+                                        class="flex flex-col rounded-xl border border-gray-100 bg-gray-50/50 p-3 text-center transition hover:shadow-sm"
+                                    >
+                                        <!-- Biển số mini simulation -->
+                                        <div 
+                                            class="mx-auto mb-2 flex items-center justify-center rounded border px-2 py-0.5 font-sans font-black text-xs select-none shadow-[0_2px_4px_rgba(0,0,0,0.02)]"
+                                            :class="relPlate.color === 1 
+                                                ? 'border-black/20 bg-gradient-to-b from-amber-400 to-amber-500 text-black' 
+                                                : 'border-gray-200 bg-white text-black'"
+                                        >
+                                            {{ relPlate.local_symbol }}{{ relPlate.serial_letter }} - {{ relPlate.serial_number.slice(0, 3) }}.{{ relPlate.serial_number.slice(3) }}
+                                        </div>
+
+                                        <!-- Province & Price -->
+                                        <span class="text-[10px] text-gray-600 truncate mb-1">
+                                            {{ relPlate.province?.name || 'Chưa rõ' }}
+                                        </span>
+                                        <span class="text-xs font-black text-[#8C1E1E]">
+                                            {{ relPlate.winning_price > 0 ? formatShortMoney(relPlate.winning_price) : 'Đang đấu giá' }}
                                         </span>
                                     </div>
                                 </div>

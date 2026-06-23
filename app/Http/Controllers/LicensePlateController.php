@@ -436,11 +436,57 @@ class LicensePlateController extends Controller
         $trend = $predictorService->getTrendData($plate);
         $score = $predictorService->calculateScore($plate);
 
+        // Truy vấn 4 biển số liên quan cùng loại đã đấu giá xong và có kết quả để so sánh
+        $primaryKind = $plate->kinds->where('priority', '<', 1000)->sortBy('priority')->first();
+        $relatedQuery = LicensePlate::with(['province', 'kinds', 'seoArticle'])
+            ->where('id', '!=', $plate->id)
+            ->where('vehicle_type', $plate->vehicle_type)
+            ->where('status', 'completed')
+            ->where('winning_price', '>', 0);
+
+        if ($primaryKind) {
+            $relatedQuery->whereHas('kinds', function ($qk) use ($primaryKind) {
+                $qk->where('plate_kinds.id', $primaryKind->id);
+            });
+        } else {
+            $relatedQuery->whereDoesntHave('kinds', function ($qk) {
+                $qk->where('plate_kinds.priority', '<', 1000);
+            });
+        }
+
+        // Lấy tối đa 4 biển số cùng tỉnh/thành phố trước
+        $sameProvincePlates = (clone $relatedQuery)
+            ->where('province_code', $plate->province_code)
+            ->inRandomOrder()
+            ->limit(4)
+            ->get();
+
+        $needed = 4 - $sameProvincePlates->count();
+        $otherProvincePlates = collect();
+
+        // Nếu chưa đủ 4 biển, tìm thêm từ các tỉnh thành khác
+        if ($needed > 0) {
+            $excludeIds = $sameProvincePlates->pluck('id')->all();
+            
+            $otherProvincePlates = (clone $relatedQuery)
+                ->where('province_code', '!=', $plate->province_code)
+                ->whereNotIn('id', $excludeIds)
+                ->inRandomOrder()
+                ->limit($needed)
+                ->get();
+        }
+
+        // Kết hợp và transform dữ liệu
+        $relatedPlates = $sameProvincePlates->concat($otherProvincePlates)
+            ->map(fn ($p) => $this->transformPlate($p))
+            ->toArray();
+
         return response()->json([
             'plate' => $this->transformPlate($plate),
             'price_prediction' => $prediction,
             'price_trend' => $trend,
             'plate_score' => $score,
+            'related_plates' => $relatedPlates,
         ]);
     }
 

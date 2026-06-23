@@ -286,6 +286,38 @@ const onChartMouseMove = (e: MouseEvent) => {
     mouseY.value = e.clientY;
 };
 
+const onChartTouchStart = (index: number, e: TouchEvent) => {
+    hoveredIndex.value = index;
+
+    if (e.touches && e.touches.length > 0) {
+        mouseX.value = e.touches[0].clientX;
+        mouseY.value = e.touches[0].clientY;
+    }
+};
+
+const onChartTouchMove = (e: TouchEvent) => {
+    if (e.touches && e.touches.length > 0) {
+        mouseX.value = e.touches[0].clientX;
+        mouseY.value = e.touches[0].clientY;
+
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        const target = document.elementFromPoint(touchX, touchY);
+
+        if (target && target.hasAttribute('data-index')) {
+            const idx = parseInt(target.getAttribute('data-index') || '');
+
+            if (!isNaN(idx)) {
+                hoveredIndex.value = idx;
+            }
+        }
+    }
+};
+
+const onChartTouchEnd = () => {
+    hoveredIndex.value = null;
+};
+
 // Danh sách mã tỉnh đang được chọn hiển thị biểu đồ
 const selectedProvinceCodes = ref<string[]>([]);
 
@@ -333,6 +365,59 @@ const isProvinceActive = (code: string) => {
     }
 
     return selectedProvinceCodes.value.includes(code);
+};
+
+// Trạng thái hiển thị dropdown tùy chỉnh trên Mobile
+const isMobileDropdownOpen = ref(false);
+const searchMobileProvince = ref('');
+
+// Danh sách tỉnh lọc theo ô tìm kiếm trên Mobile
+const filteredProvincesForMobile = computed(() => {
+    const q = searchMobileProvince.value.trim().toLowerCase();
+
+    if (!q) {
+        return availableProvinces.value;
+    }
+
+    return availableProvinces.value.filter((prov) =>
+        prov.name.toLowerCase().includes(q),
+    );
+});
+
+// Tên tỉnh đang chọn hiển thị trên nhãn nút Dropdown Mobile
+const selectedProvinceNameForMobile = computed(() => {
+    if (selectedProvinceCodes.value.length === 0) {
+        return 'Tất cả tỉnh thành';
+    }
+
+    const activeCode = selectedProvinceCodes.value[0];
+    const match = availableProvinces.value.find((p) => p.code === activeCode);
+
+    return match ? match.name : 'Tất cả tỉnh thành';
+});
+
+// Số lượng biển số đang chọn hiển thị trên nhãn nút Dropdown Mobile
+const selectedProvinceCountForMobile = computed(() => {
+    if (selectedProvinceCodes.value.length === 0) {
+        return totalPlatesCount.value;
+    }
+
+    const activeCode = selectedProvinceCodes.value[0];
+    const match = availableProvinces.value.find((p) => p.code === activeCode);
+
+    return match ? match.count : 0;
+});
+
+// Chọn tỉnh từ Dropdown tùy chỉnh trên Mobile
+const selectMobileProvince = (code: string) => {
+    if (code === 'all') {
+        selectedProvinceCodes.value = [];
+    } else {
+        selectedProvinceCodes.value = [code];
+    }
+
+    isMobileDropdownOpen.value = false;
+    searchMobileProvince.value = '';
 };
 
 // Tên tỉnh đang chọn (dùng cho tiêu đề biểu đồ)
@@ -711,21 +796,21 @@ watch(showPriceGuide, (newVal) => {
                                 <!-- 1. Long Plate Style (Biển dài tiêu chuẩn 1 dòng) -->
                                 <div
                                     v-if="plateStyle === 'long'"
-                                    class="relative flex aspect-[520/110] w-full max-w-[480px] items-center justify-center rounded-lg border p-1 shadow-[0_8px_20px_-3px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all"
+                                    class="relative flex aspect-[520/110] w-full max-w-[480px] items-center justify-center rounded-lg border p-1 shadow-[0_8px_25px_-3px_rgba(0,0,0,0.15),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all duration-300 hover:shadow-[0_12px_30px_-3px_rgba(0,0,0,0.2)]"
                                     :class="
                                         plate.color === 1
-                                            ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black'
+                                            ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black'
                                             : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'
                                     "
                                 >
                                     <!-- Acrylic shine layer -->
                                     <div
-                                        class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"
+                                        class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/10 to-transparent"
                                     ></div>
 
                                     <!-- Embossed inner border line -->
                                     <div
-                                        class="flex h-full w-full items-center justify-center rounded border px-4 min-[380px]:px-6 sm:px-8 select-none"
+                                        class="flex h-full w-full items-center justify-center rounded border px-3 min-[340px]:px-4 min-[380px]:px-6 sm:px-8 select-none"
                                         :class="
                                             plate.color === 1
                                                 ? 'border-black/35'
@@ -738,7 +823,7 @@ watch(showPriceGuide, (newVal) => {
                                         >
                                             <!-- Mã vùng + Seri (e.g. 60K) -->
                                             <span
-                                                class="text-[1.8rem] min-[380px]:text-[2.2rem] min-[440px]:text-[2.6rem] md:text-[3rem] leading-none font-black text-black uppercase select-none"
+                                                class="text-[1.4rem] min-[340px]:text-[1.8rem] min-[380px]:text-[2.2rem] min-[440px]:text-[2.6rem] md:text-[3rem] leading-none font-black text-black uppercase select-none"
                                             >
                                                 {{ plate.local_symbol
                                                 }}{{ plate.serial_letter }}
@@ -746,13 +831,13 @@ watch(showPriceGuide, (newVal) => {
 
                                             <!-- Gạch ngang nhỏ ở giữa -->
                                             <span
-                                                class="mx-1.5 min-[380px]:mx-2.5 md:mx-3.5 text-[1.6rem] min-[380px]:text-[2rem] min-[440px]:text-[2.4rem] md:text-[2.8rem] leading-none font-bold text-black/80"
+                                                class="mx-1 min-[340px]:mx-1.5 min-[380px]:mx-2.5 md:mx-3.5 text-[1.2rem] min-[340px]:text-[1.6rem] min-[380px]:text-[2rem] min-[440px]:text-[2.4rem] md:text-[2.8rem] leading-none font-bold text-black/80"
                                             >-</span
                                             >
 
                                             <!-- Dãy số ngũ số (e.g. 559.95) -->
                                             <span
-                                                class="flex items-center text-[1.8rem] min-[380px]:text-[2.2rem] min-[440px]:text-[2.6rem] md:text-[3rem] leading-none font-black text-black select-none"
+                                                class="flex items-center text-[1.4rem] min-[340px]:text-[1.8rem] min-[380px]:text-[2.2rem] min-[440px]:text-[2.6rem] md:text-[3rem] leading-none font-black text-black select-none"
                                             >
                                                 {{
                                                     plate.serial_number.slice(
@@ -768,21 +853,21 @@ watch(showPriceGuide, (newVal) => {
                                 <!-- 2. Square Plate Style (Biển vuông 2 dòng) -->
                                 <div
                                     v-else
-                                    class="relative flex aspect-[280/200] w-full max-w-[260px] items-center justify-center rounded-xl border p-1.5 shadow-[0_8px_20px_-3px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all"
+                                    class="relative flex aspect-[280/200] w-full max-w-[195px] min-[360px]:max-w-[210px] min-[400px]:max-w-[230px] md:max-w-[260px] items-center justify-center rounded-xl border p-1 shadow-[0_8px_25px_-3px_rgba(0,0,0,0.15),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all duration-300 hover:shadow-[0_12px_30px_-3px_rgba(0,0,0,0.2)]"
                                     :class="
                                         plate.color === 1
-                                            ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black'
+                                            ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black'
                                             : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'
                                     "
                                 >
                                     <!-- Acrylic shine layer -->
                                     <div
-                                        class="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-tr from-transparent via-white/5 to-transparent"
+                                        class="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-tr from-transparent via-white/10 to-transparent"
                                     ></div>
 
                                     <!-- Embossed inner border line -->
                                     <div
-                                        class="flex h-full w-full flex-col items-center justify-center gap-y-2 min-[380px]:gap-y-3 rounded border px-4 py-4 min-[380px]:px-6 min-[380px]:py-6 select-none"
+                                        class="flex h-full w-full flex-col items-center justify-center gap-y-1 min-[360px]:gap-y-2 rounded border px-3 py-2.5 min-[360px]:px-4 min-[360px]:py-4 md:px-6 md:py-6 select-none"
                                         :class="
                                             plate.color === 1
                                                 ? 'border-black/35'
@@ -791,7 +876,7 @@ watch(showPriceGuide, (newVal) => {
                                     >
                                         <!-- Row 1: Mã vùng + Seri -->
                                         <div
-                                            class="w-full text-center font-sans text-[2.3rem] min-[380px]:text-[2.7rem] md:text-[3.1rem] leading-none font-black uppercase"
+                                            class="w-full text-center font-sans text-[1.4rem] min-[340px]:text-[1.6rem] min-[360px]:text-[1.8rem] min-[400px]:text-[2.2rem] md:text-[3.1rem] leading-none font-black uppercase"
                                         >
                                             {{ plate.local_symbol
                                             }}{{ plate.serial_letter }}
@@ -799,7 +884,7 @@ watch(showPriceGuide, (newVal) => {
 
                                         <!-- Row 2: Dãy 5 số -->
                                         <div
-                                            class="flex w-full items-end justify-center text-center font-sans text-[2.3rem] min-[380px]:text-[2.7rem] md:text-[3.1rem] leading-none font-black"
+                                            class="flex w-full items-end justify-center text-center font-sans text-[1.4rem] min-[340px]:text-[1.6rem] min-[360px]:text-[1.8rem] min-[400px]:text-[2.2rem] md:text-[3.1rem] leading-none font-black"
                                         >
                                             <span>{{
                                                 plate.serial_number.slice(0, 3)
@@ -822,26 +907,26 @@ watch(showPriceGuide, (newVal) => {
 
                         <!-- Switch Plate Layout Buttons -->
                         <div
-                            class="flex rounded-lg border border-gray-200 bg-gray-100 p-0.5"
+                            class="flex w-full max-w-[285px] rounded-xl border border-gray-200 bg-gray-100 p-1 shadow-inner"
                         >
                             <button
                                 @click="plateStyle = 'long'"
-                                class="rounded-md px-3 py-1 text-xs font-bold transition"
+                                class="w-1/2 rounded-lg py-1.5 px-3 text-xs font-extrabold transition-all duration-300 select-none cursor-pointer"
                                 :class="
                                     plateStyle === 'long'
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-950'
+                                        ? 'bg-white text-[#8C1E1E] shadow-sm font-black'
+                                        : 'text-gray-500 hover:text-gray-900'
                                 "
                             >
                                 Bản biển dài
                             </button>
                             <button
                                 @click="plateStyle = 'square'"
-                                class="rounded-md px-3 py-1 text-xs font-bold transition"
+                                class="w-1/2 rounded-lg py-1.5 px-3 text-xs font-extrabold transition-all duration-300 select-none cursor-pointer"
                                 :class="
                                     plateStyle === 'square'
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-950'
+                                        ? 'bg-white text-[#8C1E1E] shadow-sm font-black'
+                                        : 'text-gray-500 hover:text-gray-900'
                                 "
                             >
                                 Bản biển vuông
@@ -913,33 +998,27 @@ watch(showPriceGuide, (newVal) => {
                             </div>
                         </div>
 
-                        <h2
-                            class="mb-4 text-2xl font-extrabold tracking-tight text-gray-900"
-                        >
-                            {{ plate.display_number }}
-                        </h2>
-
                         <!-- Tight Info fields -->
                         <div class="space-y-2.5">
                             <div
-                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                class="flex items-center justify-between border-b border-gray-100/50 py-1.5"
                             >
-                                <span class="text-xs text-gray-500"
+                                <span class="text-[13px] text-gray-500"
                                     >Tỉnh/Thành phố:</span
                                 >
-                                <span class="text-sm font-bold text-gray-800">{{
+                                <span class="text-[13px] font-bold text-gray-800">{{
                                     plate.province
                                         ? plate.province.name
                                         : 'Chưa rõ'
                                 }}</span>
                             </div>
                             <div
-                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                class="flex items-center justify-between border-b border-gray-100/50 py-1.5"
                             >
-                                <span class="text-xs text-gray-500"
+                                <span class="text-[13px] text-gray-500"
                                     >Loại phương tiện:</span
                                 >
-                                <span class="text-sm font-bold text-gray-800">
+                                <span class="text-[13px] font-bold text-gray-800">
                                     {{
                                         plate.vehicle_type === 'car'
                                             ? 'Xe Ô tô'
@@ -948,13 +1027,13 @@ watch(showPriceGuide, (newVal) => {
                                 </span>
                             </div>
                             <div
-                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                class="flex items-center justify-between border-b border-gray-100/50 py-1.5"
                             >
                                 <span
-                                    class="text-gray-505 text-xs text-gray-500"
+                                    class="text-[13px] text-gray-500"
                                     >Màu biển số:</span
                                 >
-                                <span class="text-sm font-bold text-gray-800">
+                                <span class="text-[13px] font-bold text-gray-800">
                                     {{
                                         plate.color === 1
                                             ? 'Nền Vàng (Kinh doanh)'
@@ -963,37 +1042,37 @@ watch(showPriceGuide, (newVal) => {
                                 </span>
                             </div>
                             <div
-                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                class="flex items-center justify-between border-b border-gray-100/50 py-1.5"
                                 v-if="plate.starting_price > 0"
                             >
-                                <span class="text-xs text-gray-500"
+                                <span class="text-[13px] text-gray-500"
                                     >Giá khởi điểm:</span
-                                  >
-                                <span class="text-sm font-bold text-gray-800">{{
+                                >
+                                <span class="text-[13px] font-bold text-gray-800">{{
                                     formatMoney(plate.starting_price)
                                 }}</span>
                             </div>
                             <div
-                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                class="flex items-center justify-between border-b border-gray-100/50 py-1.5"
                                 v-if="plate.status === 'custom_valuation'"
                             >
-                                <span class="text-xs text-gray-500"
+                                <span class="text-[13px] text-gray-500"
                                     >Nguồn dữ liệu:</span
                                 >
-                                <span class="text-sm font-bold text-[#8C1E1E]"
+                                <span class="text-[13px] font-bold text-[#8C1E1E]"
                                     >Thành viên tự định giá</span
                                 >
                             </div>
                             <div
-                                class="flex justify-between border-b border-gray-100/50 py-1.5"
+                                class="flex items-center justify-between border-b border-gray-100/50 py-1.5"
                                 v-if="plate.auction_start_time"
                             >
                                 <span
-                                    class="text-gray-505 text-xs text-gray-500"
+                                    class="text-[13px] text-gray-500"
                                     >Thời gian đấu giá:</span
                                 >
                                 <span
-                                    class="text-right text-xs font-bold text-gray-800"
+                                    class="text-right text-[13px] font-bold text-gray-800"
                                 >
                                     {{ formatDate(plate.auction_start_time) }}
                                 </span>
@@ -1047,30 +1126,30 @@ watch(showPriceGuide, (newVal) => {
                             :class="plate.winning_price > 0 ? 'text-2xl font-black text-[#8C1E1E]' : 'text-sm font-bold text-gray-600'"
                         >
                             {{
-                                plate.winning_price > 0
-                                    ? formatMoney(plate.winning_price)
-                                    : 'Chưa diễn ra / Đang cập nhật'
-                            }}
+                                    plate.winning_price > 0
+                                        ? formatMoney(plate.winning_price)
+                                        : 'Chưa diễn ra / Đang cập nhật'
+                                }}
+                            </div>
+                        </div>
+
+                        <!-- Caution/Info Banner for Custom Valuation -->
+                        <div 
+                            v-if="plate.status === 'custom_valuation'"
+                            class="mt-4 rounded-xl border border-amber-100 bg-amber-50/70 p-3.5 text-xs text-amber-800 leading-relaxed shadow-sm"
+                        >
+                            <strong>Lưu ý:</strong> Đây là biển số xe cá nhân do thành viên tự nhập để định giá. Khoảng định giá tham khảo của hệ thống chỉ mang tính chất tham khảo dựa trên dữ liệu lịch sử đấu giá VPA.
                         </div>
                     </div>
-
-                    <!-- Caution/Info Banner for Custom Valuation -->
-                    <div 
-                        v-if="plate.status === 'custom_valuation'"
-                        class="mt-4 rounded-xl border border-amber-100 bg-amber-50/70 p-3.5 text-xs text-amber-800 leading-relaxed shadow-sm"
-                    >
-                        <strong>Lưu ý:</strong> Đây là biển số xe cá nhân do thành viên tự nhập để định giá. Khoảng định giá tham khảo của hệ thống chỉ mang tính chất tham khảo dựa trên dữ liệu lịch sử đấu giá VPA.
-                    </div>
                 </div>
-            </div>
 
             <!-- Section: Scoring & Predictions -->
             <div class="mb-8 grid grid-cols-1 gap-6" :class="plate.status !== 'completed' && plate.status !== 'custom_valuation' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
                 <!-- Left: Score Card (Ẩn nếu là biển tự định giá) -->
-                <div v-if="plate.status !== 'custom_valuation'" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4 border-b border-gray-100 pb-2.5 flex items-center justify-between">
+                <div v-if="plate.status !== 'custom_valuation'" class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm">
+                    <div class="mb-4 border-b border-gray-100 pb-2.5 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                         <h3 class="text-base font-bold text-gray-900">Chấm điểm & Phân tích thế số</h3>
-                        <div class="flex items-center gap-2 select-none">
+                        <div class="flex items-center justify-between w-full sm:w-auto sm:justify-end gap-2 select-none">
                             <span class="text-xs font-bold text-gray-500">Xem cách tính</span>
                             <button 
                                 @click="showScoringGuide = !showScoringGuide"
@@ -1116,8 +1195,7 @@ watch(showPriceGuide, (newVal) => {
                             </svg>
                             <!-- Center text overlay -->
                             <div class="absolute text-center flex flex-col items-center justify-center">
-                                <span class="text-2.5xl font-black tracking-tight leading-none text-gray-900">{{ plate_score.score }}</span>
-                                <span class="text-[8px] font-bold text-gray-400 tracking-wider uppercase mt-1">ĐIỂM</span>
+                                <span class="text-2xl min-[360px]:text-3xl font-black tracking-tight leading-none text-gray-900">{{ plate_score.score }}</span>
                             </div>
                         </div>
 
@@ -1130,7 +1208,7 @@ watch(showPriceGuide, (newVal) => {
                             </div>
 
                             <!-- Vertical Divider -->
-                            <div class="h-8 w-px bg-gray-150 shrink-0"></div>
+                            <div class="h-8 w-px bg-gray-200 shrink-0"></div>
 
                             <!-- Thế số -->
                             <div class="text-center flex-1 min-w-0">
@@ -1139,15 +1217,13 @@ watch(showPriceGuide, (newVal) => {
                             </div>
                         </div>
                     </div>
-
-                    <!-- Detailed Scoring Explanation is now presented in a Teleport Modal -->
                 </div>
 
                 <!-- Right: Prediction Card (if not completed) -->
-                <div v-if="plate.status !== 'completed'" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="mb-5 border-b border-gray-100 pb-3 flex items-center justify-between">
+                <div v-if="plate.status !== 'completed'" class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm">
+                    <div class="mb-5 border-b border-gray-100 pb-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                         <h3 class="text-base font-bold text-gray-900">Ước lượng giá trị biển số</h3>
-                        <div class="flex items-center gap-2 select-none">
+                        <div class="flex items-center justify-between w-full sm:w-auto sm:justify-end gap-2 select-none">
                             <span class="text-xs font-bold text-gray-500">Xem cách tính</span>
                             <button 
                                 @click="showPriceGuide = !showPriceGuide"
@@ -1166,9 +1242,9 @@ watch(showPriceGuide, (newVal) => {
 
                     <div>
                         <!-- Predicted Price Range display -->
-                        <div class="rounded-xl bg-gray-50 p-5 border border-gray-100 text-center">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Giá giá trị dự kiến</span>
-                            <div class="text-3xl font-extrabold text-[#8C1E1E] tracking-tight leading-none my-2.5">
+                        <div class="rounded-xl bg-gray-50 p-4 sm:p-5 border border-gray-100 text-center">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Giá trị dự kiến</span>
+                            <div class="text-2xl min-[360px]:text-3xl font-extrabold text-[#8C1E1E] tracking-tight leading-none my-2.5">
                                 {{ formatMoney(price_prediction.expected) }}
                             </div>
                             <div class="text-xs text-gray-500">
@@ -1230,15 +1306,24 @@ watch(showPriceGuide, (newVal) => {
                         >
                             <div>
                                 <h3
-                                    class="font-sans text-lg font-bold text-gray-900"
+                                    class="font-sans text-sm sm:text-lg font-bold text-gray-900 leading-snug"
                                 >
-                                    Lịch sử giá trúng đấu giá sê-ri số đuôi "{{
-                                        plate.serial_number
-                                    }}" tại {{ selectedProvinceName }}
+                                    <!-- Desktop Title -->
+                                    <span class="hidden sm:inline">
+                                        Lịch sử giá trúng đấu giá sê-ri số đuôi "{{ plate.serial_number }}" tại {{ selectedProvinceName }}
+                                    </span>
+                                    <!-- Mobile Title -->
+                                    <span class="inline sm:hidden">
+                                        Lịch sử giá đuôi "{{ plate.serial_number }}" ({{ selectedProvinceName }})
+                                    </span>
                                 </h3>
-                                <p class="mt-1 text-[11px] text-gray-400">
-                                    Đơn vị: VND. Bản vẽ xu hướng giá theo thời
-                                    gian thực tế.
+                                <p class="mt-1 text-[11px] text-gray-450 leading-normal">
+                                    <span class="hidden sm:inline">
+                                        Đơn vị: VND. Bản vẽ xu hướng giá theo thời gian thực tế.
+                                    </span>
+                                    <span class="inline sm:hidden">
+                                        Đơn vị: VND • Xu hướng giá thực tế
+                                    </span>
                                 </p>
                             </div>
                         </div>
@@ -1331,9 +1416,48 @@ watch(showPriceGuide, (newVal) => {
                             </div>
                         </Teleport>
 
-                        <!-- SVG Price Chart -->
+                        <!-- Mobile view: Sleek historical price list -->
+                        <div class="block md:hidden mb-6">
+                            <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                                <div class="mb-3 flex items-center justify-between border-b border-gray-100 pb-2 select-none">
+                                    <span class="text-xs font-bold text-gray-700">Giá trúng gần đây</span>
+                                    <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0">Mới nhất</span>
+                                </div>
+                                <div class="max-h-[320px] overflow-y-auto divide-y divide-gray-100 pr-1 scrollbar-none">
+                                    <div 
+                                        v-for="(item, i) in selectedPlates.slice().reverse()" 
+                                        :key="'mobile-plate-' + i" 
+                                        class="flex items-center justify-between py-3"
+                                    >
+                                        <!-- Left Column: Plate Number & Province Name stacked vertically -->
+                                        <div class="flex flex-col gap-1 min-w-0">
+                                            <!-- Mini Plate Simulation -->
+                                            <span class="inline-flex items-center justify-center rounded border border-gray-300 bg-white px-2 py-0.5 font-sans text-xs font-black tracking-tight text-gray-900 select-none shadow-sm w-max">
+                                                {{ item.plate_number }}
+                                            </span>
+                                            <!-- Province Name -->
+                                            <span class="text-[10px] font-bold text-gray-500 truncate max-w-[130px] pl-0.5">
+                                                {{ item.province_name }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Right Column: Price & Date stacked vertically -->
+                                        <div class="flex flex-col items-end gap-0.5 shrink-0 pl-3">
+                                            <span class="text-[13px] font-black text-[#8C1E1E] whitespace-nowrap">
+                                                {{ formatMoney(item.winning_price) }}
+                                            </span>
+                                            <span class="text-[9px] font-medium text-gray-400">
+                                                {{ item.auction_date }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SVG Price Chart (Desktop only) -->
                         <div
-                            class="border-gray-150 relative overflow-hidden rounded-2xl border bg-gray-50 p-4 shadow-inner md:p-6"
+                            class="hidden md:block border-gray-200 relative overflow-hidden rounded-2xl border bg-gray-50 p-4 shadow-inner md:p-6"
                         >
                             <svg
                                 viewBox="0 0 500 216"
@@ -1375,7 +1499,7 @@ watch(showPriceGuide, (newVal) => {
                                 <text
                                     x="30"
                                     y="33"
-                                    class="text-right font-sans text-[6px] font-semibold text-gray-400"
+                                    class="text-right font-sans text-[8.5px] md:text-[6px] font-bold md:font-semibold text-gray-400"
                                     text-anchor="end"
                                 >
                                     {{ formatShortMoney(maxCategoryValue) }}
@@ -1393,7 +1517,7 @@ watch(showPriceGuide, (newVal) => {
                                 <text
                                     x="30"
                                     y="83"
-                                    class="text-right font-sans text-[6px] font-semibold text-gray-400"
+                                    class="text-right font-sans text-[8.5px] md:text-[6px] font-bold md:font-semibold text-gray-400"
                                     text-anchor="end"
                                 >
                                     {{
@@ -1415,7 +1539,7 @@ watch(showPriceGuide, (newVal) => {
                                 <text
                                     x="30"
                                     y="133"
-                                    class="text-right font-sans text-[6px] font-semibold text-gray-400"
+                                    class="text-right font-sans text-[8.5px] md:text-[6px] font-bold md:font-semibold text-gray-400"
                                     text-anchor="end"
                                 >
                                     {{
@@ -1437,7 +1561,7 @@ watch(showPriceGuide, (newVal) => {
                                 <text
                                     x="30"
                                     y="183"
-                                    class="text-right font-sans text-[6px] font-semibold text-gray-400"
+                                    class="text-right font-sans text-[8.5px] md:text-[6px] font-bold md:font-semibold text-gray-400"
                                     text-anchor="end"
                                 >
                                     0
@@ -1525,7 +1649,7 @@ watch(showPriceGuide, (newVal) => {
                                             )
                                         "
                                         y="198"
-                                        class="font-sans text-[6px] font-bold text-gray-500"
+                                        class="font-sans text-[8.5px] md:text-[6px] font-black md:font-bold text-gray-500"
                                         text-anchor="middle"
                                     >
                                         {{ item.plate_number }}
@@ -1546,7 +1670,7 @@ watch(showPriceGuide, (newVal) => {
                                             )
                                         "
                                         y="210"
-                                        class="font-sans text-[5.5px] font-medium text-gray-400"
+                                        class="font-sans text-[7.5px] md:text-[5.5px] font-bold md:font-medium text-gray-400"
                                         text-anchor="middle"
                                     >
                                         {{ item.auction_date }}
@@ -1557,6 +1681,7 @@ watch(showPriceGuide, (newVal) => {
                                 <rect
                                     v-for="(item, i) in selectedPlates"
                                     :key="'hover-zone-' + i"
+                                    :data-index="i"
                                     :x="
                                         getXCoordinate(
                                             i,
@@ -1575,32 +1700,130 @@ watch(showPriceGuide, (newVal) => {
                                     "
                                     height="180"
                                     fill="transparent"
-                                    class="cursor-pointer"
+                                    class="cursor-pointer select-none"
                                     @mouseenter="hoveredIndex = i"
                                     @mousemove="onChartMouseMove($event)"
                                     @mouseleave="hoveredIndex = null"
+                                    @touchstart="onChartTouchStart(i, $event)"
+                                    @touchmove="onChartTouchMove($event)"
+                                    @touchend="onChartTouchEnd"
                                 />
                             </svg>
                         </div>
 
                         <!-- Legend / Selection tabs below chart -->
-                        <div class="border-gray-150 mt-6 border-t pt-5">
+                        <div class="border-gray-200 mt-6 border-t pt-5">
                             <p
                                 class="mb-3 text-center text-xs font-bold tracking-wider text-gray-500 uppercase sm:text-left"
                             >
                                 Xem lịch sử giá của các tỉnh/thành phố khác:
                             </p>
+
+                            <!-- Dropdown Select on Mobile (hidden on sm and larger) -->
+                            <div class="block sm:hidden mb-4 relative">
+                                <!-- Trigger Button -->
+                                <button
+                                    @click="isMobileDropdownOpen = !isMobileDropdownOpen"
+                                    type="button"
+                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-white py-3 pl-4 pr-3.5 text-xs font-bold text-gray-700 shadow-sm transition-all focus:border-[#8C1E1E] focus:outline-none focus:ring-1 focus:ring-[#8C1E1E] z-40 relative cursor-pointer"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ selectedProvinceNameForMobile }}</span>
+                                        <span class="rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-black text-gray-500">
+                                            {{ selectedProvinceCountForMobile }}
+                                        </span>
+                                    </div>
+                                    <svg
+                                        class="h-4 w-4 text-gray-450 transition-transform duration-200"
+                                        :class="isMobileDropdownOpen ? 'rotate-180' : ''"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </button>
+
+                                <!-- Click outside backdrop -->
+                                <div
+                                    v-if="isMobileDropdownOpen"
+                                    class="fixed inset-0 z-30 bg-transparent"
+                                    @click="isMobileDropdownOpen = false"
+                                ></div>
+
+                                <!-- Dropdown Menu Panel -->
+                                <div
+                                    v-if="isMobileDropdownOpen"
+                                    class="absolute left-0 right-0 mt-1.5 rounded-xl border border-gray-205 bg-white shadow-lg z-40 flex flex-col overflow-hidden"
+                                >
+                                    <!-- Search input -->
+                                    <div class="p-2 border-b border-gray-100 bg-gray-50/80">
+                                        <div class="relative">
+                                            <input
+                                                v-model="searchMobileProvince"
+                                                type="text"
+                                                placeholder="Tìm kiếm tỉnh thành..."
+                                                class="w-full rounded-lg border border-gray-200 bg-white py-2 pl-8 pr-3 text-xs font-medium focus:border-[#8C1E1E] focus:outline-none focus:ring-1 focus:ring-[#8C1E1E]"
+                                            />
+                                            <div class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none">
+                                                <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.602 10.602z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Items List -->
+                                    <div class="overflow-y-auto py-1 divide-y divide-gray-50 max-h-56">
+                                        <!-- Option: Tất cả -->
+                                        <button
+                                            @click="selectMobileProvince('all')"
+                                            type="button"
+                                            class="w-full flex items-center justify-between px-4 py-2.5 text-left text-xs font-bold transition-colors cursor-pointer"
+                                            :class="selectedProvinceCodes.length === 0 ? 'bg-[#8C1E1E]/5 text-[#8C1E1E]' : 'text-gray-700 hover:bg-gray-50'"
+                                        >
+                                            <span>Tất cả tỉnh thành</span>
+                                            <span class="rounded-full px-1.5 py-0.5 text-[9px] font-black" :class="selectedProvinceCodes.length === 0 ? 'bg-[#8C1E1E]/10 text-[#8C1E1E]' : 'bg-gray-100 text-gray-500'">
+                                                {{ totalPlatesCount }}
+                                            </span>
+                                        </button>
+
+                                        <!-- Options: Từng tỉnh -->
+                                        <button
+                                            v-for="prov in filteredProvincesForMobile"
+                                            :key="prov.code"
+                                            @click="selectMobileProvince(prov.code)"
+                                            type="button"
+                                            class="w-full flex items-center justify-between px-4 py-2.5 text-left text-xs font-bold transition-colors cursor-pointer"
+                                            :class="selectedProvinceCodes[0] === prov.code ? 'bg-[#8C1E1E]/5 text-[#8C1E1E]' : 'text-gray-700 hover:bg-gray-50'"
+                                        >
+                                            <span>{{ prov.name }}</span>
+                                            <span class="rounded-full px-1.5 py-0.5 text-[9px] font-black" :class="selectedProvinceCodes[0] === prov.code ? 'bg-[#8C1E1E]/10 text-[#8C1E1E]' : 'bg-gray-100 text-gray-500'">
+                                                {{ prov.count }}
+                                            </span>
+                                        </button>
+
+                                        <!-- Empty state if search has no results -->
+                                        <div v-if="filteredProvincesForMobile.length === 0" class="py-4 text-center text-xs text-gray-400">
+                                            Không tìm thấy tỉnh thành nào
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Buttons List on Desktop (hidden on mobile, wraps on sm and larger) -->
                             <div
-                                class="flex flex-wrap justify-center gap-2 sm:justify-start"
+                                class="hidden sm:flex flex-wrap gap-2 justify-start"
                             >
                                 <!-- Nút Tất cả -->
                                 <button
                                     @click="toggleProvince('all')"
-                                    class="flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200 select-none"
+                                    class="flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200 select-none shrink-0"
                                     :class="
                                         isAllSelected
                                             ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white shadow-sm'
-                                            : 'border-gray-250 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     "
                                 >
                                     <span>Tất cả</span>
@@ -1621,11 +1844,11 @@ watch(showPriceGuide, (newVal) => {
                                     v-for="prov in availableProvinces"
                                     :key="prov.code"
                                     @click="toggleProvince(prov.code)"
-                                    class="flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200 select-none"
+                                    class="flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200 select-none shrink-0"
                                     :class="
                                         isProvinceActive(prov.code)
                                             ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white shadow-sm'
-                                            : 'border-gray-250 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     "
                                 >
                                     <span>{{ prov.name }}</span>
@@ -1668,9 +1891,9 @@ watch(showPriceGuide, (newVal) => {
                 </div>
 
                 <!-- Main Article Content (Ẩn nếu là biển tự định giá) -->
-                <div v-else-if="plate.status !== 'custom_valuation'" class="prose max-w-none">
+                <div v-else-if="plate.status !== 'custom_valuation'" class="prose prose-sm sm:prose-base max-w-none prose-headings:font-bold sm:prose-headings:font-extrabold prose-h2:text-base sm:prose-h2:text-xl prose-h3:text-sm sm:prose-h3:text-lg prose-p:text-sm sm:prose-p:text-base prose-p:leading-relaxed text-gray-800">
                     <h1
-                        class="mb-6 border-b border-gray-100 pb-4 font-sans text-2xl font-extrabold tracking-tight text-gray-900 lg:text-3xl leading-tight"
+                        class="mb-4 sm:mb-5 border-b border-gray-100 pb-2 sm:pb-3 font-sans text-[19px] sm:text-2xl lg:text-3xl font-bold sm:font-extrabold tracking-tight text-gray-900 leading-snug sm:leading-tight"
                     >
                         {{ article.title }}
                     </h1>
@@ -1691,11 +1914,11 @@ watch(showPriceGuide, (newVal) => {
                     <!-- Table of Contents Widget -->
                     <div
                         v-if="tocItems.length > 0"
-                        class="mb-8 rounded-xl border border-gray-200 bg-gray-50/80 p-5"
+                        class="mb-8 rounded-xl border border-gray-200 bg-gray-50/80 p-4 sm:p-5"
                     >
                         <div
                             @click="isTocExpanded = !isTocExpanded"
-                            class="group mb-3 flex cursor-pointer items-center justify-between border-b border-gray-200/60 pb-2 select-none"
+                            class="group mb-3 flex cursor-pointer items-center justify-between border-b border-gray-200/60 pb-2 select-none py-0.5 sm:py-0"
                         >
                             <div
                                 class="flex items-center gap-2 font-bold text-gray-800"
@@ -1725,7 +1948,7 @@ watch(showPriceGuide, (newVal) => {
                         </div>
                         <nav
                             v-show="isTocExpanded"
-                            class="space-y-2.5 text-xs sm:text-sm"
+                            class="space-y-3 sm:space-y-2.5 text-xs sm:text-sm"
                         >
                             <div
                                 v-for="item in tocItems"
@@ -1749,7 +1972,7 @@ watch(showPriceGuide, (newVal) => {
                     <!-- Render HTML content safely -->
                     <div
                         v-if="article.content"
-                        class="ai-content-body space-y-6 text-base leading-relaxed text-gray-700"
+                        class="ai-content-body space-y-6 text-sm sm:text-base leading-relaxed text-gray-700"
                         v-html="article.content"
                     ></div>
                     <div v-else class="text-sm text-gray-500">
@@ -1770,7 +1993,7 @@ watch(showPriceGuide, (newVal) => {
             </div>
 
             <!-- Related License Plates Section -->
-            <div v-if="related_plates && related_plates.length > 0" class="mt-8 border-t border-gray-250 pt-8">
+            <div v-if="related_plates && related_plates.length > 0" class="mt-8 border-t border-gray-200 pt-8">
                 <h3 class="mb-6 text-xl font-extrabold tracking-tight text-gray-900">
                     Đề xuất biển số xe liên quan
                 </h3>
@@ -1789,26 +2012,7 @@ watch(showPriceGuide, (newVal) => {
                                     Biển thường
                                 </span>
                             </div>
-                            <span
-                                class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider"
-                                :class="
-                                    relPlate.status === 'completed'
-                                        ? 'bg-emerald-50 text-emerald-800'
-                                        : relPlate.status === 'announced'
-                                        ? 'bg-amber-50 text-amber-800'
-                                        : 'bg-blue-50 text-blue-800'
-                                "
-                            >
-                                <span
-                                    class="h-1 w-1 rounded-full"
-                                    :class="
-                                        relPlate.status === 'completed'
-                                            ? 'bg-emerald-500'
-                                            : relPlate.status === 'announced'
-                                            ? 'bg-amber-500 animate-pulse'
-                                            : 'bg-blue-500 animate-pulse'
-                                    "
-                                ></span>
+                            <span class="inline-flex items-center rounded-md bg-[#8C1E1E]/5 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-[#8C1E1E] ring-1 ring-[#8C1E1E]/10">
                                 {{
                                     relPlate.status === 'completed'
                                         ? 'Đã đấu giá'
@@ -1849,7 +2053,7 @@ watch(showPriceGuide, (newVal) => {
                                         <span class="mx-1 font-bold text-black/80">-</span>
                                         <span class="flex items-center">
                                             {{ relPlate.serial_number.slice(0, 3) }}
-                                            <span class="mx-0.5 mb-0.5 h-0.5 w-0.5 shrink-0 self-end rounded-full bg-black"></span>
+                                            .
                                             {{ relPlate.serial_number.slice(3) }}
                                         </span>
                                     </div>
@@ -1895,61 +2099,61 @@ watch(showPriceGuide, (newVal) => {
                 <!-- Modal content container -->
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all transform scale-100 border border-gray-100 z-10 animate-fade-in">
                     <!-- Close button in absolute top-right -->
-                    <button @click="showScoringGuide = false" class="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors focus:outline-none" aria-label="Close modal">
+                    <button @click="showScoringGuide = false" class="absolute top-4 sm:top-5 right-4 sm:right-5 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors focus:outline-none z-20 cursor-pointer" aria-label="Close modal">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
 
                     <!-- Header -->
-                    <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-3">
-                        <div>
-                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Công thức tính điểm chi tiết</h3>
-                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Cách thức tự động chấm điểm và đánh giá biển số xe</p>
+                    <div class="px-5 sm:px-8 py-5 sm:py-6 border-b border-gray-100 flex items-center gap-3">
+                        <div class="pr-8">
+                            <h3 class="text-base sm:text-xl font-bold text-gray-900">Công thức tính điểm chi tiết</h3>
+                            <p class="text-[11px] sm:text-sm text-gray-500 mt-0.5">Cách thức tự động chấm điểm và đánh giá biển số xe</p>
                         </div>
                     </div>
 
                     <!-- Body -->
-                    <div class="px-8 py-6 sm:py-8 overflow-y-auto space-y-6 bg-[#F9FAFB]">
-                        <p class="leading-relaxed text-gray-600 text-sm sm:text-[15px]">
+                    <div class="px-4 sm:px-8 py-5 sm:py-8 overflow-y-auto space-y-6 bg-[#F9FAFB]">
+                        <p class="leading-relaxed text-gray-600 text-xs sm:text-[15px]">
                             Điểm số của biển số được tính tự động dựa trên tổng hợp các yếu tố thế số, tổng nút và quan niệm dân gian với thang điểm từ <span class="font-bold text-gray-900">10 đến 99</span>:
                         </p>
                         
                         <!-- Grid with columns -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             
                             <!-- Column 1: Base & VIP -->
-                            <div class="space-y-6">
+                            <div class="space-y-4 sm:space-y-6">
                                 <!-- Base Score -->
-                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 transition hover:shadow-md hover:border-gray-300">
-                                    <div class="flex items-center justify-between mb-3.5">
-                                        <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Khởi điểm</span>
-                                        <span class="text-xs sm:text-sm font-black text-gray-950 bg-gray-100/80 px-2.5 py-1 rounded">50đ</span>
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-4 sm:p-5 transition hover:shadow-md hover:border-gray-300">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-wider">Khởi điểm</span>
+                                        <span class="text-xs sm:text-sm font-black text-gray-950 bg-gray-100/80 px-2 py-0.5 rounded">50đ</span>
                                     </div>
-                                    <h5 class="text-sm font-bold text-gray-900">Điểm cơ sở ban đầu</h5>
-                                    <p class="text-xs sm:text-[13px] text-gray-500 mt-1.5 leading-relaxed">Tất cả biển số đều bắt đầu từ mốc 50 điểm trước khi cộng/trừ các yếu tố khác.</p>
+                                    <h5 class="text-xs sm:text-sm font-bold text-gray-900">Điểm cơ sở ban đầu</h5>
+                                    <p class="text-[11px] sm:text-[13px] text-gray-500 mt-1 leading-relaxed">Tất cả biển số đều bắt đầu từ mốc 50 điểm trước khi cộng/trừ các yếu tố khác.</p>
                                 </div>
 
                                 <!-- VIP Layouts -->
-                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 transition hover:shadow-md hover:border-gray-300">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Ưu tiên</span>
-                                        <span class="text-sm font-bold text-gray-950">Thế số VIP</span>
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-4 sm:p-5 transition hover:shadow-md hover:border-gray-300">
+                                    <div class="flex items-center gap-2 mb-3.5">
+                                        <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-wider">Ưu tiên</span>
+                                        <span class="text-xs sm:text-sm font-bold text-gray-950">Thế số VIP</span>
                                     </div>
-                                    <div class="space-y-2.5 text-xs sm:text-[13px] leading-relaxed">
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                    <div class="space-y-2 text-[11px] sm:text-[13px] leading-relaxed">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Ngũ quý</span>
                                             <span class="font-bold text-gray-950">+45đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Sảnh tiến / Tứ quý</span>
                                             <span class="font-bold text-gray-950">+35đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Lộc phát / Số gánh</span>
                                             <span class="font-bold text-gray-950">+25đ / +20đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Tam hoa</span>
                                             <span class="font-bold text-gray-950">+20đ</span>
                                         </div>
@@ -1962,32 +2166,32 @@ watch(showPriceGuide, (newVal) => {
                             </div>
 
                             <!-- Column 2: Nút, May mắn & Trừ điểm -->
-                            <div class="space-y-6">
+                            <div class="space-y-4 sm:space-y-6">
                                 <!-- Nút & Cặp số may mắn -->
-                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 transition hover:shadow-md hover:border-gray-300">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Bổ trợ</span>
-                                        <span class="text-sm font-bold text-gray-950">Nút số & Cặp số đẹp</span>
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-4 sm:p-5 transition hover:shadow-md hover:border-gray-300">
+                                    <div class="flex items-center gap-2 mb-3.5">
+                                        <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-wider">Bổ trợ</span>
+                                        <span class="text-xs sm:text-sm font-bold text-gray-950">Nút số & Cặp số đẹp</span>
                                     </div>
-                                    <div class="space-y-3.5 text-xs sm:text-[13px] leading-relaxed">
+                                    <div class="space-y-3 text-[11px] sm:text-[13px] leading-relaxed">
                                         <!-- Nút -->
                                         <div class="space-y-2">
-                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-2">
+                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-1.5">
                                                 <span>Tổng nút đạt 9 - 10:</span>
                                                 <span class="font-bold text-gray-950">+10đ</span>
                                             </div>
-                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-2">
+                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-1.5">
                                                 <span>Tổng nút đạt 7 - 8:</span>
                                                 <span class="font-bold text-gray-950">+5đ</span>
                                             </div>
-                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-2">
+                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-1.5">
                                                 <span>Các trường hợp nút khác:</span>
                                                 <span class="font-bold text-gray-950">+2đ</span>
                                             </div>
                                         </div>
                                         <!-- May mắn -->
                                         <div class="space-y-2 pt-0.5">
-                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-2">
+                                            <div class="flex justify-between text-gray-600 border-b border-gray-100 pb-1.5">
                                                 <span>Chứa Lộc Phát (68/86):</span>
                                                 <span class="font-bold text-gray-950">+8đ</span>
                                             </div>
@@ -2000,17 +2204,17 @@ watch(showPriceGuide, (newVal) => {
                                 </div>
 
                                 <!-- Penalties (Trừ điểm số hạn) -->
-                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 transition hover:shadow-md hover:border-gray-300">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-xs font-bold text-[#8C1E1E] bg-red-50 px-2.5 py-1 rounded uppercase tracking-wider">Hạn chế</span>
-                                        <span class="text-sm font-bold text-gray-950">Trừ điểm số hạn / xấu</span>
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-4 sm:p-5 transition hover:shadow-md hover:border-gray-300">
+                                    <div class="flex items-center gap-2 mb-3.5">
+                                        <span class="text-[10px] font-bold text-[#8C1E1E] bg-red-50 px-2 py-0.5 rounded uppercase tracking-wider">Hạn chế</span>
+                                        <span class="text-xs sm:text-sm font-bold text-gray-950">Trừ điểm số hạn / xấu</span>
                                     </div>
-                                    <div class="space-y-2.5 text-xs sm:text-[13px] mb-4 leading-relaxed">
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                    <div class="space-y-2 text-[11px] sm:text-[13px] mb-4 leading-relaxed">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Chứa cặp số hạn (49/53):</span>
                                             <span class="font-bold text-[#8C1E1E]">-15đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Chứa cả hai số 4 và 7:</span>
                                             <span class="font-bold text-[#8C1E1E]">-10đ</span>
                                         </div>
@@ -2025,8 +2229,8 @@ watch(showPriceGuide, (newVal) => {
                     </div>
                     
                     <!-- Footer -->
-                    <div class="px-8 py-5 border-t border-gray-100 flex justify-end bg-gray-50">
-                        <button @click="showScoringGuide = false" type="button" class="px-6 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-xs sm:text-sm font-bold transition-all shadow-sm focus:outline-none">
+                    <div class="px-5 sm:px-8 py-4 sm:py-5 border-t border-gray-100 flex justify-end bg-gray-50">
+                        <button @click="showScoringGuide = false" type="button" class="px-5 sm:px-6 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-xs sm:text-sm font-bold transition-all shadow-sm focus:outline-none cursor-pointer">
                             Đóng
                         </button>
                     </div>
@@ -2045,121 +2249,120 @@ watch(showPriceGuide, (newVal) => {
                 <!-- Modal content container -->
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all transform scale-100 border border-gray-100 z-10 animate-fade-in">
                     <!-- Close button in absolute top-right -->
-                    <button @click="showPriceGuide = false" class="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors focus:outline-none" aria-label="Close modal">
+                    <button @click="showPriceGuide = false" class="absolute top-4 sm:top-5 right-4 sm:right-5 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors focus:outline-none z-20 cursor-pointer" aria-label="Close modal">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
 
                     <!-- Header -->
-                    <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-3">
-                        <div>
-                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Cách tính giá dự kiến chi tiết</h3>
-                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Cách thức tự động ước lượng giá trị biển số xe</p>
+                    <div class="px-5 sm:px-8 py-5 sm:py-6 border-b border-gray-100 flex items-center gap-3">
+                        <div class="pr-8">
+                            <h3 class="text-base sm:text-xl font-bold text-gray-900">Cách tính giá dự kiến chi tiết</h3>
+                            <p class="text-[11px] sm:text-sm text-gray-500 mt-0.5">Cách thức tự động ước lượng giá trị biển số xe</p>
                         </div>
                     </div>
 
                     <!-- Body -->
-                    <div class="px-8 py-6 sm:py-8 overflow-y-auto space-y-6 bg-[#F9FAFB]">
+                    <div class="px-4 sm:px-8 py-5 sm:py-8 overflow-y-auto space-y-6 bg-[#F9FAFB]">
                         <!-- Part 1: Current Plate Calculation -->
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-150 pb-4 mb-6">
-                                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider text-[#8C1E1E]">
+                        <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 md:p-8 shadow-sm">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 pb-3 mb-5">
+                                <h4 class="text-xs sm:text-sm font-bold text-gray-950 uppercase tracking-wider text-[#8C1E1E]">
                                     Chi tiết các bước định giá biển: {{ plate.display_number }}
                                 </h4>
-                                <div></div>
                             </div>
                             
                             <!-- Premium Vertical Calculation Steps Pipeline -->
-                            <div class="relative pl-6 sm:pl-8 space-y-8 select-none">
+                            <div class="relative pl-7 sm:pl-8 space-y-8 select-none border-l border-dashed border-gray-200 ml-3.5 sm:ml-4">
                                 <!-- Step 1: Base Price -->
                                 <div class="relative">
-                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">1</span>
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <span class="absolute left-0 top-0.5 transform -translate-x-1/2 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white border-2 border-gray-300 text-[10px] sm:text-xs font-black text-gray-500 shadow-sm">1</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-3">
                                         <div>
-                                            <h5 class="text-sm font-bold text-gray-900">Mốc giá nền theo thế số</h5>
-                                            <p class="text-xs text-gray-500 mt-0.5">Dựa trên trung bình trúng đấu giá thực tế của nhóm thế số <strong class="text-gray-700 font-semibold">{{ price_prediction.kind_name }}</strong> toàn quốc.</p>
+                                            <h5 class="text-xs sm:text-sm font-bold text-gray-900">Mốc giá nền theo thế số</h5>
+                                            <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Dựa trên trung bình trúng đấu giá thực tế của nhóm thế số <strong class="text-gray-700 font-semibold">{{ price_prediction.kind_name }}</strong> toàn quốc.</p>
                                         </div>
                                         <div class="text-right sm:text-right flex-shrink-0">
-                                            <div class="text-sm font-extrabold text-gray-950 whitespace-nowrap">{{ formatMoney(price_prediction.base_price) }}</div>
+                                            <div class="text-xs sm:text-sm font-extrabold text-gray-950 whitespace-nowrap">{{ formatMoney(price_prediction.base_price) }}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Step 2: Province Multiplier -->
                                 <div class="relative">
-                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">2</span>
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <span class="absolute left-0 top-0.5 transform -translate-x-1/2 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white border-2 border-gray-300 text-[10px] sm:text-xs font-black text-gray-500 shadow-sm">2</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-3">
                                         <div>
-                                            <h5 class="text-sm font-bold text-gray-900">Hệ số điều chỉnh theo khu vực ({{ plate.province?.name ?? 'Tỉnh khác' }})</h5>
-                                            <p class="text-xs text-gray-500 mt-0.5">Tính toán tự động dựa trên mức giá đấu trúng thực tế tại khu vực đăng ký so với cả nước.</p>
+                                            <h5 class="text-xs sm:text-sm font-bold text-gray-900">Hệ số điều chỉnh theo khu vực ({{ plate.province?.name ?? 'Tỉnh khác' }})</h5>
+                                            <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Tính toán tự động dựa trên mức giá đấu trúng thực tế tại khu vực đăng ký so với cả nước.</p>
                                         </div>
                                         <div class="text-right flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
-                                            <span class="rounded bg-amber-50 border border-amber-150 px-2 py-0.5 text-xs font-bold text-amber-700">x{{ price_prediction.province_multiplier }}</span>
-                                            <div class="text-xs font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier) }}</div>
+                                            <span class="rounded bg-amber-50 border border-amber-150 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">x{{ price_prediction.province_multiplier }}</span>
+                                            <div class="text-[11px] font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier) }}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Step 3: Nut Multiplier -->
                                 <div class="relative">
-                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">3</span>
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <span class="absolute left-0 top-0.5 transform -translate-x-1/2 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white border-2 border-gray-300 text-[10px] sm:text-xs font-black text-gray-500 shadow-sm">3</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-3">
                                         <div>
-                                            <h5 class="text-sm font-bold text-gray-900">Hệ số tổng nút số ({{ price_prediction.nut }} nút)</h5>
-                                            <p class="text-xs text-gray-500 mt-0.5">Hệ số khuyến khích cho các biển có tổng số nút cao mang năng lượng tốt (9 và 10 nút).</p>
+                                            <h5 class="text-xs sm:text-sm font-bold text-gray-900">Hệ số tổng nút số ({{ price_prediction.nut }} nút)</h5>
+                                            <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Hệ số khuyến khích cho các biển có tổng số nút cao mang năng lượng tốt (9 và 10 nút).</p>
                                         </div>
                                         <div class="text-right flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
-                                            <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.nut_multiplier > 1.0 ? 'bg-green-50 border border-green-150 text-green-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
+                                            <span class="rounded px-1.5 py-0.5 text-[10px] font-bold" :class="price_prediction.nut_multiplier > 1.0 ? 'bg-green-50 border border-green-150 text-green-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
                                                 x{{ price_prediction.nut_multiplier }}
                                             </span>
-                                            <div class="text-xs font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier) }}</div>
+                                            <div class="text-[11px] font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier) }}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Step 4: Bad Numbers Multiplier -->
                                 <div class="relative">
-                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">4</span>
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <span class="absolute left-0 top-0.5 transform -translate-x-1/2 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white border-2 border-gray-300 text-[10px] sm:text-xs font-black text-gray-500 shadow-sm">4</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-3">
                                         <div>
-                                            <h5 class="text-sm font-bold text-gray-900">Chiết khấu tránh số xấu (Số 4, 7)</h5>
-                                            <p class="text-xs text-gray-500 mt-0.5">Khấu trừ giá trị đối với các biển số có chứa chữ số Hán Việt không được ưu chuộng.</p>
+                                            <h5 class="text-xs sm:text-sm font-bold text-gray-900">Chiết khấu tránh số xấu (Số 4, 7)</h5>
+                                            <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Khấu trừ giá trị đối với các biển số có chứa chữ số Hán Việt không được ưu chuộng.</p>
                                         </div>
                                         <div class="text-right flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
-                                            <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.has_bad_numbers ? 'bg-red-50 border border-red-150 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
+                                            <span class="rounded px-1.5 py-0.5 text-[10px] font-bold" :class="price_prediction.has_bad_numbers ? 'bg-red-50 border border-red-150 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
                                                 x{{ price_prediction.bad_multiplier }}
                                             </span>
-                                            <div class="text-xs font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier) }}</div>
+                                            <div class="text-[11px] font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier) }}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Step 5: Market Trend Multiplier -->
                                 <div class="relative">
-                                    <span class="absolute -left-[37px] sm:-left-[45px] top-0 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 border border-gray-250 text-[11px] font-black text-gray-600 shadow-sm">5</span>
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <span class="absolute left-0 top-0.5 transform -translate-x-1/2 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white border-2 border-gray-300 text-[10px] sm:text-xs font-black text-gray-500 shadow-sm">5</span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-3">
                                         <div>
-                                            <h5 class="text-sm font-bold text-gray-900">Hệ số xu hướng biến động sê-ri đuôi "{{ plate.serial_number }}"</h5>
-                                            <p class="text-xs text-gray-500 mt-0.5">Tính toán dựa trên chiều biến động giá lịch sử đấu giá của chính các biển số có cùng sê-ri số đuôi này.</p>
+                                            <h5 class="text-xs sm:text-sm font-bold text-gray-900">Hệ số xu hướng biến động sê-ri đuôi "{{ plate.serial_number }}"</h5>
+                                            <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5">Tính toán dựa trên chiều biến động giá lịch sử đấu giá của chính các biển số có cùng sê-ri số đuôi này.</p>
                                         </div>
                                         <div class="text-right flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
-                                            <span class="rounded px-2 py-0.5 text-xs font-bold font-semibold" :class="price_prediction.trend.direction === 'up' ? 'bg-green-50 border border-green-150 text-green-700' : price_prediction.trend.direction === 'down' ? 'bg-red-50 border border-red-150 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
+                                            <span class="rounded px-1.5 py-0.5 text-[10px] font-bold" :class="price_prediction.trend.direction === 'up' ? 'bg-green-50 border border-green-150 text-green-700' : price_prediction.trend.direction === 'down' ? 'bg-red-50 border border-red-150 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-500'">
                                                 x{{ price_prediction.trend.multiplier }}
                                             </span>
-                                            <div class="text-xs font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier * price_prediction.trend.multiplier) }}</div>
+                                            <div class="text-[11px] font-bold text-gray-400 whitespace-nowrap">→ {{ formatMoney(price_prediction.base_price * price_prediction.province_multiplier * price_prediction.nut_multiplier * price_prediction.bad_multiplier * price_prediction.trend.multiplier) }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Step 6 / Final Expected Result block -->
-                            <div class="rounded-2xl border border-[#8C1E1E]/20 bg-[#8C1E1E]/5 p-6 text-center mt-8 shadow-inner relative overflow-hidden">
+                            <div class="rounded-2xl border border-[#8C1E1E]/20 bg-[#8C1E1E]/5 p-5 sm:p-6 text-center mt-8 shadow-inner relative overflow-hidden">
                                 <div class="absolute -right-10 -bottom-10 h-28 w-28 rounded-full bg-[#8C1E1E]/5 blur-xl"></div>
                                 <div class="absolute -left-10 -top-10 h-28 w-28 rounded-full bg-[#8C1E1E]/5 blur-xl"></div>
                                 
                                 <span class="relative z-10 text-[10px] text-[#8C1E1E] font-bold uppercase tracking-widest">Giá Trị Dự Kiến Đề Xuất Cuối Cùng</span>
-                                <div class="relative z-10 text-3xl sm:text-4xl font-black text-[#8C1E1E] my-2 tracking-tight">
+                                <div class="relative z-10 text-2xl sm:text-4xl font-black text-[#8C1E1E] my-2 tracking-tight">
                                     {{ formatMoney(price_prediction.expected) }}
                                 </div>
                                 <div class="relative z-10 text-xs text-gray-500 font-medium">
@@ -2174,48 +2377,48 @@ watch(showPriceGuide, (newVal) => {
 
                         <!-- Part 2: General formula explanation -->
                         <div class="space-y-6">
-                            <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2 text-gray-700">Công thức định giá tổng quát</h4>
-                            <p class="leading-relaxed text-gray-600 text-sm">
+                            <h4 class="text-xs sm:text-sm font-bold text-gray-900 uppercase tracking-wider mb-2 text-gray-700">Công thức định giá tổng quát</h4>
+                            <p class="leading-relaxed text-gray-600 text-xs sm:text-sm">
                                 Giá trị dự kiến của biển số được tính bằng công thức tích hợp dựa trên thống kê lịch sử trúng đấu giá của hàng trăm ngàn biển số thực tế:
                             </p>
                             
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <!-- Base Price table -->
-                                <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Mốc 1</span>
-                                        <span class="text-sm font-bold text-gray-950">Giá nền theo thế số</span>
+                                <div class="rounded-xl border border-gray-200/80 bg-white p-4 sm:p-5 shadow-sm">
+                                    <div class="flex items-center gap-2 mb-3.5">
+                                        <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-wider">Mốc 1</span>
+                                        <span class="text-xs sm:text-sm font-bold text-gray-950">Giá nền theo thế số</span>
                                     </div>
-                                    <div class="space-y-2 text-xs sm:text-[13px] leading-relaxed">
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                    <div class="space-y-2 text-[11px] sm:text-[13px] leading-relaxed">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Ngũ quý</span>
                                             <span class="font-bold text-gray-950">1.160.000.000đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Số gánh</span>
                                             <span class="font-bold text-gray-950">289.000.000đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Sảnh tiến</span>
                                             <span class="font-bold text-gray-950">265.000.000đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Tứ quý</span>
                                             <span class="font-bold text-gray-950">145.000.000đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Lặp đôi</span>
                                             <span class="font-bold text-gray-950">70.000.000đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Tam hoa</span>
                                             <span class="font-bold text-gray-950">65.000.000đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Lộc phát (68/86)</span>
                                             <span class="font-bold text-gray-950">55.000.000đ</span>
                                         </div>
-                                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                                        <div class="flex justify-between border-b border-gray-100 pb-1.5">
                                             <span class="text-gray-600">Biển thường</span>
                                             <span class="font-bold text-gray-950">40.000.000đ</span>
                                         </div>
@@ -2227,16 +2430,16 @@ watch(showPriceGuide, (newVal) => {
                                 </div>
 
                                 <!-- Regional coefficients & multipliers -->
-                                <div class="space-y-6">
-                                    <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
-                                        <div class="flex items-center gap-2 mb-4">
-                                            <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded uppercase tracking-wider">Mốc 2</span>
-                                            <span class="text-sm font-bold text-gray-950">Hệ số nhân điều chỉnh</span>
+                                <div class="space-y-4 sm:space-y-6">
+                                    <div class="rounded-xl border border-gray-200/80 bg-white p-4 sm:p-5 shadow-sm">
+                                        <div class="flex items-center gap-2 mb-3.5">
+                                            <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-wider">Mốc 2</span>
+                                            <span class="text-xs sm:text-sm font-bold text-gray-950">Hệ số nhân điều chỉnh</span>
                                         </div>
-                                        <div class="space-y-3.5 text-xs sm:text-[13px] leading-relaxed">
+                                        <div class="space-y-3.5 text-[11px] sm:text-[13px] leading-relaxed">
                                             <div class="space-y-2 border-b border-gray-100 pb-3">
                                                 <div class="flex justify-between">
-                                                    <span class="text-gray-605 font-semibold text-gray-700">Tỉnh thành đăng ký:</span>
+                                                    <span class="font-semibold text-gray-700">Tỉnh thành đăng ký:</span>
                                                 </div>
                                                 <div class="flex justify-between pl-3 text-gray-500">
                                                     <span>Hà Nội (01):</span>
@@ -2257,22 +2460,22 @@ watch(showPriceGuide, (newVal) => {
                                                     <span class="font-semibold text-gray-700">Nút số (Tổng số % 10):</span>
                                                     <span class="font-bold text-gray-950">x1.1</span>
                                                 </div>
-                                                <p class="text-[11px] text-gray-400 pl-3">Áp dụng khi tổng số nút đạt 9 hoặc 10 nút.</p>
+                                                <p class="text-[10px] text-gray-400 pl-3">Áp dụng khi tổng số nút đạt 9 hoặc 10 nút.</p>
                                             </div>
 
                                             <div class="space-y-2">
-                                                <div class="flex justify-between text-gray-650">
+                                                <div class="flex justify-between text-gray-600">
                                                     <span class="font-semibold text-[#8C1E1E]">Tránh số xấu (Số 4, 7):</span>
                                                     <span class="font-bold text-[#8C1E1E]">x0.85</span>
                                                 </div>
-                                                <p class="text-[11px] text-gray-400 pl-3">Áp dụng khi biển số có chứa chữ số 4 hoặc 7.</p>
+                                                <p class="text-[10px] text-gray-400 pl-3">Áp dụng khi biển số có chứa chữ số 4 hoặc 7.</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm">
                                         <h5 class="text-xs font-bold text-gray-950 uppercase mb-1">* Quy tắc giá sàn & giới hạn</h5>
-                                        <p class="text-xs text-gray-500 leading-relaxed">
+                                        <p class="text-[11px] text-gray-500 leading-relaxed">
                                             Giá dự kiến tối thiểu không dưới giá khởi điểm sàn <strong>40.000.000đ</strong>. Khoảng dao động giá trị tối thiểu là 80% (Dự kiến * 0.8) và tối đa là 130% (Dự kiến * 1.3).
                                         </p>
                                     </div>
@@ -2282,8 +2485,8 @@ watch(showPriceGuide, (newVal) => {
                     </div>
                     
                     <!-- Footer -->
-                    <div class="px-8 py-5 border-t border-gray-100 flex justify-end bg-gray-50">
-                        <button @click="showPriceGuide = false" type="button" class="px-6 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-xs sm:text-sm font-bold transition-all shadow-sm focus:outline-none">
+                    <div class="px-5 sm:px-8 py-4 sm:py-5 border-t border-gray-100 flex justify-end bg-gray-50">
+                        <button @click="showPriceGuide = false" type="button" class="px-5 sm:px-6 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-xs sm:text-sm font-bold transition-all shadow-sm focus:outline-none cursor-pointer">
                             Đóng
                         </button>
                     </div>
@@ -2298,6 +2501,34 @@ body,
 .font-sans,
 .font-serif {
     font-family: 'Inter', sans-serif !important;
+}
+
+/* Responsive adjustments for AI content headings */
+@media (max-width: 639px) {
+    .ai-content-body h2 {
+        font-size: 16.5px !important;
+        font-weight: 700 !important;
+        line-height: 1.45 !important;
+        margin-top: 1.25rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .ai-content-body h3 {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        line-height: 1.45 !important;
+        margin-top: 1rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-none {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }
 
 /* Perspective utilities for 3D card tilt */
