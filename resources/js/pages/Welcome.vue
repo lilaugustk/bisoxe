@@ -296,20 +296,27 @@ const reload = () => {
         targetPath = '/bien-so-xe-may';
     }
 
+    const params: Record<string, any> = {
+        search: searchQuery.value,
+        color: selectedColor.value,
+        province: selectedProvince.value,
+        kind: selectedKind.value.join(','),
+        tab: activeTab.value,
+        start_date: startDate.value,
+        end_date: endDate.value,
+        birth_years: selectedBirthYears.value.join(','),
+        avoid_numbers: selectedAvoidNumbers.value.join(','),
+        limit: selectedLimit.value,
+    };
+
+    // Lọc bỏ các tham số rỗng, null hoặc undefined
+    const cleanParams = Object.fromEntries(
+        Object.entries(params).filter((entry) => entry[1] !== '' && entry[1] !== null && entry[1] !== undefined)
+    );
+
     router.get(
         targetPath,
-        {
-            search: searchQuery.value,
-            color: selectedColor.value,
-            province: selectedProvince.value,
-            kind: selectedKind.value.join(','),
-            tab: activeTab.value,
-            start_date: startDate.value,
-            end_date: endDate.value,
-            birth_years: selectedBirthYears.value.join(','),
-            avoid_numbers: selectedAvoidNumbers.value.join(','),
-            limit: selectedLimit.value,
-        },
+        cleanParams,
         {
             preserveState: true,
             replace: true,
