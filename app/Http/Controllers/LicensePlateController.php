@@ -454,12 +454,16 @@ class LicensePlateController extends Controller
             });
         }
 
-        // Lấy tối đa 4 biển số cùng tỉnh/thành phố trước
-        $sameProvincePlates = (clone $relatedQuery)
+        // Lấy tối đa 50 biển số cùng tỉnh/thành phố mới nhất trước
+        $sameProvinceCandidates = (clone $relatedQuery)
             ->where('province_code', $plate->province_code)
-            ->inRandomOrder()
-            ->limit(4)
+            ->latest()
+            ->limit(50)
             ->get();
+
+        $sameProvincePlates = $sameProvinceCandidates->isNotEmpty()
+            ? $sameProvinceCandidates->random(min(4, $sameProvinceCandidates->count()))
+            : collect();
 
         $needed = 4 - $sameProvincePlates->count();
         $otherProvincePlates = collect();
@@ -468,12 +472,16 @@ class LicensePlateController extends Controller
         if ($needed > 0) {
             $excludeIds = $sameProvincePlates->pluck('id')->all();
             
-            $otherProvincePlates = (clone $relatedQuery)
+            $otherProvinceCandidates = (clone $relatedQuery)
                 ->where('province_code', '!=', $plate->province_code)
                 ->whereNotIn('id', $excludeIds)
-                ->inRandomOrder()
-                ->limit($needed)
+                ->latest()
+                ->limit(50)
                 ->get();
+
+            if ($otherProvinceCandidates->isNotEmpty()) {
+                $otherProvincePlates = $otherProvinceCandidates->random(min($needed, $otherProvinceCandidates->count()));
+            }
         }
 
         // Kết hợp và transform dữ liệu
