@@ -141,25 +141,11 @@ class LicensePlateController extends Controller
         if ($status === 'completed') {
             $query->orderBy('auction_start_time', 'desc')->latest();
         } elseif ($status === 'waiting_auction') {
-            $query->select('license_plates.*')
-                ->selectSub(function ($q) {
-                    $q->selectRaw('MIN(pk.priority)')
-                        ->from('plate_kinds as pk')
-                        ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
-                        ->whereColumn('lpk.plate_id', 'license_plates.id');
-                }, 'min_kind_priority')
-                ->orderBy('auction_start_time', 'asc')
-                ->orderByRaw('COALESCE(min_kind_priority, 9999) asc')
+            $query->orderBy('auction_start_time', 'asc')
+                ->orderBy('min_kind_priority', 'asc')
                 ->latest();
         } else {
-            $query->select('license_plates.*')
-                ->selectSub(function ($q) {
-                    $q->selectRaw('MIN(pk.priority)')
-                        ->from('plate_kinds as pk')
-                        ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
-                        ->whereColumn('lpk.plate_id', 'license_plates.id');
-                }, 'min_kind_priority')
-                ->orderByRaw('COALESCE(min_kind_priority, 9999) asc')
+            $query->orderBy('min_kind_priority', 'asc')
                 ->latest();
         }
 

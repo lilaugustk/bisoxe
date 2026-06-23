@@ -306,6 +306,25 @@ class ImportVpaData extends Command
                         }
                     }
 
+                    // Nhận dạng kinds động từ regex để tìm min_kind_priority
+                    $minKindPriority = 9999;
+                    if (! empty($serialNumber)) {
+                        foreach ($kindsCache as $kind) {
+                            if ($kind->regex) {
+                                try {
+                                    if (preg_match('#'.str_replace('#', '\#', $kind->regex).'#', $serialNumber)) {
+                                        $priority = (int) ($kind->priority ?? 9999);
+                                        if ($priority < $minKindPriority) {
+                                            $minKindPriority = $priority;
+                                        }
+                                    }
+                                } catch (\Exception $e) {
+                                    // Bỏ qua regex lỗi
+                                }
+                            }
+                        }
+                    }
+
                     $platesToUpsert[] = [
                         'vehicle_type' => $fileConfig['vehicle_type'],
                         'local_symbol' => $localSymbol,
@@ -318,6 +337,7 @@ class ImportVpaData extends Command
                         'status' => $newStatus,
                         'starting_price' => $startingPrice,
                         'winning_price' => $winningPrice,
+                        'min_kind_priority' => $minKindPriority,
                         'register_start_time' => $registerStart,
                         'register_end_time' => $registerEnd,
                         'auction_start_time' => $auctionStart,
@@ -341,6 +361,7 @@ class ImportVpaData extends Command
                         'status',
                         'starting_price',
                         'winning_price',
+                        'min_kind_priority',
                         'register_start_time',
                         'register_end_time',
                         'auction_start_time',
