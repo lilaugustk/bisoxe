@@ -20,13 +20,13 @@ return new class extends Migration
 
         // Cập nhật dữ liệu cũ dựa trên bảng liên kết kinds hiện tại
         DB::statement("
-            UPDATE license_plates lp
-            SET lp.min_kind_priority = COALESCE(
+            UPDATE license_plates
+            SET min_kind_priority = COALESCE(
                 (
                     SELECT MIN(pk.priority)
                     FROM license_plate_kinds lpk
                     JOIN plate_kinds pk ON pk.id = lpk.kind_id
-                    WHERE lpk.plate_id = lp.id
+                    WHERE lpk.plate_id = license_plates.id
                 ),
                 9999
             )
