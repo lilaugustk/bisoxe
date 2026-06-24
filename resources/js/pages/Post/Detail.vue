@@ -20,10 +20,40 @@ interface Post {
     created_at: string;
 }
 
+interface LicensePlate {
+    id: number;
+    vehicle_type: string;
+    local_symbol: string;
+    serial_letter: string;
+    serial_number: string;
+    display_number: string;
+    province_code: string | null;
+    color: number;
+    status: string;
+    starting_price: number;
+    winning_price: number;
+    auction_start_time: string | null;
+    seoArticle?: {
+        slug: string;
+    } | null;
+}
+
 const props = defineProps<{
     post: Post;
     relatedPosts: Post[];
+    upcomingPlates?: LicensePlate[];
+    completedPlates?: LicensePlate[];
 }>();
+
+const formatMoney = (value: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        maximumFractionDigits: 0,
+    }).format(value);
+};
+
+const activePlatesTab = ref<'upcoming' | 'completed'>('upcoming');
 
 const schemaStructuredData = computed(() => {
     return {
@@ -100,6 +130,10 @@ onMounted(() => {
     nextTick(() => {
         generateToc();
     });
+
+    if ((!props.upcomingPlates || props.upcomingPlates.length === 0) && props.completedPlates && props.completedPlates.length > 0) {
+        activePlatesTab.value = 'completed';
+    }
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
@@ -472,6 +506,81 @@ const formatDate = (dateStr: string | null) => {
                             >
                                 Tra cứu ngay
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Plates Widget -->
+                    <div
+                        v-if="(upcomingPlates && upcomingPlates.length > 0) || (completedPlates && completedPlates.length > 0)"
+                        class="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+                    >
+                        <div class="border-b border-gray-100 pb-2.5">
+                            <h3
+                                class="text-sm font-black tracking-wider text-gray-900 uppercase"
+                            >
+                                Biển số đấu giá liên quan
+                            </h3>
+                            <p class="mt-0.5 text-xs text-gray-400">
+                                Cập nhật trực tiếp từ kho biển số địa phương
+                            </p>
+                        </div>
+
+                        <!-- Tabs to switch between Upcoming and Completed -->
+                        <div class="flex rounded-lg bg-gray-100 p-0.5">
+                            <button
+                                v-if="upcomingPlates && upcomingPlates.length > 0"
+                                @click="activePlatesTab = 'upcoming'"
+                                :class="activePlatesTab === 'upcoming' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
+                                class="flex-1 rounded-md py-1.5 text-center text-[11px] font-bold transition select-none"
+                            >
+                                Sắp đấu giá ({{ upcomingPlates.length }})
+                            </button>
+                            <button
+                                v-if="completedPlates && completedPlates.length > 0"
+                                @click="activePlatesTab = 'completed'"
+                                :class="activePlatesTab === 'completed' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
+                                class="flex-1 rounded-md py-1.5 text-center text-[11px] font-bold transition select-none"
+                            >
+                                Đã đấu giá ({{ completedPlates.length }})
+                            </button>
+                        </div>
+
+                        <!-- Plates list -->
+                        <div class="space-y-3">
+                            <div
+                                v-for="plate in (activePlatesTab === 'upcoming' ? upcomingPlates : completedPlates)"
+                                :key="plate.id"
+                                class="group relative flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/30 p-2.5 transition hover:bg-gray-50"
+                            >
+                                <!-- Left: Scaled Plate -->
+                                <Link
+                                    :href="`/bien-so-${plate.seoArticle?.slug || (plate.local_symbol + plate.serial_letter + '-' + plate.serial_number).toLowerCase().replace('.', '')}`"
+                                    class="relative flex aspect-[520/110] w-[110px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102"
+                                    :class="plate.color === 1 
+                                        ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' 
+                                        : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
+                                >
+                                    <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
+                                    <div class="flex h-full w-full items-center justify-center rounded border px-1"
+                                        :class="plate.color === 1 ? 'border-black/30' : 'border-gray-200'"
+                                    >
+                                        <span class="font-sans font-black tracking-tight text-[10px]">{{ plate.display_number }}</span>
+                                    </div>
+                                </Link>
+
+                                <!-- Right: Info -->
+                                <div class="flex flex-1 flex-col items-end pl-3">
+                                    <span class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">
+                                        {{ activePlatesTab === 'upcoming' ? 'Giá khởi điểm' : 'Giá trúng' }}
+                                    </span>
+                                    <span class="text-xs font-black text-[#8C1E1E]">
+                                        {{ plate.winning_price > 0 ? formatMoney(plate.winning_price) : formatMoney(plate.starting_price) }}
+                                    </span>
+                                    <span v-if="plate.auction_start_time" class="mt-0.5 text-[9px] text-gray-400">
+                                        {{ formatDate(plate.auction_start_time).split(' ')[0] }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

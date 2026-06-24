@@ -13,6 +13,7 @@ class Post extends Model
         'title',
         'slug',
         'category',
+        'province_code',
         'summary',
         'meta_title',
         'meta_description',
@@ -29,6 +30,16 @@ class Post extends Model
         'view_count' => 'integer',
         'generated_at' => 'datetime',
     ];
+
+    /**
+     * Lấy thông tin tỉnh thành liên kết với bài viết này.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Province, $this>
+     */
+    public function province(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Province::class, 'province_code', 'code');
+    }
 
     /**
      * Scope lọc bài viết đã xuất bản.

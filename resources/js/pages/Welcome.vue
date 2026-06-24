@@ -5,6 +5,13 @@ import BackToTop from '../components/BackToTop.vue';
 import DatePicker from '../components/DatePicker.vue';
 import Footer from '../components/Footer.vue';
 import Header from '../components/Header.vue';
+import SearchableSelect from '../components/SearchableSelect.vue';
+
+const colorOptions = [
+    { value: '0', label: 'Biển trắng (Cá nhân)' },
+    { value: '1', label: 'Biển vàng (Kinh doanh)' },
+];
+
 
 interface Plate {
     id: number;
@@ -259,7 +266,12 @@ const formatDate = (dateStr: string | null) => {
 };
 
 // Đọc trực tiếp từ props đã truy vấn trên server thay vì tính toán trên client
-const uniqueProvinces = computed(() => props.provinces);
+const provinceOptions = computed(() =>
+    props.provinces.map((prov) => ({
+        value: prov.code,
+        label: prov.name,
+    }))
+);
 const uniqueKinds = computed(() =>
     props.kinds.filter((k) =>
         [
@@ -656,71 +668,20 @@ onUnmounted(() => {
                         </div>
 
                         <!-- Color select (custom styling matching reference image) -->
-                        <div class="relative">
-                            <select
-                                v-model="selectedColor"
-                                aria-label="Chọn màu biển"
-                                class="w-full cursor-pointer appearance-none rounded-full border border-gray-200 bg-white px-5 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none"
-                            >
-                                <option value="">Chọn màu biển</option>
-                                <option value="0">Biển trắng (Cá nhân)</option>
-                                <option value="1">
-                                    Biển vàng (Kinh doanh)
-                                </option>
-                            </select>
-                            <div
-                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400"
-                            >
-                                <svg
-                                    class="h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </div>
-                        </div>
+                        <SearchableSelect
+                            v-model="selectedColor"
+                            :options="colorOptions"
+                            placeholder="Chọn màu biển"
+                        />
 
                         <!-- Province select (custom styling matching reference image) -->
-                        <div class="relative">
-                            <select
-                                v-model="selectedProvince"
-                                aria-label="Chọn tỉnh, thành phố"
-                                class="w-full cursor-pointer appearance-none rounded-full border border-gray-200 bg-white px-5 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none"
-                            >
-                                <option value="">Chọn tỉnh, thành phố</option>
-                                <option
-                                    v-for="prov in uniqueProvinces"
-                                    :key="prov.code"
-                                    :value="prov.code"
-                                >
-                                    {{ prov.name }}
-                                </option>
-                            </select>
-                            <div
-                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400"
-                            >
-                                <svg
-                                    class="h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </div>
-                        </div>
+                        <SearchableSelect
+                            v-model="selectedProvince"
+                            :options="provinceOptions"
+                            placeholder="Chọn tỉnh, thành phố"
+                            searchable
+                            search-placeholder="Tìm kiếm tỉnh, thành..."
+                        />
 
                         <!-- Date inputs with custom calendar picker -->
                         <div class="space-y-3 pt-2">
@@ -1577,6 +1538,230 @@ onUnmounted(() => {
         <Footer />
 
         <BackToTop />
+
+        <!-- Teleport for Mobile Filters Drawer -->
+        <Teleport to="body">
+            <div v-if="isMobileFiltersOpen" class="fixed inset-0 z-50 flex justify-end">
+                <!-- Backdrop -->
+                <div 
+                    class="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity" 
+                    @click="isMobileFiltersOpen = false"
+                ></div>
+
+                <!-- Drawer Container -->
+                <div 
+                    class="relative z-50 flex h-full w-full max-w-sm flex-col bg-white shadow-2xl transition-transform"
+                    role="dialog" 
+                    aria-modal="true"
+                >
+                    <!-- Drawer Header -->
+                    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                        <div class="flex items-center gap-2">
+                            <svg class="h-5 w-5 text-[#8C1E1E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            <h2 class="text-base font-bold text-gray-900">Bộ lọc tìm kiếm</h2>
+                        </div>
+                        <button 
+                            type="button"
+                            @click="isMobileFiltersOpen = false"
+                            class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                        >
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Scrollable Body content -->
+                    <div class="flex-1 overflow-y-auto p-5 space-y-4">
+                        <!-- General Filters -->
+                        <div class="space-y-4">
+                            <!-- Search input -->
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </span>
+                                <input
+                                    type="text"
+                                    v-model="searchQuery"
+                                    placeholder="Nhập để tìm kiếm biển số xe"
+                                    class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 placeholder-gray-400 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none"
+                                />
+                            </div>
+
+                            <!-- Color select -->
+                            <SearchableSelect
+                                v-model="selectedColor"
+                                :options="colorOptions"
+                                placeholder="Chọn màu biển"
+                            />
+
+                            <!-- Province select -->
+                            <SearchableSelect
+                                v-model="selectedProvince"
+                                :options="provinceOptions"
+                                placeholder="Chọn tỉnh, thành phố"
+                                searchable
+                                search-placeholder="Tìm kiếm tỉnh, thành..."
+                            />
+
+                            <!-- Date inputs -->
+                            <div class="space-y-3 pt-2">
+                                <DatePicker
+                                    v-model="startDate"
+                                    placeholder="Từ ngày đấu giá"
+                                />
+                                <DatePicker
+                                    v-model="endDate"
+                                    placeholder="Đến ngày đấu giá"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Kinds Collapsible Section -->
+                        <div
+                            v-if="activeTab !== 'result'"
+                            class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+                        >
+                            <button
+                                type="button"
+                                @click="kindsOpen = !kindsOpen"
+                                class="flex w-full items-center justify-between border-b border-gray-100 bg-red-50/10 px-4 py-3 text-sm font-bold text-gray-900 transition hover:bg-red-50/20"
+                            >
+                                <span>Loại biển</span>
+                                <svg
+                                    class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                                    :class="kindsOpen ? 'rotate-180' : ''"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div v-show="kindsOpen" class="max-h-64 space-y-2.5 overflow-y-auto p-4">
+                                <label
+                                    v-for="kind in uniqueKinds"
+                                    :key="kind.id"
+                                    class="flex cursor-pointer items-center gap-3 text-sm text-gray-600 select-none hover:text-gray-900"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        :value="kind.id.toString()"
+                                        v-model="selectedKind"
+                                        class="h-4 w-4 rounded border-gray-300 text-[#8C1E1E] accent-[#8C1E1E] focus:ring-[#8C1E1E]/20"
+                                    />
+                                    <span>{{ kind.name }}</span>
+                                </label>
+                                <div v-if="uniqueKinds.length === 0" class="py-2 text-center text-xs text-gray-400">
+                                    Không có loại biển nào
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Birth Years Collapsible Section -->
+                        <div
+                            v-if="activeTab !== 'result'"
+                            class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+                        >
+                            <button
+                                type="button"
+                                @click="birthYearsOpen = !birthYearsOpen"
+                                class="flex w-full items-center justify-between border-b border-gray-100 bg-red-50/10 px-4 py-3 text-sm font-bold text-gray-900 transition hover:bg-red-50/20"
+                            >
+                                <span>Năm sinh</span>
+                                <svg
+                                    class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                                    :class="birthYearsOpen ? 'rotate-180' : ''"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div v-show="birthYearsOpen" class="space-y-2.5 p-4">
+                                <label
+                                    v-for="opt in birthYearOptions"
+                                    :key="opt.value"
+                                    class="flex cursor-pointer items-center gap-3 text-sm text-gray-600 select-none hover:text-gray-900"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        :value="opt.value"
+                                        v-model="selectedBirthYears"
+                                        class="h-4 w-4 rounded border-gray-300 text-[#8C1E1E] accent-[#8C1E1E] focus:ring-[#8C1E1E]/20"
+                                    />
+                                    <span>{{ opt.label }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Avoid Numbers Collapsible Section -->
+                        <div
+                            v-if="activeTab !== 'result'"
+                            class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+                        >
+                            <button
+                                type="button"
+                                @click="avoidNumbersOpen = !avoidNumbersOpen"
+                                class="flex w-full items-center justify-between border-b border-gray-100 bg-red-50/10 px-4 py-3 text-sm font-bold text-gray-900 transition hover:bg-red-50/20"
+                            >
+                                <span>Tránh số</span>
+                                <svg
+                                    class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                                    :class="avoidNumbersOpen ? 'rotate-180' : ''"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div v-show="avoidNumbersOpen" class="space-y-2.5 p-4">
+                                <label
+                                    v-for="opt in avoidNumberOptions"
+                                    :key="opt.value"
+                                    class="flex cursor-pointer items-center gap-3 text-sm text-gray-600 select-none hover:text-gray-900"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        :value="opt.value"
+                                        v-model="selectedAvoidNumbers"
+                                        class="h-4 w-4 rounded border-gray-300 text-[#8C1E1E] accent-[#8C1E1E] focus:ring-[#8C1E1E]/20"
+                                    />
+                                    <span>{{ opt.label }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="border-t border-gray-100 p-4 bg-gray-50 flex gap-3">
+                        <button 
+                            type="button"
+                            @click="clearAllFilters(); isMobileFiltersOpen = false;"
+                            class="flex-1 rounded-full border border-gray-200 bg-white py-3 text-xs font-bold text-gray-600 transition hover:bg-gray-50 text-center cursor-pointer"
+                        >
+                            Thiết lập lại
+                        </button>
+                        <button 
+                            type="button"
+                            @click="isMobileFiltersOpen = false; reload();"
+                            class="flex-1 rounded-full bg-[#8C1E1E] py-3 text-xs font-bold text-white shadow-md transition hover:bg-[#701818] text-center cursor-pointer"
+                        >
+                            Áp dụng ({{ activeFiltersCount }})
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 

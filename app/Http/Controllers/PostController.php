@@ -82,9 +82,30 @@ class PostController extends Controller
                 ->get();
         }
 
+        // Lấy danh sách biển số sắp đấu giá và đã đấu giá của tỉnh thành liên kết
+        $upcomingPlates = collect();
+        $completedPlates = collect();
+        if (!empty($post->province_code)) {
+            $upcomingPlates = \App\Models\LicensePlate::with('seoArticle')
+                ->where('province_code', $post->province_code)
+                ->whereIn('status', ['waiting_auction', 'announced'])
+                ->orderBy('auction_start_time', 'asc')
+                ->limit(6)
+                ->get();
+
+            $completedPlates = \App\Models\LicensePlate::with('seoArticle')
+                ->where('province_code', $post->province_code)
+                ->where('status', 'completed')
+                ->orderBy('auction_start_time', 'desc')
+                ->limit(6)
+                ->get();
+        }
+
         return Inertia::render('Post/Detail', [
             'post' => $post,
             'relatedPosts' => $relatedPosts,
+            'upcomingPlates' => $upcomingPlates,
+            'completedPlates' => $completedPlates,
         ]);
     }
 }
