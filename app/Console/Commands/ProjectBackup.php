@@ -194,38 +194,46 @@ class ProjectBackup extends Command
             // Lấy danh sách bảng
             $tables = [];
             $stmt = $pdo->query('SHOW TABLES');
-            while ($row = $stmt->fetch(\PDO::FETCH_NUM)) {
-                $tables[] = $row[0];
+            if ($stmt instanceof \PDOStatement) {
+                while ($row = $stmt->fetch(\PDO::FETCH_NUM)) {
+                    $tables[] = $row[0];
+                }
+                $stmt->closeCursor();
             }
-            $stmt->closeCursor();
 
             foreach ($tables as $table) {
                 $this->info("Đang sao lưu bảng: {$table}");
                 // Xuất câu lệnh tạo bảng
                 $createStmt = $pdo->query("SHOW CREATE TABLE `{$table}`");
-                $createRow = $createStmt->fetch(\PDO::FETCH_NUM);
-                $createStmt->closeCursor();
+                if ($createStmt instanceof \PDOStatement) {
+                    $createRow = $createStmt->fetch(\PDO::FETCH_NUM);
+                    $createStmt->closeCursor();
 
-                fwrite($handle, "DROP TABLE IF EXISTS `{$table}`;\n");
-                fwrite($handle, $createRow[1] . ";\n\n");
+                    if ($createRow) {
+                        fwrite($handle, "DROP TABLE IF EXISTS `{$table}`;\n");
+                        fwrite($handle, $createRow[1] . ";\n\n");
+                    }
+                }
 
                 // Thiết lập PDO MySQL không buffer để tránh tràn bộ nhớ đối với bảng lớn
                 $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
                 // Xuất dữ liệu bảng
                 $rowsStmt = $pdo->query("SELECT * FROM `{$table}`");
-                while ($row = $rowsStmt->fetch(\PDO::FETCH_ASSOC)) {
-                    $keys = array_map(fn($key) => "`{$key}`", array_keys($row));
-                    $values = array_map(function ($val) use ($pdo) {
-                        if ($val === null) {
-                            return 'NULL';
-                        }
-                        return $pdo->quote($val);
-                    }, array_values($row));
+                if ($rowsStmt instanceof \PDOStatement) {
+                    while ($row = $rowsStmt->fetch(\PDO::FETCH_ASSOC)) {
+                        $keys = array_map(fn($key) => "`{$key}`", array_keys($row));
+                        $values = array_map(function ($val) use ($pdo) {
+                            if ($val === null) {
+                                return 'NULL';
+                            }
+                            return $pdo->quote($val);
+                        }, array_values($row));
 
-                    fwrite($handle, "INSERT INTO `{$table}` (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $values) . ");\n");
+                        fwrite($handle, "INSERT INTO `{$table}` (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $values) . ");\n");
+                    }
+                    $rowsStmt->closeCursor();
                 }
-                $rowsStmt->closeCursor();
 
                 // Khôi phục lại chế độ có buffer để thực hiện các lệnh ở vòng lặp sau
                 $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
@@ -273,7 +281,7 @@ class ProjectBackup extends Command
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
+        $pow = (int) min($pow, count($units) - 1);
         $bytes /= pow(1024, $pow);
 
         return round($bytes, $precision) . ' ' . $units[$pow];

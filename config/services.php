@@ -46,4 +46,12 @@ return [
         'api_base_url' => env('GROQ_API_BASE_URL', 'https://api.groq.com/openai/v1'),
     ],
 
+    'google' => [
+        'storage_bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
+    ],
+
+    'vpa' => [
+        'proxy' => env('VPA_PROXY'),
+    ],
+
 ];

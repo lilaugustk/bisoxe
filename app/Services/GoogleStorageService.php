@@ -17,7 +17,7 @@ class GoogleStorageService
     public function __construct()
     {
         $credentialsPath = storage_path('app/google-credentials.json');
-        $this->bucketName = config('services.google.storage_bucket') ?? env('GOOGLE_CLOUD_STORAGE_BUCKET');
+        $this->bucketName = config('services.google.storage_bucket');
 
         if (file_exists($credentialsPath) && !empty($this->bucketName)) {
             try {
@@ -127,7 +127,7 @@ class GoogleStorageService
     /**
      * Liệt kê danh sách các bản sao lưu trong GCS Bucket
      *
-     * @return array<int, array{name: string, size: string, mtime: int}>
+     * @return array<int, array{name: string, size: int, mtime: int}>
      */
     public function listFiles(string $prefix = 'backup-'): array
     {
@@ -151,7 +151,7 @@ class GoogleStorageService
                     // Chuyển mtime định dạng ISO-8601 sang timestamp
                     $mtime = strtotime($object->getUpdated());
                     $fileList[] = [
-                        'name' => $object->getName(),
+                        'name' => (string) $object->getName(),
                         'size' => (int) $object->getSize(),
                         'mtime' => $mtime !== false ? $mtime : time(),
                     ];

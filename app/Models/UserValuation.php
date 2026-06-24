@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Cache;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Province|null $province
- * @property-read \Illuminate\Support\Collection $kinds
+ * @property-read \Illuminate\Support\Collection<int, \App\Models\PlateKind> $kinds
  */
 class UserValuation extends Model
 {
@@ -59,7 +59,7 @@ class UserValuation extends Model
     /**
      * Nhận diện các phân loại loại biển số động dựa trên regex của plate_kinds.
      *
-     * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Support\Collection<int, \App\Models\PlateKind>
      */
     public function getKindsAttribute()
     {
@@ -85,11 +85,11 @@ class UserValuation extends Model
             if ($regex) {
                 try {
                     if (preg_match('#' . str_replace('#', '\#', $regex) . '#', $serialNumber)) {
-                        $matchedKinds->push((object)[
+                        $matchedKinds->push(new PlateKind([
                             'id' => $kind['id'],
                             'name' => $kind['name'],
                             'priority' => $kind['priority'],
-                        ]);
+                        ]));
                     }
                 } catch (\Exception $e) {
                     // Bỏ qua regex lỗi

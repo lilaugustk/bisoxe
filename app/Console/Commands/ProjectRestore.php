@@ -81,7 +81,16 @@ class ProjectRestore extends Command
             array_key_first($options)
         );
 
+        if (!is_string($selectedName)) {
+            $this->error("Lựa chọn không hợp lệ.");
+            return self::FAILURE;
+        }
+
         $selectedBackup = collect($backups)->first(fn($b) => $b['name'] === $selectedName);
+        if (!$selectedBackup) {
+            $this->error("Không tìm thấy thông tin bản sao lưu đã chọn.");
+            return self::FAILURE;
+        }
 
         $this->warn("CẢNH BÁO: Quá trình khôi phục sẽ ghi đè lên Cơ sở dữ liệu và các Tệp tin tải lên hiện tại!");
         if (!$this->confirm("Bạn có chắc chắn muốn tiến hành khôi phục từ bản sao lưu [{$selectedName}] không?", false)) {
@@ -185,7 +194,7 @@ class ProjectRestore extends Command
             File::deleteDirectory($tempPath);
 
             // Xóa file ZIP tải từ GCS về để tránh rác dung lượng cục bộ
-            if (isset($deleteLocalAfterRestore) && $deleteLocalAfterRestore && isset($zipFilePath) && File::exists($zipFilePath)) {
+            if ($deleteLocalAfterRestore && $zipFilePath !== '' && File::exists($zipFilePath)) {
                 File::delete($zipFilePath);
             }
         }
@@ -253,6 +262,8 @@ class ProjectRestore extends Command
      */
     private function fallbackImportMysql(string $sqlFilePath): bool
     {
+        /** @var \PDO|null $pdo */
+        $pdo = null;
         try {
             ini_set('memory_limit', '512M');
             $pdo = DB::connection()->getPdo();
@@ -316,9 +327,11 @@ class ProjectRestore extends Command
 
             return true;
         } catch (Exception $e) {
-            if (isset($pdo) && $pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
+            try {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+            } catch (\Throwable $ex) {}
             $this->newLine();
             $this->error("Lỗi phương thức dự phòng PDO: " . $e->getMessage());
             return false;
@@ -333,7 +346,7 @@ class ProjectRestore extends Command
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
+        $pow = (int) min($pow, count($units) - 1);
         $bytes /= pow(1024, $pow);
 
         return round($bytes, $precision) . ' ' . $units[$pow];

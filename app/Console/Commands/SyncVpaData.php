@@ -134,7 +134,7 @@ class SyncVpaData extends Command
                         ],
                     ];
 
-                    $proxy = env('VPA_PROXY');
+                    $proxy = config('services.vpa.proxy');
                     if ($proxy) {
                         $httpOptions['proxy'] = $proxy;
                     }
