@@ -158,14 +158,14 @@ const isHomePath = computed(() => currentPath.value === '/');
 
 const pageTitle = computed(() => {
     if (isHomePath.value) {
-        return 'Tra cứu Ý nghĩa Biển số xe & Kết quả Đấu giá - BISOXE.COM';
+        return 'Tra cứu biển số xe toàn quốc & Kết quả Đấu giá - BISOXE.COM';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Tra cứu Ý nghĩa Biển số xe máy, mô tô & Kết quả Đấu giá - BISOXE.COM';
+        return 'Tra cứu biển số xe máy, mô tô toàn quốc & Kết quả Đấu giá - BISOXE.COM';
     }
 
-    return 'Tra cứu Ý nghĩa Biển số xe ô tô & Kết quả Đấu giá - BISOXE.COM';
+    return 'Tra cứu biển số xe ô tô toàn quốc & Kết quả Đấu giá - BISOXE.COM';
 });
 
 const pageDescription = computed(() => {
