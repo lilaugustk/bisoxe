@@ -139,14 +139,12 @@ class LicensePlateController extends Controller
 
         // Sắp xếp
         if ($status === 'completed') {
-            $query->orderBy('auction_start_time', 'desc')->latest();
+            $query->orderBy('auction_start_time', 'desc');
         } elseif ($status === 'waiting_auction') {
             $query->orderBy('auction_start_time', 'asc')
-                ->orderBy('min_kind_priority', 'asc')
-                ->latest();
+                ->orderBy('min_kind_priority', 'asc');
         } else {
-            $query->orderBy('min_kind_priority', 'asc')
-                ->latest();
+            $query->orderBy('min_kind_priority', 'asc');
         }
 
         $limit = (int) $request->input('limit', 20);
