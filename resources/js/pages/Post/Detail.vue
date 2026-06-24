@@ -392,6 +392,7 @@ const formatDate = (dateStr: string | null) => {
                                     <img
                                         v-if="rel.image_path"
                                         :src="rel.image_path"
+                                        :alt="rel.title"
                                         class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                                     />
                                     <div

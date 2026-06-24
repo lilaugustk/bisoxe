@@ -319,6 +319,11 @@ class LicensePlateController extends Controller
         }
 
         if ($article) {
+            // Chuyển hướng 301 nếu slug yêu cầu khác với slug bài viết chuẩn
+            if ($slug !== $article->slug) {
+                return redirect()->to('/bien-so-' . $article->slug, 301);
+            }
+
             return Inertia::render('Plate/Detail', [
                 'article' => [
                     'title' => $article->title,
