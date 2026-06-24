@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_valuations', function (Blueprint $table) {
-            $table->id();
-            $table->string('vehicle_type'); // 'car' or 'motorcycle'
-            $table->string('local_symbol');
-            $table->string('serial_letter');
-            $table->string('serial_number');
-            $table->string('full_number')->index();
-            $table->string('display_number');
-            $table->string('province_code')->nullable();
-            $table->integer('color')->default(0);
-            $table->bigInteger('asking_price');
-            $table->string('ip_address')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('user_valuations')) {
+            Schema::create('user_valuations', function (Blueprint $table) {
+                $table->id();
+                $table->string('vehicle_type'); // 'car' or 'motorcycle'
+                $table->string('local_symbol');
+                $table->string('serial_letter');
+                $table->string('serial_number');
+                $table->string('full_number')->index();
+                $table->string('display_number');
+                $table->string('province_code')->nullable();
+                $table->integer('color')->default(0);
+                $table->bigInteger('asking_price');
+                $table->string('ip_address')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

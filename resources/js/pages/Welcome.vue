@@ -435,10 +435,11 @@ onUnmounted(() => {
         <!-- 2. Main Header -->
         <Header />
 
-        <!-- 3. Landing Hero Section (Chứa H1 chuẩn SEO) -->
-        <section
-            class="relative overflow-hidden border-b border-gray-200 bg-white py-16 lg:py-20"
-        >
+        <main>
+            <!-- 3. Landing Hero Section (Chứa H1 chuẩn SEO) -->
+            <section
+                class="relative overflow-hidden border-b border-gray-200 bg-white py-16 lg:py-20"
+            >
             <div class="pointer-events-none absolute inset-0 opacity-40">
                 <div
                     class="absolute top-[10%] left-[10%] h-[30rem] w-[30rem] rounded-full bg-red-100 blur-3xl"
@@ -663,6 +664,7 @@ onUnmounted(() => {
                         <div class="relative">
                             <select
                                 v-model="selectedColor"
+                                aria-label="Chọn màu biển"
                                 class="w-full cursor-pointer appearance-none rounded-full border border-gray-200 bg-white px-5 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none"
                             >
                                 <option value="">Chọn màu biển</option>
@@ -694,6 +696,7 @@ onUnmounted(() => {
                         <div class="relative">
                             <select
                                 v-model="selectedProvince"
+                                aria-label="Chọn tỉnh, thành phố"
                                 class="w-full cursor-pointer appearance-none rounded-full border border-gray-200 bg-white px-5 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none"
                             >
                                 <option value="">Chọn tỉnh, thành phố</option>
@@ -887,7 +890,7 @@ onUnmounted(() => {
                                 class="w-full min-w-[600px] border-collapse text-left text-sm"
                             >
                                 <thead
-                                    class="border-b border-gray-200 bg-gray-100/80 text-xs font-bold tracking-wider text-gray-500 uppercase"
+                                    class="border-b border-gray-200 bg-gray-100/80 text-xs font-bold tracking-wider text-gray-700 uppercase"
                                 >
                                     <tr>
                                         <th class="w-16 px-6 py-4 text-center hidden sm:table-cell">
@@ -1178,6 +1181,7 @@ onUnmounted(() => {
                                             <Link
                                                 v-else
                                                 :href="link.url || '#'"
+                                                aria-label="Trang trước"
                                                 class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]"
                                             >
                                                 <svg
@@ -1224,6 +1228,7 @@ onUnmounted(() => {
                                             <Link
                                                 v-else
                                                 :href="link.url || '#'"
+                                                aria-label="Trang sau"
                                                 class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]"
                                             >
                                                 <svg
@@ -1296,6 +1301,7 @@ onUnmounted(() => {
                                     <Link
                                         v-else
                                         :href="props.plates.links[0].url || '#'"
+                                        aria-label="Trang trước"
                                         class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]"
                                     >
                                         <svg
@@ -1340,6 +1346,7 @@ onUnmounted(() => {
                                     <Link
                                         v-else
                                         :href="props.plates.links[props.plates.links.length - 1].url || '#'"
+                                        aria-label="Trang sau"
                                         class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]"
                                     >
                                         <svg
@@ -1569,6 +1576,7 @@ onUnmounted(() => {
                 </div>
             </div>
         </section>
+        </main>
 
         <!-- Footer -->
         <Footer />

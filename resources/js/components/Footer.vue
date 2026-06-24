@@ -170,11 +170,11 @@
 
                 <!-- Links Column 1: Tra cứu -->
                 <div class="space-y-4 lg:col-span-2">
-                    <h4
+                    <div
                         class="border-l-2 border-[#8C1E1E] pl-2.5 text-xs font-black tracking-wider text-white uppercase"
                     >
                         Tra cứu
-                    </h4>
+                    </div>
                     <ul class="space-y-2.5 text-xs font-medium">
                         <li>
                             <Link
@@ -202,11 +202,11 @@
 
                 <!-- Links Column 2: Cẩm nang -->
                 <div class="space-y-4 lg:col-span-3">
-                    <h4
+                    <div
                         class="border-l-2 border-[#8C1E1E] pl-2.5 text-xs font-black tracking-wider text-white uppercase"
                     >
                         Ý nghĩa & Tin tức
-                    </h4>
+                    </div>
                     <ul class="space-y-2.5 text-xs font-medium">
                         <li>
                             <Link
@@ -241,11 +241,11 @@
 
                 <!-- Links Column 3: Hỗ trợ & Liên hệ -->
                 <div class="space-y-4 lg:col-span-3">
-                    <h4
+                    <div
                         class="border-l-2 border-[#8C1E1E] pl-2.5 text-xs font-black tracking-wider text-white uppercase"
                     >
                         Hỗ trợ & Liên hệ
-                    </h4>
+                    </div>
                     <ul class="space-y-2.5 text-xs font-light">
                         <li class="flex items-start gap-2">
                             <span>Hà Nội, Việt Nam</span>
@@ -272,28 +272,28 @@
                     <p class="text-xs font-bold text-gray-300">
                         © 2026 BISOXE.COM. Bảo lưu mọi quyền.
                     </p>
-                    <div class="flex gap-4 text-xs text-gray-500">
+                    <div class="flex gap-4 text-xs text-gray-400">
                         <Link
                             href="/"
-                            class="transition-colors hover:text-gray-300"
+                            class="transition-colors hover:text-gray-200"
                             >Trang chủ</Link
                         >
                         <span>•</span>
                         <Link
                             href="/bien-so-xe-o-to"
-                            class="transition-colors hover:text-gray-300"
+                            class="transition-colors hover:text-gray-200"
                             >Biển số ô tô</Link
                         >
                         <span>•</span>
                         <Link
                             href="/bien-so-xe-may"
-                            class="transition-colors hover:text-gray-300"
+                            class="transition-colors hover:text-gray-200"
                             >Biển số xe máy</Link
                         >
                     </div>
                 </div>
                 <p
-                    class="text-justify text-[11px] leading-relaxed font-light text-gray-500 md:text-left"
+                    class="text-justify text-[11px] leading-relaxed font-light text-gray-400 md:text-left"
                 >
                     * Khước từ trách nhiệm: Nội dung giải luận, phân tích biển
                     số xe đẹp xấu mang tính chất tham khảo, tổng hợp theo các quan

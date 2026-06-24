@@ -430,7 +430,7 @@ onUnmounted(() => {
 }
 
 .trigger-text.placeholder {
-    color: #9ca3af;
+    color: #4b5563;
 }
 
 .trigger-icons {
