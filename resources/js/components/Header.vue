@@ -192,7 +192,7 @@ const isValuationActive = computed(() => {
                         href="/#meanings-section"
                         class="transition hover:text-[#8C1E1E]"
                     >
-                        Ý nghĩa các con số
+                        Ý nghĩa biển số
                     </Link>
                     <a
                         v-if="isHomePath"

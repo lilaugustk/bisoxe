@@ -2,6 +2,7 @@
 
 html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears/disappears */
 }
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
