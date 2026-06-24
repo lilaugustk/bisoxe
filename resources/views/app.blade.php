@@ -16,7 +16,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
         <!-- Vite CSS -->
-        @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
+        @vite(['resources/css/app.css', 'resources/js/app.ts'])
 
         <!-- Inertia Head (title, meta SEO per page) -->
         <x-inertia::head>
