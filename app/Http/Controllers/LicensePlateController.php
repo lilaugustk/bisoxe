@@ -152,7 +152,43 @@ class LicensePlateController extends Controller
             $limit = 20;
         }
 
-        $paginated = $query->paginate($limit)->onEachSide(1)->withQueryString();
+        $page = (int) $request->input('page', 1);
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        // Cache total count of plates to avoid slow count(*) query on large datasets
+        $cacheKey = 'plates_count_' . md5(serialize([
+            'tab' => $tab,
+            'search' => $search,
+            'color' => $color,
+            'province' => $province,
+            'kind' => $kind,
+            'vehicle' => $vehicle,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'birth_years' => $birthYears,
+            'avoid_numbers' => $avoidNumbers,
+        ]));
+
+        $total = Cache::remember($cacheKey, 120, function () use ($query) {
+            return $query->count();
+        });
+
+        $items = $query->forPage($page, $limit)->get();
+
+        $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $total,
+            $limit,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+
+        $paginated->onEachSide(1);
 
         // Chuyển đổi dữ liệu cho từng item
         $transformedData = collect($paginated->items())->map(fn ($p) => $this->transformPlate($p))->toArray();
