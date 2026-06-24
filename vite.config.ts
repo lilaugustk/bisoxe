@@ -27,10 +27,10 @@ export default defineConfig({
         }),
     ],
     build: {
+        modulePreload: false, // Tắt <link rel="modulepreload"> do @vite() tạo ra
         rollupOptions: {
             output: {
                 manualChunks(id) {
-                    // Gộp tất cả node_modules vào chunk vendor
                     if (id.includes('node_modules')) {
                         return 'vendor';
                     }
