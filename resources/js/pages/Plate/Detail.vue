@@ -89,6 +89,55 @@ const props = defineProps<{
     related_plates: Plate[];
 }>();
 
+const schemaStructuredData = computed(() => {
+    if (props.is_pending || !props.article) {
+        return null;
+    }
+
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: props.article.title,
+        description: props.article.meta_description,
+        image: props.article.image_url ?? undefined,
+        datePublished: props.article.generated_at,
+        dateModified: props.article.generated_at,
+        author: {
+            '@type': 'Organization',
+            name: 'BISOXE.COM',
+            url: 'https://bisoxe.com',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'BISOXE.COM',
+            logo: {
+                '@type': 'ImageObject',
+                url: 'https://bisoxe.com/apple-touch-icon.png',
+            },
+        },
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://bisoxe.com/bien-so-${props.article.slug}`,
+        },
+    };
+});
+
+watch(schemaStructuredData, (newSchema) => {
+    const oldScript = document.getElementById('json-ld-schema');
+
+    if (oldScript) {
+        oldScript.remove();
+    }
+
+    if (newSchema) {
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.id = 'json-ld-schema';
+        script.text = JSON.stringify(newSchema);
+        document.head.appendChild(script);
+    }
+}, { immediate: true });
+
 const plateStyle = ref<'long' | 'square'>('long');
 
 interface TocItem {
@@ -185,6 +234,12 @@ onUnmounted(() => {
     }
 
     document.body.style.overflow = '';
+
+    const script = document.getElementById('json-ld-schema');
+
+    if (script) {
+        script.remove();
+    }
 });
 
 // Định dạng tiền tệ VND
@@ -692,13 +747,14 @@ watch(showPriceGuide, (newVal) => {
     <Head>
         <title>{{ article.meta_title || article.title }}</title>
         <meta name="description" :content="article.meta_description" />
+        <link rel="canonical" :href="'https://bisoxe.com/bien-so-' + article.slug" />
         <meta
             property="og:title"
             :content="props.article.meta_title || props.article.title"
         />
         <meta property="og:description" :content="article.meta_description" />
         <meta property="og:type" content="article" />
-        <meta property="og:url" :content="`/bien-so-${article.slug}`" />
+        <meta property="og:url" :content="'https://bisoxe.com/bien-so-' + article.slug" />
         <meta
             v-if="article.image_url"
             property="og:image"

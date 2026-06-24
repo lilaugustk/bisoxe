@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import BackToTop from '../../components/BackToTop.vue';
 import Footer from '../../components/Footer.vue';
 import Header from '../../components/Header.vue';
@@ -20,10 +20,39 @@ interface Post {
     created_at: string;
 }
 
-defineProps<{
+const props = defineProps<{
     post: Post;
     relatedPosts: Post[];
 }>();
+
+const schemaStructuredData = computed(() => {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: props.post.title,
+        description: props.post.meta_description || props.post.summary || '',
+        image: props.post.image_path ? `https://bisoxe.com${props.post.image_path}` : undefined,
+        datePublished: props.post.generated_at || props.post.created_at,
+        dateModified: props.post.created_at,
+        author: {
+            '@type': 'Organization',
+            name: 'BISOXE.COM',
+            url: 'https://bisoxe.com',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'BISOXE.COM',
+            logo: {
+                '@type': 'ImageObject',
+                url: 'https://bisoxe.com/apple-touch-icon.png',
+            },
+        },
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://bisoxe.com/bai-viet/${props.post.slug}`,
+        },
+    };
+});
 
 const plateSearchQuery = ref('');
 
@@ -71,6 +100,20 @@ onMounted(() => {
     nextTick(() => {
         generateToc();
     });
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'json-ld-schema';
+    script.text = JSON.stringify(schemaStructuredData.value);
+    document.head.appendChild(script);
+});
+
+onUnmounted(() => {
+    const script = document.getElementById('json-ld-schema');
+
+    if (script) {
+        script.remove();
+    }
 });
 
 const getCategoryLabel = (cat: string) => {
@@ -123,6 +166,7 @@ const formatDate = (dateStr: string | null) => {
             name="description"
             :content="post.meta_description || post.summary || ''"
         />
+        <link rel="canonical" :href="'https://bisoxe.com/bai-viet/' + post.slug" />
         <meta
             property="og:title"
             :content="post.meta_title || post.title || ''"
@@ -132,7 +176,7 @@ const formatDate = (dateStr: string | null) => {
             :content="post.meta_description || post.summary || ''"
         />
         <meta property="og:type" content="article" />
-        <meta property="og:url" :content="`/bai-viet/${post.slug}`" />
+        <meta property="og:url" :content="'https://bisoxe.com/bai-viet/' + post.slug" />
         <meta
             v-if="post.image_path"
             property="og:image"

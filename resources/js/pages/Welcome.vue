@@ -158,14 +158,14 @@ const isHomePath = computed(() => currentPath.value === '/');
 
 const pageTitle = computed(() => {
     if (isHomePath.value) {
-        return 'BISOXE.COM - Tra cứu Ý nghĩa Biển số xe & Kết quả Đấu giá';
+        return 'Tra cứu Ý nghĩa Biển số xe & Kết quả Đấu giá - BISOXE.COM';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'BISOXE.COM - Tra cứu Ý nghĩa Biển số xe máy, mô tô & Kết quả Đấu giá';
+        return 'Tra cứu Ý nghĩa Biển số xe máy, mô tô & Kết quả Đấu giá - BISOXE.COM';
     }
 
-    return 'BISOXE.COM - Tra cứu Ý nghĩa Biển số xe ô tô & Kết quả Đấu giá';
+    return 'Tra cứu Ý nghĩa Biển số xe ô tô & Kết quả Đấu giá - BISOXE.COM';
 });
 
 const pageDescription = computed(() => {
@@ -419,6 +419,11 @@ onUnmounted(() => {
     <Head>
         <title>{{ pageTitle }}</title>
         <meta name="description" :content="pageDescription" />
+        <link rel="canonical" :href="'https://bisoxe.com' + currentPath" />
+        <meta property="og:title" :content="pageTitle" />
+        <meta property="og:description" :content="pageDescription" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" :content="'https://bisoxe.com' + currentPath" />
     </Head>
 
     <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">

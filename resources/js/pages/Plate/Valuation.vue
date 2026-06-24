@@ -212,8 +212,13 @@ const closeValuationModal = () => {
 
 <template>
     <Head>
-        <title>Tự định giá biển số xe cá nhân - BISOXE.COM</title>
+        <title>Định giá biển số xe trực tuyến chính xác - BISOXE.COM</title>
         <meta name="description" content="Nhập biển số xe ô tô hoặc xe máy của bạn để tự định giá, xem thông tin định giá tham khảo của hệ thống và đối chiếu lịch sử đấu giá." />
+        <link rel="canonical" href="https://bisoxe.com/dinh-gia" />
+        <meta property="og:title" content="Định giá biển số xe trực tuyến chính xác - BISOXE.COM" />
+        <meta property="og:description" content="Nhập biển số xe ô tô hoặc xe máy của bạn để tự định giá, xem thông tin định giá tham khảo của hệ thống và đối chiếu lịch sử đấu giá." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://bisoxe.com/dinh-gia" />
     </Head>
 
     <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">

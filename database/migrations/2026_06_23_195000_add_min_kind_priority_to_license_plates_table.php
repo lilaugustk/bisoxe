@@ -12,25 +12,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('license_plates', function (Blueprint $table) {
-            $table->integer('min_kind_priority')->default(9999)->after('winning_price');
-            $table->index('min_kind_priority');
-            $table->index(['vehicle_type', 'status', 'min_kind_priority']);
-        });
+        if (!Schema::hasColumn('license_plates', 'min_kind_priority')) {
+            Schema::table('license_plates', function (Blueprint $table) {
+                $table->integer('min_kind_priority')->default(9999)->after('winning_price');
+                $table->index('min_kind_priority');
+                $table->index(['vehicle_type', 'status', 'min_kind_priority']);
+            });
 
-        // Cập nhật dữ liệu cũ dựa trên bảng liên kết kinds hiện tại
-        DB::statement("
-            UPDATE license_plates
-            SET min_kind_priority = COALESCE(
-                (
-                    SELECT MIN(pk.priority)
-                    FROM license_plate_kinds lpk
-                    JOIN plate_kinds pk ON pk.id = lpk.kind_id
-                    WHERE lpk.plate_id = license_plates.id
-                ),
-                9999
-            )
-        ");
+            // Cập nhật dữ liệu cũ dựa trên bảng liên kết kinds hiện tại
+            DB::statement("
+                UPDATE license_plates
+                SET min_kind_priority = COALESCE(
+                    (
+                        SELECT MIN(pk.priority)
+                        FROM license_plate_kinds lpk
+                        JOIN plate_kinds pk ON pk.id = lpk.kind_id
+                        WHERE lpk.plate_id = license_plates.id
+                    ),
+                    9999
+                )
+            ");
+        }
     }
 
     /**
@@ -38,10 +40,18 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('license_plates', function (Blueprint $table) {
-            $table->dropIndex(['vehicle_type', 'status', 'min_kind_priority']);
-            $table->dropIndex(['min_kind_priority']);
-            $table->dropColumn('min_kind_priority');
-        });
+        if (Schema::hasColumn('license_plates', 'min_kind_priority')) {
+            Schema::table('license_plates', function (Blueprint $table) {
+                try {
+                    $table->dropIndex(['vehicle_type', 'status', 'min_kind_priority']);
+                } catch (\Exception $e) {
+                }
+                try {
+                    $table->dropIndex(['min_kind_priority']);
+                } catch (\Exception $e) {
+                }
+                $table->dropColumn('min_kind_priority');
+            });
+        }
     }
 };

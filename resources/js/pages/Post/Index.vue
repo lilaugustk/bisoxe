@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 import BackToTop from '../../components/BackToTop.vue';
 import Footer from '../../components/Footer.vue';
 import Header from '../../components/Header.vue';
@@ -32,6 +32,9 @@ const props = defineProps<{
         limit?: number | string;
     };
 }>();
+
+const page = usePage();
+const currentPath = computed(() => page.url.split('?')[0]);
 
 const searchQuery = ref(props.filters.search || '');
 const activeCategory = ref(props.filters.category || '');
@@ -113,11 +116,16 @@ const formatDate = (dateStr: string | null) => {
 
 <template>
     <Head>
-        <title>Bài viết & Cẩm nang - Giải mã Ý nghĩa Biển số xe</title>
+        <title>Bài viết & Cẩm nang giải mã ý nghĩa biển số xe - BISOXE.COM</title>
         <meta
             name="description"
             content="Khám phá cẩm nang đấu giá biển số xe, tin tức thị trường biển số đẹp và bài viết giải mã ý nghĩa biển số mới nhất tại BISOXE.COM"
         />
+        <link rel="canonical" :href="'https://bisoxe.com' + currentPath" />
+        <meta property="og:title" content="Bài viết & Cẩm nang giải mã ý nghĩa biển số xe - BISOXE.COM" />
+        <meta property="og:description" content="Khám phá cẩm nang đấu giá biển số xe, tin tức thị trường biển số đẹp và bài viết giải mã ý nghĩa biển số mới nhất tại BISOXE.COM" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" :content="'https://bisoxe.com' + currentPath" />
     </Head>
 
     <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
