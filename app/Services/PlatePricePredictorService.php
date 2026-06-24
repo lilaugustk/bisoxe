@@ -126,38 +126,42 @@ class PlatePricePredictorService
             return [];
         }
 
-        $plates = LicensePlate::with('province')
-            ->where('serial_number', $plate->serial_number)
-            ->where('vehicle_type', $plate->vehicle_type)
-            ->where('status', 'completed')
-            ->where('winning_price', '>', 0)
-            ->orderBy('auction_start_time', 'asc')
-            ->get();
+        $cacheKey = "plate_trend_data_{$plate->serial_number}_{$plate->vehicle_type}";
 
-        $grouped = $plates->groupBy('province_code');
+        return Cache::remember($cacheKey, 3600, function () use ($plate) {
+            $plates = LicensePlate::with('province')
+                ->where('serial_number', $plate->serial_number)
+                ->where('vehicle_type', $plate->vehicle_type)
+                ->where('status', 'completed')
+                ->where('winning_price', '>', 0)
+                ->orderBy('auction_start_time', 'asc')
+                ->get();
 
-        $trends = [];
-        foreach ($grouped as $provinceCode => $items) {
-            if (empty($provinceCode)) {
-                continue;
-            }
-            $firstItem = $items->first();
-            $provinceName = ($firstItem instanceof LicensePlate && $firstItem->province) ? $firstItem->province->name : 'Tỉnh khác';
-            $plateTrends = [];
-            foreach ($items as $p) {
-                $plateTrends[] = [
-                    'plate_number' => $p->display_number ?? $p->full_number,
-                    'winning_price' => (int) $p->winning_price,
-                    'auction_date' => $p->auction_start_time ? $p->auction_start_time->format('d/m/Y') : 'Chưa rõ',
+            $grouped = $plates->groupBy('province_code');
+
+            $trends = [];
+            foreach ($grouped as $provinceCode => $items) {
+                if (empty($provinceCode)) {
+                    continue;
+                }
+                $firstItem = $items->first();
+                $provinceName = ($firstItem instanceof LicensePlate && $firstItem->province) ? $firstItem->province->name : 'Tỉnh khác';
+                $plateTrends = [];
+                foreach ($items as $p) {
+                    $plateTrends[] = [
+                        'plate_number' => $p->display_number ?? $p->full_number,
+                        'winning_price' => (int) $p->winning_price,
+                        'auction_date' => $p->auction_start_time ? $p->auction_start_time->format('d/m/Y') : 'Chưa rõ',
+                    ];
+                }
+                $trends[$provinceCode] = [
+                    'province_name' => $provinceName,
+                    'plates' => $plateTrends,
                 ];
             }
-            $trends[$provinceCode] = [
-                'province_name' => $provinceName,
-                'plates' => $plateTrends,
-            ];
-        }
 
-        return $trends;
+            return $trends;
+        });
     }
 
     /**
@@ -320,56 +324,60 @@ class PlatePricePredictorService
             return $default;
         }
 
-        // Lấy lịch sử trúng đấu giá sắp xếp theo thời gian tăng dần
-        $history = LicensePlate::where('serial_number', $plate->serial_number)
-            ->where('vehicle_type', $plate->vehicle_type)
-            ->where('status', 'completed')
-            ->where('winning_price', '>', 0)
-            ->orderBy('auction_start_time', 'asc')
-            ->get();
+        $cacheKey = "plate_price_trend_calc_{$plate->serial_number}_{$plate->vehicle_type}";
 
-        $count = $history->count();
+        return Cache::remember($cacheKey, 3600, function () use ($plate, $default) {
+            // Lấy lịch sử trúng đấu giá sắp xếp theo thời gian tăng dần
+            $history = LicensePlate::where('serial_number', $plate->serial_number)
+                ->where('vehicle_type', $plate->vehicle_type)
+                ->where('status', 'completed')
+                ->where('winning_price', '>', 0)
+                ->orderBy('auction_start_time', 'asc')
+                ->get();
 
-        // Cần ít nhất 3 mẫu để xác định xu hướng tăng/giảm chính xác
-        if ($count < 3) {
-            return $default;
-        }
+            $count = $history->count();
 
-        $mid = (int) floor($count / 2);
-        
-        $olderPlates = $history->slice(0, $mid);
-        $newerPlates = $history->slice($mid);
+            // Cần ít nhất 3 mẫu để xác định xu hướng tăng/giảm chính xác
+            if ($count < 3) {
+                return $default;
+            }
 
-        $olderAvg = $olderPlates->avg('winning_price') ?? 0;
-        $newerAvg = $newerPlates->avg('winning_price') ?? 0;
+            $mid = (int) floor($count / 2);
+            
+            $olderPlates = $history->slice(0, $mid);
+            $newerPlates = $history->slice($mid);
 
-        if ($olderAvg == 0 || $newerAvg == 0) {
-            return $default;
-        }
+            $olderAvg = $olderPlates->avg('winning_price') ?? 0;
+            $newerAvg = $newerPlates->avg('winning_price') ?? 0;
 
-        $ratio = $newerAvg / $olderAvg;
-        $percentage = round(($ratio - 1) * 100, 1);
+            if ($olderAvg == 0 || $newerAvg == 0) {
+                return $default;
+            }
 
-        // Giới hạn hệ số xu hướng trong khoảng [0.8, 1.25] để dự báo không bị quá lệch
-        $multiplier = max(0.8, min(1.25, $ratio));
+            $ratio = $newerAvg / $olderAvg;
+            $percentage = round(($ratio - 1) * 100, 1);
 
-        if ($ratio > 1.05) {
-            $direction = 'up';
-            $label = $ratio > 1.15 ? 'Tăng mạnh' : 'Tăng nhẹ';
-        } elseif ($ratio < 0.95) {
-            $direction = 'down';
-            $label = $ratio < 0.85 ? 'Giảm mạnh' : 'Giảm nhẹ';
-        } else {
-            $direction = 'stable';
-            $label = 'Ổn định';
-        }
+            // Giới hạn hệ số xu hướng trong khoảng [0.8, 1.25] để dự báo không bị quá lệch
+            $multiplier = max(0.8, min(1.25, $ratio));
 
-        return [
-            'multiplier' => (float) round($multiplier, 2),
-            'direction' => $direction,
-            'percentage' => $percentage,
-            'label' => $label,
-        ];
+            if ($ratio > 1.05) {
+                $direction = 'up';
+                $label = $ratio > 1.15 ? 'Tăng mạnh' : 'Tăng nhẹ';
+            } elseif ($ratio < 0.95) {
+                $direction = 'down';
+                $label = $ratio < 0.85 ? 'Giảm mạnh' : 'Giảm nhẹ';
+            } else {
+                $direction = 'stable';
+                $label = 'Ổn định';
+            }
+
+            return [
+                'multiplier' => (float) round($multiplier, 2),
+                'direction' => $direction,
+                'percentage' => $percentage,
+                'label' => $label,
+            ];
+        });
     }
 
     /**

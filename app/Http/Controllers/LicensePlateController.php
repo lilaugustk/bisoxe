@@ -141,25 +141,11 @@ class LicensePlateController extends Controller
         if ($status === 'completed') {
             $query->orderBy('auction_start_time', 'desc')->latest();
         } elseif ($status === 'waiting_auction') {
-            $query->select('license_plates.*')
-                ->selectSub(function ($q) {
-                    $q->selectRaw('MIN(pk.priority)')
-                        ->from('plate_kinds as pk')
-                        ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
-                        ->whereColumn('lpk.plate_id', 'license_plates.id');
-                }, 'min_kind_priority')
-                ->orderBy('auction_start_time', 'asc')
-                ->orderByRaw('COALESCE(min_kind_priority, 9999) asc')
+            $query->orderBy('auction_start_time', 'asc')
+                ->orderBy('min_kind_priority', 'asc')
                 ->latest();
         } else {
-            $query->select('license_plates.*')
-                ->selectSub(function ($q) {
-                    $q->selectRaw('MIN(pk.priority)')
-                        ->from('plate_kinds as pk')
-                        ->join('license_plate_kinds as lpk', 'lpk.kind_id', '=', 'pk.id')
-                        ->whereColumn('lpk.plate_id', 'license_plates.id');
-                }, 'min_kind_priority')
-                ->orderByRaw('COALESCE(min_kind_priority, 9999) asc')
+            $query->orderBy('min_kind_priority', 'asc')
                 ->latest();
         }
 
@@ -325,16 +311,15 @@ class LicensePlateController extends Controller
             return redirect()->route('valuation.index')->with('error', 'Biển số tự định giá không có trang chi tiết.');
         }
 
-        // Nếu chưa có bài viết, tự động kích hoạt sinh bài viết đồng bộ ngay lập tức!
+        // Nếu chưa có bài viết, kích hoạt sinh bài viết bất đồng bộ ngầm bằng AI!
         try {
-            set_time_limit(120); // Đảm bảo thời gian thực thi dài hơn cho API AI
-            GenerateSeoArticleJob::dispatchSync($plate);
-            
-            // Tải lại quan hệ để lấy bài viết vừa tạo
-            $plate->load('seoArticle');
-            $article = $plate->seoArticle;
+            $lockKey = "generating_article_{$plate->id}";
+            if (!Cache::has($lockKey)) {
+                Cache::put($lockKey, true, 300); // Khóa trong 5 phút để tránh dispatch trùng lặp
+                GenerateSeoArticleJob::dispatch($plate);
+            }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Sinh bài viết đồng bộ thất bại cho biển {$plate->full_number}: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error("Kích hoạt sinh bài viết ngầm thất bại cho biển {$plate->full_number}: " . $e->getMessage());
         }
 
         if ($article) {
@@ -454,12 +439,16 @@ class LicensePlateController extends Controller
             });
         }
 
-        // Lấy tối đa 4 biển số cùng tỉnh/thành phố trước
-        $sameProvincePlates = (clone $relatedQuery)
+        // Lấy tối đa 50 biển số cùng tỉnh/thành phố mới nhất trước
+        $sameProvinceCandidates = (clone $relatedQuery)
             ->where('province_code', $plate->province_code)
-            ->inRandomOrder()
-            ->limit(4)
+            ->latest()
+            ->limit(50)
             ->get();
+
+        $sameProvincePlates = $sameProvinceCandidates->isNotEmpty()
+            ? $sameProvinceCandidates->random(min(4, $sameProvinceCandidates->count()))
+            : collect();
 
         $needed = 4 - $sameProvincePlates->count();
         $otherProvincePlates = collect();
@@ -468,12 +457,16 @@ class LicensePlateController extends Controller
         if ($needed > 0) {
             $excludeIds = $sameProvincePlates->pluck('id')->all();
             
-            $otherProvincePlates = (clone $relatedQuery)
+            $otherProvinceCandidates = (clone $relatedQuery)
                 ->where('province_code', '!=', $plate->province_code)
                 ->whereNotIn('id', $excludeIds)
-                ->inRandomOrder()
-                ->limit($needed)
+                ->latest()
+                ->limit(50)
                 ->get();
+
+            if ($otherProvinceCandidates->isNotEmpty()) {
+                $otherProvincePlates = $otherProvinceCandidates->random(min($needed, $otherProvinceCandidates->count()));
+            }
         }
 
         // Kết hợp và transform dữ liệu
