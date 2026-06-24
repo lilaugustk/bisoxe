@@ -132,7 +132,7 @@ onMounted(() => {
     // Nếu bài viết đã được gen xong và URL hiện tại chưa phải là URL chuẩn SEO (chứa slug)
     // thì dùng router.replace chuyển hướng để tránh lưu vết trong history (sửa lỗi nút Back)
     if (!props.is_pending && props.article && props.article.slug) {
-        const canonicalPath = `/bien-so/${props.article.slug}`;
+        const canonicalPath = `/bien-so-${props.article.slug}`;
 
         if (window.location.pathname !== canonicalPath) {
             router.replace({ url: canonicalPath });
@@ -162,7 +162,7 @@ onMounted(() => {
                             page.props.article &&
                             (page.props.article as any).slug
                         ) {
-                            const canonicalPath = `/bien-so/${(page.props.article as any).slug}`;
+                            const canonicalPath = `/bien-so-${(page.props.article as any).slug}`;
 
                             if (window.location.pathname !== canonicalPath) {
                                 router.replace({ url: canonicalPath });
@@ -698,7 +698,7 @@ watch(showPriceGuide, (newVal) => {
         />
         <meta property="og:description" :content="article.meta_description" />
         <meta property="og:type" content="article" />
-        <meta property="og:url" :content="`/bien-so/${article.slug}`" />
+        <meta property="og:url" :content="`/bien-so-${article.slug}`" />
         <meta
             v-if="article.image_url"
             property="og:image"
@@ -2072,7 +2072,7 @@ watch(showPriceGuide, (newVal) => {
                                 </div>
                             </div>
                             <Link
-                                :href="`/bien-so/${relPlate.slug}`"
+                                :href="`/bien-so-${relPlate.slug}`"
                                 class="rounded-md border border-[#8C1E1E] bg-white px-2.5 py-1.5 text-[10px] font-bold text-[#8C1E1E] shadow-sm transition hover:bg-[#8C1E1E] hover:text-white"
                             >
                                 Xem phân tích

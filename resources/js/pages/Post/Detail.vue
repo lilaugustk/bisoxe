@@ -460,7 +460,7 @@ const formatDate = (dateStr: string | null) => {
                                 </svg>
                             </Link>
                             <Link
-                                href="/bai-viet?category=y-nghia-bien-so"
+                                href="/c/y-nghia-bien-so"
                                 class="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50 hover:text-[#8C1E1E]"
                             >
                                 <span>Ý nghĩa biển số</span>
@@ -479,7 +479,7 @@ const formatDate = (dateStr: string | null) => {
                                 </svg>
                             </Link>
                             <Link
-                                href="/bai-viet?category=huong-dan"
+                                href="/c/huong-dan"
                                 class="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50 hover:text-[#8C1E1E]"
                             >
                                 <span>Cẩm nang hướng dẫn</span>
@@ -498,7 +498,7 @@ const formatDate = (dateStr: string | null) => {
                                 </svg>
                             </Link>
                             <Link
-                                href="/bai-viet?category=tin-tuc"
+                                href="/c/tin-tuc"
                                 class="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50 hover:text-[#8C1E1E]"
                             >
                                 <span>Tin tức & Thị trường</span>

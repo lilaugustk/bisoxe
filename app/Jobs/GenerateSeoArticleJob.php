@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Models\LicensePlate;
 use App\Models\SeoArticle;
 use App\Services\GeminiApiService;
-use App\Services\GroqApiService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -50,23 +49,14 @@ class GenerateSeoArticleJob implements ShouldQueue
         }
 
         try {
-            // Dùng Gemini làm AI chính để sinh nội dung, tự động fallback sang Groq nếu lỗi
+            // Dùng Gemini để sinh nội dung
             $generationModel = config('services.gemini.model', 'gemini-2.5-flash');
-            try {
-                $data = $geminiService->generateForLicensePlate($this->plate);
-            } catch (\Exception $e) {
-                Log::warning('Gemini API failed, falling back to Groq API for plate: '.$this->plate->full_number, [
-                    'error' => $e->getMessage(),
-                ]);
-                $groqService = app(GroqApiService::class);
-                $data = $groqService->generateForLicensePlate($this->plate);
-                $generationModel = config('services.groq.model', 'groq/compound-mini');
-            }
+            $data = $geminiService->generateForLicensePlate($this->plate);
 
             // Tạo slug chuẩn SEO cho trang chi tiết biển số
             // Ví dụ: 30K-999.99 -> bien-so-30k-99999
             $cleanNumber = str_replace(['-', '.'], '', $this->plate->full_number);
-            $slug = Str::slug('bien-so-'.$this->plate->local_symbol.$this->plate->serial_letter.'-'.$this->plate->serial_number);
+            $slug = Str::slug($this->plate->local_symbol.$this->plate->serial_letter.'-'.$this->plate->serial_number);
 
             // Đảm bảo slug là duy nhất
             $originalSlug = $slug;

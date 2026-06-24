@@ -77,14 +77,14 @@ class GeminiApiService
         $internalLinksPrompt = '';
         if ($relatedPlates->isNotEmpty()) {
             $internalLinksPrompt = "\nYÊU CẦU CHÈN LIÊN KẾT NỘI BỘ (SEO INTERNAL LINKING):\n";
-            $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 2 liên kết từ danh sách dưới đây vào nội dung bài viết dưới dạng thẻ HTML <a href=\"/bien-so/slug\">biển số [display_number]</a>. Chỉ chèn link khi ngữ cảnh thực sự phù hợp (ví dụ: khi so sánh thế số, giá trị hoặc ý nghĩa của các con số tương tự):\n";
+            $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 2 liên kết từ danh sách dưới đây vào nội dung bài viết dưới dạng thẻ HTML <a href=\"/bien-so-slug\">biển số [display_number]</a>. Chỉ chèn link khi ngữ cảnh thực sự phù hợp (ví dụ: khi so sánh thế số, giá trị hoặc ý nghĩa của các con số tương tự):\n";
             foreach ($relatedPlates as $rp) {
-                $rpSlug = $rp->seoArticle ? $rp->seoArticle->slug : \Illuminate\Support\Str::slug('bien-so-'.$rp->local_symbol.$rp->serial_letter.'-'.$rp->serial_number);
-                $internalLinksPrompt .= "- Biển số: {$rp->display_number} (Đường dẫn: /bien-so/{$rpSlug})\n";
+                $rpSlug = $rp->seoArticle ? $rp->seoArticle->slug : \Illuminate\Support\Str::slug($rp->local_symbol.$rp->serial_letter.'-'.$rp->serial_number);
+                $internalLinksPrompt .= "- Biển số: {$rp->display_number} (Đường dẫn: /bien-so-{$rpSlug})\n";
             }
             $internalLinksPrompt .= "\nQuy tắc chèn link bắt buộc:\n";
             $internalLinksPrompt .= "- KHÔNG được gom các liên kết thành một danh sách riêng biệt ở cuối bài viết. Hãy phân bổ chúng rải rác trong các đoạn phân tích thế số, ý nghĩa hoặc định giá khi có sự so sánh phù hợp.\n";
-            $internalLinksPrompt .= "- Anchor text phải là tên biển số hoặc diễn đạt tự nhiên chứa biển số (Ví dụ: \"giá trị của <a href='/bien-so/slug'>biển số [display_number]</a>\" hoặc \"so với <a href='/bien-so/slug'>phân tích biển số [display_number]</a>\").\n";
+            $internalLinksPrompt .= "- Anchor text phải là tên biển số hoặc diễn đạt tự nhiên chứa biển số (Ví dụ: \"giá trị của <a href='/bien-so-slug'>biển số [display_number]</a>\" hoặc \"so với <a href='/bien-so-slug'>phân tích biển số [display_number]</a>\").\n";
             $internalLinksPrompt .= "- TUYỆT ĐỐI CẤM sử dụng các từ chung chung làm anchor text như: 'bấm vào đây', 'xem thêm', 'link', 'tại đây', 'đường dẫn này', 'chi tiết'.\n";
         }
 
@@ -217,14 +217,14 @@ Yêu cầu quan trọng:
         $internalLinksPrompt = '';
         if ($featuredPlates->isNotEmpty()) {
             $internalLinksPrompt = "\nYÊU CẦU CHÈN LIÊN KẾT NỘI BỘ (SEO INTERNAL LINKING):\n";
-            $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 3 liên kết từ danh sách các biển số xe nổi bật dưới đây vào nội dung bài viết dưới dạng thẻ HTML <a href=\"/bien-so/slug\">biển số [display_number]</a>. Chỉ chèn link khi ngữ cảnh thực sự phù hợp (ví dụ: khi so sánh thế số, giá trị hoặc ý nghĩa của các con số tương tự hoặc khi lấy ví dụ cụ thể):\n";
+            $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 3 liên kết từ danh sách các biển số xe nổi bật dưới đây vào nội dung bài viết dưới dạng thẻ HTML <a href=\"/bien-so-slug\">biển số [display_number]</a>. Chỉ chèn link khi ngữ cảnh thực sự phù hợp (ví dụ: khi so sánh thế số, giá trị hoặc ý nghĩa của các con số tương tự hoặc khi lấy ví dụ cụ thể):\n";
             foreach ($featuredPlates as $fp) {
-                $fpSlug = $fp->seoArticle ? $fp->seoArticle->slug : \Illuminate\Support\Str::slug('bien-so-'.$fp->local_symbol.$fp->serial_letter.'-'.$fp->serial_number);
-                $internalLinksPrompt .= "- Biển số: {$fp->display_number} (Đường dẫn: /bien-so/{$fpSlug})\n";
+                $fpSlug = $fp->seoArticle ? $fp->seoArticle->slug : \Illuminate\Support\Str::slug($fp->local_symbol.$fp->serial_letter.'-'.$fp->serial_number);
+                $internalLinksPrompt .= "- Biển số: {$fp->display_number} (Đường dẫn: /bien-so-{$fpSlug})\n";
             }
             $internalLinksPrompt .= "\nQuy tắc chèn link bắt buộc:\n";
             $internalLinksPrompt .= "- KHÔNG được gom các liên kết thành một danh sách riêng biệt ở cuối bài viết. Hãy phân bổ chúng rải rác trong các đoạn phân tích thế số, ý nghĩa hoặc định giá khi có sự so sánh phù hợp.\n";
-            $internalLinksPrompt .= "- Anchor text phải là tên biển số hoặc diễn đạt tự nhiên chứa biển số (Ví dụ: \"giá trị của <a href='/bien-so/slug'>biển số [display_number]</a>\" hoặc \"so với <a href='/bien-so/slug'>phân tích biển số [display_number]</a>\").\n";
+            $internalLinksPrompt .= "- Anchor text phải là tên biển số hoặc diễn đạt tự nhiên chứa biển số (Ví dụ: \"giá trị của <a href='/bien-so-slug'>biển số [display_number]</a>\" hoặc \"so với <a href='/bien-so-slug'>phân tích biển số [display_number]</a>\").\n";
             $internalLinksPrompt .= "- TUYỆT ĐỐI CẤM sử dụng các từ chung chung làm anchor text như: 'bấm vào đây', 'xem thêm', 'link', 'tại đây', 'đường dẫn này', 'chi tiết'.\n";
         }
 

@@ -217,21 +217,21 @@
                         </li>
                         <li>
                             <Link
-                                href="/bai-viet?category=y-nghia-bien-so"
+                                href="/c/y-nghia-bien-so"
                                 class="transition-colors duration-200 hover:text-[#F5B800]"
                                 >Ý nghĩa biển số</Link
                             >
                         </li>
                         <li>
                             <Link
-                                href="/bai-viet?category=huong-dan"
+                                href="/c/huong-dan"
                                 class="transition-colors duration-200 hover:text-[#F5B800]"
                                 >Cẩm nang hướng dẫn</Link
                             >
                         </li>
                         <li>
                             <Link
-                                href="/bai-viet?category=tin-tuc"
+                                href="/c/tin-tuc"
                                 class="transition-colors duration-200 hover:text-[#F5B800]"
                                 >Tin tức & Thị trường</Link
                             >

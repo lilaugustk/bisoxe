@@ -974,7 +974,7 @@ onUnmounted(() => {
 
                                         <td class="px-6 py-4 text-center">
                                             <Link
-                                                :href="`/bien-so/${plate.slug}`"
+                                                :href="`/bien-so-${plate.slug}`"
                                                 class="inline-block rounded-md border border-[#8C1E1E] px-3 py-2 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
                                             >
                                                 Phân tích biển số
@@ -1052,7 +1052,7 @@ onUnmounted(() => {
                                 <!-- Card Footer: Action -->
                                 <div class="pt-1">
                                     <Link
-                                        :href="`/bien-so/${plate.slug}`"
+                                        :href="`/bien-so-${plate.slug}`"
                                         class="flex w-full items-center justify-center rounded-xl border border-[#8C1E1E] bg-red-50/20 py-2.5 text-xs font-bold text-[#8C1E1E] shadow-xs transition hover:bg-[#8C1E1E] hover:text-white"
                                     >
                                         Phân tích chi tiết biển số →

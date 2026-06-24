@@ -70,12 +70,20 @@ const getCategoryBg = (cat: string) => {
 };
 
 const reload = () => {
+    let url = '/bai-viet';
+    const params: Record<string, any> = {};
+
+    if (activeCategory.value) {
+        url = `/c/${activeCategory.value}`;
+    }
+
+    if (searchQuery.value && searchQuery.value.trim() !== '') {
+        params.search = searchQuery.value.trim();
+    }
+
     router.get(
-        '/bai-viet',
-        {
-            search: searchQuery.value,
-            category: activeCategory.value,
-        },
+        url,
+        params,
         {
             preserveState: true,
             replace: true,

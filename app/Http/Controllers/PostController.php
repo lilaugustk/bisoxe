@@ -12,10 +12,18 @@ class PostController extends Controller
     /**
      * Hiển thị danh sách bài viết chung.
      */
-    public function index(Request $request): Response
+    public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
         $search = $request->input('search');
-        $category = $request->input('category');
+        $category = $request->input('category') ?? $request->route('category');
+
+        if ($request->routeIs('posts.index') && $request->has('category') && !empty($request->input('category'))) {
+            $params = [];
+            if (!empty($search)) {
+                $params['search'] = $search;
+            }
+            return redirect()->to(route('posts.category', array_merge(['category' => $request->input('category')], $params)), 301);
+        }
 
         $query = Post::query()->published()->latest();
 
