@@ -172,7 +172,7 @@ class SyncVpaData extends Command
 
                     // Nếu cào gia tăng (Incremental) -> Kiểm tra ngắt sớm
                     if (! $isFull) {
-                        if ($this->shouldStopCrawling($records)) {
+                        if ($this->shouldStopCrawling($records, $config)) {
                             $this->info('Nhận diện tất cả các biển số trong trang này đã được cập nhật trong DB. Ngắt sớm (Early Stop)!');
                             break;
                         }
@@ -226,8 +226,9 @@ class SyncVpaData extends Command
      * Xác định xem các bản ghi trên trang hiện tại đã được đồng bộ trong database chưa.
      *
      * @param  array<int, array<string, mixed>>  $records
+     * @param  array<string, mixed>  $config
      */
-    private function shouldStopCrawling(array $records): bool
+    private function shouldStopCrawling(array $records, array $config): bool
     {
         $fullNumbers = [];
         foreach ($records as $item) {
@@ -255,6 +256,9 @@ class SyncVpaData extends Command
             return false;
         }
 
+        // Trạng thái dự kiến trong database tương ứng với cấu hình cào hiện tại
+        $expectedDbStatus = $config['is_result'] ? 'completed' : ($config['status'] === 'published' ? 'announced' : $config['status']);
+
         $allUpToDate = true;
         foreach ($records as $item) {
             $localSymbol = $item['localSymbol'] ?? '';
@@ -268,6 +272,12 @@ class SyncVpaData extends Command
 
             $existing = $existingPlates->get($fullNumber);
             if (! $existing) {
+                $allUpToDate = false;
+                break;
+            }
+
+            // Nếu trạng thái trong DB khác trạng thái mong muốn của luồng này (ví dụ: đang waiting_auction mà API đã có kết quả) -> Chưa cập nhật
+            if ($existing->status !== $expectedDbStatus) {
                 $allUpToDate = false;
                 break;
             }
