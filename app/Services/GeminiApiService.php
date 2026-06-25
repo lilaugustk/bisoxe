@@ -484,22 +484,10 @@ Yêu cầu quan trọng khác:
                         ],
                     ]);
 
-                // Nếu gặp lỗi có thể retry (quá tải, server lỗi, rate limit), thử model tiếp theo
-                if (in_array($response->status(), [429, 500, 503])) {
-                    Log::warning("Gemini model [{$model}] returned {$response->status()}, trying next fallback model...", [
-                        'body' => substr($response->body(), 0, 300),
-                    ]);
-                    $lastException = new \Exception("Gemini model [{$model}] returned HTTP {$response->status()}");
-                    continue; // Thử model tiếp theo
-                }
-
-                // Lỗi khác (401, 400...) — không cần thử fallback
                 if ($response->failed()) {
-                    Log::error("Gemini API request failed with model [{$model}]", [
-                        'status' => $response->status(),
-                        'body' => $response->body(),
-                    ]);
-                    throw new \Exception("Gemini API [{$model}] returned status code {$response->status()}");
+                    Log::warning("Gemini model [{$model}] request failed with status {$response->status()}: " . substr($response->body(), 0, 300));
+                    $lastException = new \Exception("Gemini model [{$model}] returned status code {$response->status()}");
+                    continue; // Try next model
                 }
 
                 $result = $response->json();
@@ -525,10 +513,9 @@ Yêu cầu quan trọng khác:
                 return $decoded;
 
             } catch (\Exception $e) {
-                // Nếu exception không phải do 503/429/500 (đã handle ở trên), re-throw ngay
-                if ($lastException === null || $e !== $lastException) {
-                    throw $e;
-                }
+                Log::warning("Gemini model [{$model}] encountered an exception: " . $e->getMessage());
+                $lastException = $e;
+                continue; // Try next model
             }
         }
 
