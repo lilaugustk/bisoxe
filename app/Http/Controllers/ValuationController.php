@@ -9,13 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Contracts\View\View;
 
 class ValuationController extends Controller
 {
     /**
      * Hiển thị trang công cụ tự định giá biển số.
      */
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         // Lấy danh sách 10 biển số được định giá gần đây nhất từ bảng user_valuations
         $recentValuations = UserValuation::with(['province'])
@@ -37,7 +38,7 @@ class ValuationController extends Controller
             ])
             ->toArray();
 
-        return Inertia::render('Plate/Valuation', [
+        return view('plate.valuation', [
             'recent_valuations' => $recentValuations,
         ]);
     }

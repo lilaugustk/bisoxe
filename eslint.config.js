@@ -1,8 +1,8 @@
+import js from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript';
 import prettier from 'eslint-config-prettier/flat';
 import importPlugin from 'eslint-plugin-import';
-import vue from 'eslint-plugin-vue';
+import tseslint from 'typescript-eslint';
 
 const controlStatements = [
     'if',
@@ -21,9 +21,9 @@ const paddingAroundControl = [
     ]),
 ];
 
-export default defineConfigWithVueTs(
-    vue.configs['flat/essential'],
-    vueTsConfigs.recommended,
+export default tseslint.config(
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
     {
         plugins: {
             import: importPlugin,
@@ -38,7 +38,6 @@ export default defineConfigWithVueTs(
             },
         },
         rules: {
-            'vue/multi-word-component-names': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/consistent-type-imports': [
                 'error',
@@ -85,12 +84,11 @@ export default defineConfigWithVueTs(
             'tailwind.config.js',
             'vite.config.ts',
             'resources/js/actions/**',
-            'resources/js/components/ui/*',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
         ],
     },
-    prettier, // Turn off all rules that might conflict with Prettier
+    prettier,
     {
         plugins: {
             '@stylistic': stylistic,

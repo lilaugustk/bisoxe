@@ -6,13 +6,14 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Contracts\View\View;
 
 class PostController extends Controller
 {
     /**
      * Hiển thị danh sách bài viết chung.
      */
-    public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
+    public function index(Request $request): View|\Illuminate\Http\RedirectResponse
     {
         $search = $request->input('search');
         $category = $request->input('category') ?? $request->route('category');
@@ -46,7 +47,7 @@ class PostController extends Controller
 
         $paginated = $query->paginate($limit)->withQueryString();
 
-        return Inertia::render('Post/Index', [
+        return view('post.index', [
             'posts' => $paginated,
             'filters' => [
                 'search' => $search,
@@ -59,7 +60,7 @@ class PostController extends Controller
     /**
      * Hiển thị nội dung chi tiết bài viết chung.
      */
-    public function show(string $slug): Response
+    public function show(string $slug): View
     {
         $post = Post::where('slug', $slug)->published()->firstOrFail();
 
@@ -101,7 +102,7 @@ class PostController extends Controller
                 ->get();
         }
 
-        return Inertia::render('Post/Detail', [
+        return view('post.detail', [
             'post' => $post,
             'relatedPosts' => $relatedPosts,
             'upcomingPlates' => $upcomingPlates,

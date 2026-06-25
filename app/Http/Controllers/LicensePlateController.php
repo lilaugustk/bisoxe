@@ -14,13 +14,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Contracts\View\View;
 
 class LicensePlateController extends Controller
 {
     /**
      * Hiển thị danh sách biển số xe ô tô.
      */
-    public function carIndex(Request $request): Response
+    public function carIndex(Request $request): View
     {
         $request->merge(['vehicle' => 'car']);
 
@@ -28,9 +29,19 @@ class LicensePlateController extends Controller
     }
 
     /**
+     * Hiển thị danh sách biển số xe ô tô lọc theo tìm kiếm qua Pretty URL.
+     */
+    public function carSearchIndex(Request $request, string $search): View
+    {
+        $request->merge(['vehicle' => 'car', 'search' => strtoupper($search)]);
+
+        return $this->index($request);
+    }
+
+    /**
      * Hiển thị danh sách biển số xe máy.
      */
-    public function motorcycleIndex(Request $request): Response
+    public function motorcycleIndex(Request $request): View
     {
         $request->merge(['vehicle' => 'motorcycle']);
 
@@ -38,9 +49,19 @@ class LicensePlateController extends Controller
     }
 
     /**
+     * Hiển thị danh sách biển số xe máy lọc theo tìm kiếm qua Pretty URL.
+     */
+    public function motorcycleSearchIndex(Request $request, string $search): View
+    {
+        $request->merge(['vehicle' => 'motorcycle', 'search' => strtoupper($search)]);
+
+        return $this->index($request);
+    }
+
+    /**
      * Hiển thị danh sách biển số xe lọc theo tỉnh thành qua Pretty URL.
      */
-    public function provinceIndex(Request $request, string $provinceSlug): Response|\Illuminate\Http\RedirectResponse
+    public function provinceIndex(Request $request, string $provinceSlug): View|\Illuminate\Http\RedirectResponse
     {
         // Lấy tất cả các tỉnh thành và tìm tỉnh thành có slug khớp với $provinceSlug
         $province = Province::all()->first(function ($p) use ($provinceSlug) {
@@ -67,9 +88,19 @@ class LicensePlateController extends Controller
     }
 
     /**
+     * Hiển thị danh sách biển số xe lọc theo tỉnh thành + tìm kiếm qua Pretty URL.
+     */
+    public function provinceSearchIndex(Request $request, string $provinceSlug, string $search): View|\Illuminate\Http\RedirectResponse
+    {
+        $request->merge(['search' => strtoupper($search)]);
+
+        return $this->provinceIndex($request, $provinceSlug);
+    }
+
+    /**
      * Hiển thị danh sách biển số xe trên trang chủ.
      */
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $tab = $request->input('tab', 'announce');
         $search = $request->input('search');
@@ -121,7 +152,7 @@ class LicensePlateController extends Controller
         // 6. Lọc theo loại biển chính (kind có priority nhỏ nhất = đẹp nhất)
         // Ví dụ: lọc "Tứ quý" sẽ KHÔNG trả về biển Ngũ quý (vì kind chính của nó là Ngũ quý, không phải Tứ quý)
         if (! empty($kind)) {
-            $kindIds = array_filter(array_map('intval', explode(',', $kind)));
+            $kindIds = is_array($kind) ? array_map('intval', $kind) : array_filter(array_map('intval', explode(',', $kind)));
             if (! empty($kindIds)) {
                 $query->whereHas('kinds', function ($q) use ($kindIds) {
                     $q->whereIn('plate_kinds.id', $kindIds)
@@ -145,7 +176,7 @@ class LicensePlateController extends Controller
 
         // 8. Lọc theo năm sinh (decade pattern, ví dụ: 196x -> 1960 - 1969)
         if (! empty($birthYears)) {
-            $yearsArray = array_filter(explode(',', $birthYears));
+            $yearsArray = is_array($birthYears) ? $birthYears : array_filter(explode(',', $birthYears));
             if (! empty($yearsArray)) {
                 $query->where(function ($q) use ($yearsArray) {
                     foreach ($yearsArray as $by) {
@@ -158,7 +189,7 @@ class LicensePlateController extends Controller
 
         // 9. Lọc tránh số
         if (! empty($avoidNumbers)) {
-            $avoidsArray = array_filter(explode(',', $avoidNumbers));
+            $avoidsArray = is_array($avoidNumbers) ? $avoidNumbers : array_filter(explode(',', $avoidNumbers));
             foreach ($avoidsArray as $num) {
                 if (in_array($num, ['4', '7', '49', '53', '13'])) {
                     $query->where('serial_number', 'not like', "%{$num}%");
@@ -237,7 +268,8 @@ class LicensePlateController extends Controller
             'links' => $paginated->linkCollection()->toArray(),
         ];
 
-        return Inertia::render('Welcome', [
+        return view('welcome', [
+            'paginator' => $paginated,
             'plates' => $plates,
             'provinces' => Province::select('code', 'name')->get()->toArray(),
             'kinds' => PlateKind::select('id', 'name')->get()->toArray(),
@@ -260,7 +292,7 @@ class LicensePlateController extends Controller
     /**
      * Hiển thị trang chi tiết biển số xe và bài viết giải mã ý nghĩa tự động.
      */
-    public function show(string $slug, PlatePricePredictorService $predictorService): Response|RedirectResponse
+    public function show(string $slug, PlatePricePredictorService $predictorService): View|RedirectResponse
     {
         // 1. Tìm theo slug bài viết
         $article = SeoArticle::where('slug', $slug)
@@ -358,7 +390,7 @@ class LicensePlateController extends Controller
                 return redirect()->to('/bien-so-' . $article->slug, 301);
             }
 
-            return Inertia::render('Plate/Detail', [
+            return view('plate.detail', [
                 'article' => [
                     'title' => $article->title,
                     'meta_title' => $article->meta_title,
@@ -397,7 +429,7 @@ class LicensePlateController extends Controller
 
 
         // Trường hợp lỗi hoặc thất bại, hiển thị trang rỗng/chờ
-        return Inertia::render('Plate/Detail', [
+        return view('plate.detail', [
             'article' => [
                 'title' => "Giải mã ý nghĩa biển số {$plate->display_number}",
                 'meta_title' => "Ý nghĩa biển số {$plate->display_number} - Định giá biển số xe",
