@@ -22,7 +22,8 @@ class GenerateKeywordArticleCommand extends Command
                             {--province= : Tỉnh thành cụ thể để sinh 6 bài viết theo mẫu}
                             {--all-provinces : Sinh bài viết cho toàn bộ 63 tỉnh thành}
                             {--limit=10 : Giới hạn tổng số bài sinh ra trong một lần chạy}
-                            {--delay=5 : Thời gian dừng (giây) giữa các bài viết để tránh bị khóa API}';
+                            {--delay=5 : Thời gian dừng (giây) giữa các bài viết để tránh bị khóa API}
+                            {--force : Ghi đè bài viết nếu đã tồn tại}';
 
     /**
      * The console command description.
@@ -110,6 +111,7 @@ class GenerateKeywordArticleCommand extends Command
         $allProvincesOpt = $this->option('all-provinces');
         $limit = (int) $this->option('limit');
         $delay = (int) $this->option('delay');
+        $force = (bool) $this->option('force');
 
         if (!$keywordOpt && !$provinceOpt && !$allProvincesOpt) {
             $this->error('Bạn phải cung cấp ít nhất một tùy chọn: --keyword, --province hoặc --all-provinces.');
@@ -160,13 +162,17 @@ class GenerateKeywordArticleCommand extends Command
         }
         unset($item);
 
-        // 5. Lọc bỏ các bài viết trùng lặp dựa trên slug sắp tạo
+        // 5. Lọc bỏ các bài viết trùng lặp dựa trên slug sắp tạo (hoặc giữ lại để ghi đè nếu --force)
         $uniqueKeywords = [];
         foreach ($keywordsToGenerate as $item) {
             $slug = Str::slug($item['text']);
             if (Post::where('slug', $slug)->exists()) {
-                $this->info("Bài viết đã tồn tại (Slug: {$slug}). Bỏ qua từ khóa: '{$item['text']}'");
-                continue;
+                if (!$force) {
+                    $this->info("Bài viết đã tồn tại (Slug: {$slug}). Bỏ qua từ khóa: '{$item['text']}'");
+                    continue;
+                } else {
+                    $this->info("Bài viết đã tồn tại (Slug: {$slug}). Sẽ thực hiện ghi đè do bật tùy chọn --force.");
+                }
             }
             $uniqueKeywords[] = $item;
         }
@@ -198,6 +204,15 @@ class GenerateKeywordArticleCommand extends Command
             $this->info("Đang xử lý bài viết " . ($idx + 1) . "/" . count($uniqueKeywords) . ": '{$item['text']}'");
 
             try {
+                // Nếu chạy ở chế độ ghi đè, xóa bài viết cũ trước
+                if ($force) {
+                    $targetSlug = Str::slug($item['text']);
+                    $deleted = Post::where('slug', $targetSlug)->delete();
+                    if ($deleted) {
+                        $this->info("Đã xóa bài viết cũ với slug '{$targetSlug}' để chuẩn bị ghi đè.");
+                    }
+                }
+
                 // Đảm bảo tỉnh liên kết tồn tại trong database (nếu chưa có thì tạo mới)
                 if (!empty($item['province_code']) && !empty($item['province_name'])) {
                     Province::updateOrCreate(
