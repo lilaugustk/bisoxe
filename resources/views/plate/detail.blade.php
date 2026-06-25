@@ -150,6 +150,7 @@
     tocItems: [],
     isTocExpanded: window.innerWidth >= 768,
     isPending: {{ $is_pending ? 'true' : 'false' }},
+    plateId: {{ $plate['id'] ?? 'null' }},
 
     toSlug(str) {
         return str
@@ -373,21 +374,16 @@
     },
 
     initPendingPoll() {
-        if (this.isPending) {
-            let checkInterval = setInterval(() => {
-                fetch(window.location.href, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(res => res.text())
-                .then(html => {
-                    if (!html.includes('id=&quot;pending-loader&quot;') && !html.includes('id=&quot;pending-loader-mobile&quot;') && !html.includes('id=\'pending-loader\'') && !html.includes('id=&quot;pending-loader-desktop&quot;')) {
-                        clearInterval(checkInterval);
-                        window.location.reload();
-                    }
-                });
-            }, 5000);
+        if (this.isPending && this.plateId) {
+            fetch(`/api/bien-so/${this.plateId}/generate-article`)
+            .then(res => {
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    console.error('Failed to generate article');
+                }
+            })
+            .catch(err => console.error(err));
         }
     },
 

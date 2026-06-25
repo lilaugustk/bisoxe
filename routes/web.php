@@ -25,6 +25,8 @@ Route::get('/bien-so/{slug}', function (string $slug) {
 Route::get('/dinh-gia', [ValuationController::class, 'index'])->name('valuation.index');
 Route::post('/dinh-gia', [ValuationController::class, 'store'])->name('valuation.store');
 Route::get('/api/bien-so/{full_number}/dinh-gia', [LicensePlateController::class, 'getValuationApi'])->name('plate.api_valuation');
+Route::get('/api/bien-so/{id}/generate-article', [LicensePlateController::class, 'generateArticleApi'])->name('plate.generate_article_api')->where('id', '[0-9]+');
+
 
 Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
 Route::get('/c/{category}', [PostController::class, 'index'])->name('posts.category');

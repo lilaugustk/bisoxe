@@ -474,46 +474,8 @@ class LicensePlateController extends Controller
             return redirect()->route('valuation.index')->with('error', 'Biển số tự định giá không có trang chi tiết.');
         }
 
-        // Nếu chưa có bài viết, kích hoạt sinh bài viết đồng bộ ngay trong request này!
-        try {
-            GenerateSeoArticleJob::dispatchSync($plate);
-
-            // Lấy lại bài viết vừa được tạo
-            $article = SeoArticle::where('plate_id', $plate->id)
-                ->with(['licensePlate.province', 'licensePlate.kinds'])
-                ->first();
-
-            if ($article) {
-                // Chuyển hướng 301 nếu slug yêu cầu khác với slug bài viết chuẩn
-                if ($slug !== $article->slug) {
-                    return redirect()->to('/bien-so-' . $article->slug, 301);
-                }
-
-                return view('plate.detail', [
-                    'article' => [
-                        'title' => $article->title,
-                        'meta_title' => $article->meta_title,
-                        'meta_description' => $article->meta_description,
-                        'content' => $article->content,
-                        'video_script' => $article->video_script,
-                        'slug' => $article->slug,
-                        'generation_model' => $article->generation_model,
-                        'generated_at' => $article->generated_at ? $article->generated_at->toISOString() : null,
-                        'image_url' => $article->image_path ? asset($article->image_path) : null,
-                    ],
-                    'plate' => $this->transformPlate($plate),
-                    'is_pending' => false,
-                    'price_prediction' => $prediction,
-                    'price_trend' => $trend,
-                    'plate_score' => $score,
-                    'related_plates' => $relatedPlates,
-                ]);
-            }
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Sinh bài viết đồng bộ thất bại cho biển {$plate->full_number}: " . $e->getMessage());
-        }
-
-        // Trường hợp lỗi hoặc thất bại, hiển thị trang rỗng/chờ làm phương án dự phòng
+        // Trở lại cách cũ là KHÔNG sinh bài viết đồng bộ ngay khi load trang,
+        // Mà trả về is_pending => true lập tức, việc sinh bài viết sẽ do JS gửi request AJAX chạy ngầm lên.
         return view('plate.detail', [
             'article' => [
                 'title' => "Giải mã ý nghĩa biển số {$plate->display_number}",
@@ -650,6 +612,42 @@ class LicensePlateController extends Controller
             'plate_score' => $score,
             'related_plates' => $relatedPlates,
         ]);
+    }
+
+    /**
+     * API kích hoạt sinh bài viết đồng bộ chạy ngầm từ phía client.
+     */
+    public function generateArticleApi(int $id): \Illuminate\Http\JsonResponse
+    {
+        $plate = LicensePlate::find($id);
+
+        if (!$plate) {
+            return response()->json(['error' => 'Biển số không tồn tại.'], 404);
+        }
+
+        if ($plate->status === 'custom_valuation') {
+            return response()->json(['error' => 'Biển số tự định giá không có trang chi tiết.'], 400);
+        }
+
+        // Nếu bài viết đã tồn tại rồi thì trả về success luôn
+        if ($plate->seoArticle) {
+            return response()->json(['status' => 'success', 'message' => 'Bài viết đã tồn tại.']);
+        }
+
+        try {
+            // Sử dụng dispatchSync để sinh bài viết đồng bộ ngay trong API request này
+            GenerateSeoArticleJob::dispatchSync($plate);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Đã sinh bài viết thành công.'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Sinh bài viết từ API thất bại cho biển {$plate->full_number}: " . $e->getMessage());
+            return response()->json([
+                'error' => 'Sinh bài viết thất bại: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
