@@ -262,9 +262,14 @@
             if (searchVal) {
                 base += '-duoi-' + searchVal;
             }
+            // Thêm tab vào path nếu không phải tab mặc định (announce)
+            if (this.tab === 'official') {
+                base += '/chinh-thuc';
+            } else if (this.tab === 'result') {
+                base += '/ket-qua';
+            }
             // Chỉ giữ các tham số có giá trị (bỏ tham số rỗng)
             let params = {};
-            if (this.tab && this.tab !== 'announce') params.tab = this.tab;
             if (this.color !== '' && this.color !== null && this.color !== undefined) params.color = this.color;
             if (this.startDate) params.start_date = this.startDate;
             if (this.endDate) params.end_date = this.endDate;
@@ -299,22 +304,10 @@
         }
     }">
 
-        <!-- 3. Landing Hero Section (Chứa H1 chuẩn SEO) -->
-        <section class="relative overflow-hidden border-b border-gray-200 bg-white py-16 lg:py-20">
-            <div class="pointer-events-none absolute inset-0 opacity-40">
-                <div class="absolute top-[10%] left-[10%] h-[30rem] w-[30rem] rounded-full bg-red-100 blur-3xl"></div>
-                <div class="absolute right-[10%] bottom-[10%] h-[30rem] w-[30rem] rounded-full bg-amber-100 blur-3xl"></div>
-            </div>
-
-            <div class="relative z-10 mx-auto max-w-[1440px] px-4 text-center sm:px-6 lg:px-8">
-                <h1 class="mb-6 text-3xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl leading-tight">
-                    {!! $heroH1Html !!}
-                </h1>
-
-                <p class="mx-auto mb-8 max-w-2xl text-base sm:text-lg leading-relaxed font-normal text-gray-600">
-                    {{ $heroDescription }}
-                </p>
-
+        <!-- 3. Landing Hero Section (Chứa H1 chuẩn SEO ẩn và Ô tìm kiếm tinh gọn) -->
+        <section class="relative border-b border-gray-200 bg-white py-4 md:py-6">
+            <h1 class="sr-only">{!! strip_tags($heroH1Html) !!}</h1>
+            <div class="relative z-10 mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
                 <!-- Premium Search Bar in Hero -->
                 <div class="mx-auto max-w-lg px-2">
                     <div class="relative flex items-center gap-2 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-md focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
@@ -328,7 +321,7 @@
                                 type="text"
                                 name="search"
                                 x-model="search"
-                                placeholder="Nhập biển số (ví dụ: 30K-999.99)..."
+                                placeholder="Nhập biển số"
                                 class="w-full border-0 bg-transparent py-2.5 pr-4 pl-9 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
                             />
                         </div>
@@ -469,60 +462,492 @@
                         </div>
 
                         <!-- Color select -->
-                        <div class="relative">
-                            <select 
-                                name="color" 
-                                x-model="color"
-                                @change="submitForm()"
-                                class="w-full rounded-xl border border-gray-200 bg-white py-3.5 px-4 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none appearance-none"
+                        <div x-data="{ open: false }" class="relative">
+                            <button 
+                                type="button" 
+                                @click="open = !open" 
+                                class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white py-3.5 px-4 text-left text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none transition duration-150 ease-in-out"
                             >
-                                <option value="">Chọn màu biển</option>
-                                <option value="0">Biển trắng (Cá nhân)</option>
-                                <option value="1">Biển vàng (Kinh doanh)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <span x-text="color === '0' ? 'Biển trắng (Cá nhân)' : (color === '1' ? 'Biển vàng (Kinh doanh)' : 'Chọn màu biển')"></span>
+                                <svg class="h-4 w-4 text-gray-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
+                            </button>
+                            <div 
+                                x-show="open" 
+                                @click.outside="open = false" 
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute top-full left-0 z-40 mt-1.5 w-full rounded-xl border border-gray-200 bg-white py-1 shadow-lg focus:outline-none"
+                            >
+                                <button 
+                                    type="button"
+                                    @click="color = ''; open = false; submitForm();" 
+                                    class="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                    :class="color === '' ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                >
+                                    Chọn màu biển
+                                </button>
+                                <button 
+                                    type="button"
+                                    @click="color = '0'; open = false; submitForm();" 
+                                    class="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                    :class="color === '0' ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                >
+                                    Biển trắng (Cá nhân)
+                                </button>
+                                <button 
+                                    type="button"
+                                    @click="color = '1'; open = false; submitForm();" 
+                                    class="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                    :class="color === '1' ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                >
+                                    Biển vàng (Kinh doanh)
+                                </button>
                             </div>
+                            <input type="hidden" name="color" :value="color" />
                         </div>
 
                         <!-- Province select -->
-                        <div class="relative">
-                            <select 
-                                name="province" 
-                                x-model="province"
-                                @change="changeProvince()"
-                                class="w-full rounded-xl border border-gray-200 bg-white py-3.5 px-4 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none appearance-none"
+                        <div x-data="{ 
+                            open: false, 
+                            searchQuery: '',
+                            get filteredProvinces() {
+                                let provinces = {{ json_encode($provinces) }};
+                                if (!this.searchQuery.trim()) return provinces;
+                                let query = toSlug(this.searchQuery);
+                                return provinces.filter(p => toSlug(p.name).includes(query));
+                            },
+                            get selectedProvinceName() {
+                                let provinces = {{ json_encode($provinces) }};
+                                let found = provinces.find(p => String(p.code) === String(province));
+                                return found ? found.name : 'Chọn tỉnh, thành phố';
+                            }
+                        }" class="relative">
+                            <button 
+                                type="button" 
+                                @click="open = !open; if(open) $nextTick(() => $refs.searchField.focus())" 
+                                class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white py-3.5 px-4 text-left text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none transition duration-150 ease-in-out"
                             >
-                                <option value="">Chọn tỉnh, thành phố</option>
-                                @foreach($provinces as $p)
-                                    <option value="{{ $p['code'] }}">{{ $p['name'] }}</option>
-                                @endforeach
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <span x-text="selectedProvinceName"></span>
+                                <svg class="h-4 w-4 text-gray-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
+                            </button>
+                            <div 
+                                x-show="open" 
+                                @click.outside="open = false; searchQuery = '';" 
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute top-full left-0 z-40 mt-1.5 w-full rounded-xl border border-gray-200 bg-white p-2 shadow-lg focus:outline-none"
+                            >
+                                <div class="relative mb-2">
+                                    <input 
+                                        x-ref="searchField"
+                                        type="text" 
+                                        x-model="searchQuery" 
+                                        placeholder="Tìm tỉnh, thành phố..." 
+                                        class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-xs text-gray-700 focus:border-[#8C1E1E] focus:ring-1 focus:ring-[#8C1E1E] focus:outline-none"
+                                        @keydown.escape="open = false; searchQuery = '';"
+                                    />
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-gray-400">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="max-h-60 overflow-y-auto pr-1">
+                                    <button 
+                                        type="button"
+                                        @click="province = ''; open = false; searchQuery = ''; changeProvince();" 
+                                        class="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                        :class="province === '' ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                    >
+                                        Chọn tỉnh, thành phố
+                                    </button>
+                                    <template x-for="p in filteredProvinces" :key="p.code">
+                                        <button 
+                                            type="button"
+                                            @click="province = String(p.code); open = false; searchQuery = ''; changeProvince();" 
+                                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            :class="String(province) === String(p.code) ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                        >
+                                            <span x-text="p.name"></span>
+                                        </button>
+                                    </template>
+                                    <div x-show="filteredProvinces.length === 0" class="px-3 py-2 text-center text-xs text-gray-500">
+                                        Không tìm thấy tỉnh thành
+                                    </div>
+                                </div>
                             </div>
+                            <input type="hidden" name="province" :value="province" />
                         </div>
 
                         <!-- Date inputs -->
                         <div class="space-y-3 pt-2">
-                            <input 
-                                type="date" 
-                                name="start_date" 
-                                x-model="startDate" 
-                                @change="submitForm()"
-                                class="w-full rounded-xl border border-gray-200 bg-white py-3 px-4 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none" 
-                            />
-                            <input 
-                                type="date" 
-                                name="end_date" 
-                                x-model="endDate" 
-                                @change="submitForm()"
-                                class="w-full rounded-xl border border-gray-200 bg-white py-3 px-4 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none" 
-                            />
+                            <!-- Custom Start Date Picker -->
+                            <div x-data="{
+                                open: false,
+                                currentYear: new Date().getFullYear(),
+                                currentMonth: new Date().getMonth(),
+                                dayNames: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                                get calendarDays() {
+                                    let firstDay = new Date(this.currentYear, this.currentMonth, 1);
+                                    let lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+                                    let daysInMonth = lastDay.getDate();
+                                    let startDayOfWeek = firstDay.getDay();
+                                    let firstDayIndex = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+                                    let days = [];
+                                    let prevLastDay = new Date(this.currentYear, this.currentMonth, 0).getDate();
+                                    for (let i = firstDayIndex - 1; i >= 0; i--) {
+                                        let d = prevLastDay - i;
+                                        let m = this.currentMonth === 0 ? 11 : this.currentMonth - 1;
+                                        let y = this.currentMonth === 0 ? this.currentYear - 1 : this.currentYear;
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: false,
+                                            dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    for (let d = 1; d <= daysInMonth; d++) {
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: true,
+                                            dateStr: `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    let remainingCells = 42 - days.length;
+                                    for (let d = 1; d <= remainingCells; d++) {
+                                        let m = this.currentMonth === 11 ? 0 : this.currentMonth + 1;
+                                        let y = this.currentMonth === 11 ? this.currentYear + 1 : this.currentYear;
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: false,
+                                            dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    return days;
+                                },
+                                formatDisplayDate(dateStr) {
+                                    if (!dateStr) return '';
+                                    let parts = dateStr.split('-');
+                                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                },
+                                selectDay(dateStr) {
+                                    startDate = dateStr;
+                                    this.open = false;
+                                    submitForm();
+                                },
+                                clearDate() {
+                                    startDate = '';
+                                    this.open = false;
+                                    submitForm();
+                                },
+                                prevMonth() {
+                                    if (this.currentMonth === 0) {
+                                        this.currentMonth = 11;
+                                        this.currentYear--;
+                                    } else {
+                                        this.currentMonth--;
+                                    }
+                                },
+                                nextMonth() {
+                                    if (this.currentMonth === 11) {
+                                        this.currentMonth = 0;
+                                        this.currentYear++;
+                                    } else {
+                                        this.currentMonth++;
+                                    }
+                                },
+                                init() {
+                                    if (startDate) {
+                                        let parts = startDate.split('-');
+                                        this.currentYear = parseInt(parts[0]);
+                                        this.currentMonth = parseInt(parts[1]) - 1;
+                                    }
+                                    this.$watch('startDate', val => {
+                                        if (val) {
+                                            let parts = val.split('-');
+                                            this.currentYear = parseInt(parts[0]);
+                                            this.currentMonth = parseInt(parts[1]) - 1;
+                                        }
+                                    });
+                                }
+                            }" class="relative w-full">
+                                <button 
+                                    type="button" 
+                                    @click="open = !open" 
+                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white py-3 px-4 text-left text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none transition-all duration-200"
+                                    :class="startDate ? 'font-semibold text-gray-900 border-[#8C1E1E]/40' : 'text-gray-400'"
+                                >
+                                    <span x-text="startDate ? formatDisplayDate(startDate) : 'Từ ngày'"></span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span 
+                                            x-show="startDate" 
+                                            @click.stop="clearDate()" 
+                                            class="flex h-5 w-5 items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-[#8C1E1E] transition-all duration-150"
+                                        >
+                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </span>
+                                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                </button>
+                                <div 
+                                    x-show="open" 
+                                    @click.outside="open = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute top-full left-0 z-40 mt-1.5 w-[280px] rounded-2xl border border-gray-200 bg-white p-3.5 shadow-xl focus:outline-none"
+                                >
+                                    <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
+                                        <button type="button" @click="prevMonth()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-red-50 hover:text-[#8C1E1E] transition-all">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        <span class="text-sm font-bold text-gray-900" x-text="`Tháng ${currentMonth + 1} ${currentYear}`"></span>
+                                        <button type="button" @click="nextMonth()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-red-50 hover:text-[#8C1E1E] transition-all">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-0.5 pt-2 text-center text-[10px] font-bold text-gray-400">
+                                        <template x-for="name in dayNames" :key="name">
+                                            <span class="py-1" :class="name === 'CN' ? 'text-red-500' : ''" x-text="name"></span>
+                                        </template>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-0.5 pt-1">
+                                        <template x-for="(day, idx) in calendarDays" :key="idx">
+                                            <button 
+                                                type="button" 
+                                                @click="selectDay(day.dateStr)"
+                                                class="flex aspect-square w-full items-center justify-center rounded-lg text-xs font-semibold transition-all relative"
+                                                :class="{
+                                                    'text-gray-300': !day.isCurrentMonth,
+                                                    'text-gray-700 hover:bg-red-50 hover:text-[#8C1E1E]': day.isCurrentMonth && day.dateStr !== startDate,
+                                                    'text-red-500': day.isCurrentMonth && (idx % 7 === 6) && day.dateStr !== startDate,
+                                                    'bg-[#8C1E1E] text-white shadow-md': day.dateStr === startDate,
+                                                    'border border-[#8C1E1E] text-[#8C1E1E] bg-red-50/20': day.dateStr === new Date().toISOString().split('T')[0] && day.dateStr !== startDate
+                                                }"
+                                                x-text="day.day"
+                                            ></button>
+                                        </template>
+                                    </div>
+                                    <div class="mt-2.5 flex items-center justify-between border-t border-gray-100 pt-2 bg-white">
+                                        <button 
+                                            type="button" 
+                                            @click="selectDay(new Date().toISOString().split('T')[0])" 
+                                            class="rounded-md px-2 py-1 text-[11px] font-bold text-[#8C1E1E] hover:bg-red-50 transition-colors"
+                                        >
+                                            Hôm nay
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            x-show="startDate" 
+                                            @click="clearDate()" 
+                                            class="rounded-md px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+                                        >
+                                            Xóa ngày
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="start_date" :value="startDate" />
+                            </div>
+
+                            <!-- Custom End Date Picker -->
+                            <div x-data="{
+                                open: false,
+                                currentYear: new Date().getFullYear(),
+                                currentMonth: new Date().getMonth(),
+                                dayNames: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                                get calendarDays() {
+                                    let firstDay = new Date(this.currentYear, this.currentMonth, 1);
+                                    let lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+                                    let daysInMonth = lastDay.getDate();
+                                    let startDayOfWeek = firstDay.getDay();
+                                    let firstDayIndex = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+                                    let days = [];
+                                    let prevLastDay = new Date(this.currentYear, this.currentMonth, 0).getDate();
+                                    for (let i = firstDayIndex - 1; i >= 0; i--) {
+                                        let d = prevLastDay - i;
+                                        let m = this.currentMonth === 0 ? 11 : this.currentMonth - 1;
+                                        let y = this.currentMonth === 0 ? this.currentYear - 1 : this.currentYear;
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: false,
+                                            dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    for (let d = 1; d <= daysInMonth; d++) {
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: true,
+                                            dateStr: `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    let remainingCells = 42 - days.length;
+                                    for (let d = 1; d <= remainingCells; d++) {
+                                        let m = this.currentMonth === 11 ? 0 : this.currentMonth + 1;
+                                        let y = this.currentMonth === 11 ? this.currentYear + 1 : this.currentYear;
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: false,
+                                            dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    return days;
+                                },
+                                formatDisplayDate(dateStr) {
+                                    if (!dateStr) return '';
+                                    let parts = dateStr.split('-');
+                                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                },
+                                selectDay(dateStr) {
+                                    endDate = dateStr;
+                                    this.open = false;
+                                    submitForm();
+                                },
+                                clearDate() {
+                                    endDate = '';
+                                    this.open = false;
+                                    submitForm();
+                                },
+                                prevMonth() {
+                                    if (this.currentMonth === 0) {
+                                        this.currentMonth = 11;
+                                        this.currentYear--;
+                                    } else {
+                                        this.currentMonth--;
+                                    }
+                                },
+                                nextMonth() {
+                                    if (this.currentMonth === 11) {
+                                        this.currentMonth = 0;
+                                        this.currentYear++;
+                                    } else {
+                                        this.currentMonth++;
+                                    }
+                                },
+                                init() {
+                                    if (endDate) {
+                                        let parts = endDate.split('-');
+                                        this.currentYear = parseInt(parts[0]);
+                                        this.currentMonth = parseInt(parts[1]) - 1;
+                                    }
+                                    this.$watch('endDate', val => {
+                                        if (val) {
+                                            let parts = val.split('-');
+                                            this.currentYear = parseInt(parts[0]);
+                                            this.currentMonth = parseInt(parts[1]) - 1;
+                                        }
+                                    });
+                                }
+                            }" class="relative w-full">
+                                <button 
+                                    type="button" 
+                                    @click="open = !open" 
+                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white py-3 px-4 text-left text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none transition-all duration-200"
+                                    :class="endDate ? 'font-semibold text-gray-900 border-[#8C1E1E]/40' : 'text-gray-400'"
+                                >
+                                    <span x-text="endDate ? formatDisplayDate(endDate) : 'Đến ngày'"></span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span 
+                                            x-show="endDate" 
+                                            @click.stop="clearDate()" 
+                                            class="flex h-5 w-5 items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-[#8C1E1E] transition-all duration-150"
+                                        >
+                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </span>
+                                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                </button>
+                                <div 
+                                    x-show="open" 
+                                    @click.outside="open = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute top-full left-0 z-40 mt-1.5 w-[280px] rounded-2xl border border-gray-200 bg-white p-3.5 shadow-xl focus:outline-none"
+                                >
+                                    <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
+                                        <button type="button" @click="prevMonth()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-red-50 hover:text-[#8C1E1E] transition-all">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        <span class="text-sm font-bold text-gray-900" x-text="`Tháng ${currentMonth + 1} ${currentYear}`"></span>
+                                        <button type="button" @click="nextMonth()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-red-50 hover:text-[#8C1E1E] transition-all">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-0.5 pt-2 text-center text-[10px] font-bold text-gray-400">
+                                        <template x-for="name in dayNames" :key="name">
+                                            <span class="py-1" :class="name === 'CN' ? 'text-red-500' : ''" x-text="name"></span>
+                                        </template>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-0.5 pt-1">
+                                        <template x-for="(day, idx) in calendarDays" :key="idx">
+                                            <button 
+                                                type="button" 
+                                                @click="selectDay(day.dateStr)"
+                                                class="flex aspect-square w-full items-center justify-center rounded-lg text-xs font-semibold transition-all relative"
+                                                :class="{
+                                                    'text-gray-300': !day.isCurrentMonth,
+                                                    'text-gray-700 hover:bg-red-50 hover:text-[#8C1E1E]': day.isCurrentMonth && day.dateStr !== endDate,
+                                                    'text-red-500': day.isCurrentMonth && (idx % 7 === 6) && day.dateStr !== endDate,
+                                                    'bg-[#8C1E1E] text-white shadow-md': day.dateStr === endDate,
+                                                    'border border-[#8C1E1E] text-[#8C1E1E] bg-red-50/20': day.dateStr === new Date().toISOString().split('T')[0] && day.dateStr !== endDate
+                                                }"
+                                                x-text="day.day"
+                                            ></button>
+                                        </template>
+                                    </div>
+                                    <div class="mt-2.5 flex items-center justify-between border-t border-gray-100 pt-2 bg-white">
+                                        <button 
+                                            type="button" 
+                                            @click="selectDay(new Date().toISOString().split('T')[0])" 
+                                            class="rounded-md px-2 py-1 text-[11px] font-bold text-[#8C1E1E] hover:bg-red-50 transition-colors"
+                                        >
+                                            Hôm nay
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            x-show="endDate" 
+                                            @click="clearDate()" 
+                                            class="rounded-md px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+                                        >
+                                            Xóa ngày
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="end_date" :value="endDate" />
+                            </div>
                         </div>
                     </div>
 
@@ -651,10 +1076,10 @@
                 </aside>
 
                 <!-- Right Content Table -->
-                <div class="space-y-4 lg:col-span-3">
+                <div class="space-y-4 lg:col-span-3 min-w-0">
                     <!-- Data Table -->
                     <div class="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                        <div class="hidden md:block overflow-x-auto">
+                        <div class="hidden md:block w-full overflow-x-auto">
                             <table class="w-full min-w-[600px] border-collapse text-left text-sm">
                                 <thead class="border-b border-gray-200 bg-gray-100/80 text-xs font-bold tracking-wider text-gray-700 uppercase">
                                     <tr>
@@ -664,8 +1089,8 @@
                                             {{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}
                                         </th>
                                         <th class="px-6 py-4 whitespace-nowrap">Tỉnh, Thành phố</th>
-                                        <th class="px-6 py-4 hidden md:table-cell">Loại biển</th>
-                                        <th x-show="tab !== 'announce'" class="px-6 py-4 hidden md:table-cell">Thời gian đấu giá</th>
+                                        <th class="px-6 py-4 hidden lg:table-cell">Loại biển</th>
+                                        <th x-show="tab !== 'announce'" class="px-6 py-4 hidden lg:table-cell">Thời gian đấu giá</th>
                                         <th class="w-40 px-6 py-4 text-center">Lựa chọn</th>
                                     </tr>
                                 </thead>
@@ -684,11 +1109,11 @@
                                             <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
                                                 {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
                                             </td>
-                                            <td class="px-6 py-4 text-sm text-gray-700 hidden md:table-cell">
+                                            <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">
                                                 {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
                                             </td>
                                             @if($activeTab !== 'announce')
-                                                <td class="px-6 py-4 text-sm text-gray-700 hidden md:table-cell">
+                                                <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">
                                                     {{ $formatDate($plate['auction_start_time']) }}
                                                 </td>
                                             @endif
@@ -697,7 +1122,8 @@
                                                     href="/bien-so-{{ $plate['slug'] }}"
                                                     class="inline-block rounded-md border border-[#8C1E1E] px-3 py-2 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
                                                 >
-                                                    Phân tích biển số
+                                                    <span class="inline lg:hidden">Phân tích</span>
+                                                    <span class="hidden lg:inline">Phân tích biển số</span>
                                                 </a>
                                             </td>
                                         </tr>
@@ -916,7 +1342,7 @@
         </section>
 
         <!-- 5. SEO Text Section -->
-        <section id="meanings-section" class="scroll-mt-20 border-t border-b border-gray-200 bg-white py-16">
+        <section id="y-nghia-bien-so" class="scroll-mt-20 border-t border-b border-gray-200 bg-white py-16">
             <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
                 <header class="mb-12 text-center">
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
@@ -987,7 +1413,7 @@
         </section>
 
         <!-- 6. FAQ Section -->
-        <section id="faq-section" class="scroll-mt-20 bg-[#F9FAFB] py-16">
+        <section id="faq" class="scroll-mt-20 bg-[#F9FAFB] py-16">
             <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
                 <header class="mb-12 text-center">
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
@@ -1084,52 +1510,484 @@
                         </div>
 
                         <!-- Color select -->
-                        <div class="relative">
-                            <select 
-                                x-model="color"
-                                class="w-full rounded-xl border border-gray-200 bg-white py-3.5 px-4 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none appearance-none"
+                        <div x-data="{ open: false }" class="relative">
+                            <button 
+                                type="button" 
+                                @click="open = !open" 
+                                class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white py-3.5 px-4 text-left text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none transition duration-150 ease-in-out"
                             >
-                                <option value="">Chọn màu biển</option>
-                                <option value="0">Biển trắng (Cá nhân)</option>
-                                <option value="1">Biển vàng (Kinh doanh)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <span x-text="color === '0' ? 'Biển trắng (Cá nhân)' : (color === '1' ? 'Biển vàng (Kinh doanh)' : 'Chọn màu biển')"></span>
+                                <svg class="h-4 w-4 text-gray-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
+                            </button>
+                            <div 
+                                x-show="open" 
+                                @click.outside="open = false" 
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute top-full left-0 z-40 mt-1.5 w-full rounded-xl border border-gray-200 bg-white py-1 shadow-lg focus:outline-none"
+                            >
+                                <button 
+                                    type="button"
+                                    @click="color = ''; open = false;" 
+                                    class="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                    :class="color === '' ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                >
+                                    Chọn màu biển
+                                </button>
+                                <button 
+                                    type="button"
+                                    @click="color = '0'; open = false;" 
+                                    class="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                    :class="color === '0' ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                >
+                                    Biển trắng (Cá nhân)
+                                </button>
+                                <button 
+                                    type="button"
+                                    @click="color = '1'; open = false;" 
+                                    class="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                    :class="color === '1' ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                >
+                                    Biển vàng (Kinh doanh)
+                                </button>
                             </div>
                         </div>
 
                         <!-- Province select -->
-                        <div class="relative">
-                            <select 
-                                x-model="province"
-                                class="w-full rounded-xl border border-gray-200 bg-white py-3.5 px-4 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none appearance-none"
+                        <div x-data="{ 
+                            open: false, 
+                            searchQuery: '',
+                            get filteredProvinces() {
+                                let provinces = {{ json_encode($provinces) }};
+                                if (!this.searchQuery.trim()) return provinces;
+                                let query = toSlug(this.searchQuery);
+                                return provinces.filter(p => toSlug(p.name).includes(query));
+                            },
+                            get selectedProvinceName() {
+                                let provinces = {{ json_encode($provinces) }};
+                                let found = provinces.find(p => String(p.code) === String(province));
+                                return found ? found.name : 'Chọn tỉnh, thành phố';
+                            }
+                        }" class="relative">
+                            <button 
+                                type="button" 
+                                @click="open = !open; if(open) $nextTick(() => $refs.mobileSearchField.focus())" 
+                                class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white py-3.5 px-4 text-left text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none transition duration-150 ease-in-out"
                             >
-                                <option value="">Chọn tỉnh, thành phố</option>
-                                @foreach($provinces as $p)
-                                    <option value="{{ $p['code'] }}">{{ $p['name'] }}</option>
-                                @endforeach
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <span x-text="selectedProvinceName"></span>
+                                <svg class="h-4 w-4 text-gray-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
+                            </button>
+                            <div 
+                                x-show="open" 
+                                @click.outside="open = false; searchQuery = '';" 
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute top-full left-0 z-40 mt-1.5 w-full rounded-xl border border-gray-200 bg-white p-2 shadow-lg focus:outline-none"
+                            >
+                                <div class="relative mb-2">
+                                    <input 
+                                        x-ref="mobileSearchField"
+                                        type="text" 
+                                        x-model="searchQuery" 
+                                        placeholder="Tìm tỉnh, thành phố..." 
+                                        class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-xs text-gray-700 focus:border-[#8C1E1E] focus:ring-1 focus:ring-[#8C1E1E] focus:outline-none"
+                                        @keydown.escape="open = false; searchQuery = '';"
+                                    />
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-gray-400">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="max-h-60 overflow-y-auto pr-1">
+                                    <button 
+                                        type="button"
+                                        @click="province = ''; open = false; searchQuery = '';" 
+                                        class="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                        :class="province === '' ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                    >
+                                        Chọn tỉnh, thành phố
+                                    </button>
+                                    <template x-for="p in filteredProvinces" :key="p.code">
+                                        <button 
+                                            type="button"
+                                            @click="province = String(p.code); open = false; searchQuery = '';" 
+                                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            :class="String(province) === String(p.code) ? 'font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5' : ''"
+                                        >
+                                            <span x-text="p.name"></span>
+                                        </button>
+                                    </template>
+                                    <div x-show="filteredProvinces.length === 0" class="px-3 py-2 text-center text-xs text-gray-500">
+                                        Không tìm thấy tỉnh thành
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Date inputs -->
                         <div class="space-y-3 pt-2">
-                            <input 
-                                type="date" 
-                                x-model="startDate" 
-                                class="w-full rounded-xl border border-gray-200 bg-white py-3 px-4 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none" 
-                            />
-                            <input 
-                                type="date" 
-                                x-model="endDate" 
-                                class="w-full rounded-xl border border-gray-200 bg-white py-3 px-4 text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none" 
-                            />
+                            <!-- Custom Start Date Picker -->
+                            <div x-data="{
+                                open: false,
+                                currentYear: new Date().getFullYear(),
+                                currentMonth: new Date().getMonth(),
+                                dayNames: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                                get calendarDays() {
+                                    let firstDay = new Date(this.currentYear, this.currentMonth, 1);
+                                    let lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+                                    let daysInMonth = lastDay.getDate();
+                                    let startDayOfWeek = firstDay.getDay();
+                                    let firstDayIndex = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+                                    let days = [];
+                                    let prevLastDay = new Date(this.currentYear, this.currentMonth, 0).getDate();
+                                    for (let i = firstDayIndex - 1; i >= 0; i--) {
+                                        let d = prevLastDay - i;
+                                        let m = this.currentMonth === 0 ? 11 : this.currentMonth - 1;
+                                        let y = this.currentMonth === 0 ? this.currentYear - 1 : this.currentYear;
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: false,
+                                            dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    for (let d = 1; d <= daysInMonth; d++) {
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: true,
+                                            dateStr: `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    let remainingCells = 42 - days.length;
+                                    for (let d = 1; d <= remainingCells; d++) {
+                                        let m = this.currentMonth === 11 ? 0 : this.currentMonth + 1;
+                                        let y = this.currentMonth === 11 ? this.currentYear + 1 : this.currentYear;
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: false,
+                                            dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    return days;
+                                },
+                                formatDisplayDate(dateStr) {
+                                    if (!dateStr) return '';
+                                    let parts = dateStr.split('-');
+                                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                },
+                                selectDay(dateStr) {
+                                    startDate = dateStr;
+                                    this.open = false;
+                                },
+                                clearDate() {
+                                    startDate = '';
+                                    this.open = false;
+                                },
+                                prevMonth() {
+                                    if (this.currentMonth === 0) {
+                                        this.currentMonth = 11;
+                                        this.currentYear--;
+                                    } else {
+                                        this.currentMonth--;
+                                    }
+                                },
+                                nextMonth() {
+                                    if (this.currentMonth === 11) {
+                                        this.currentMonth = 0;
+                                        this.currentYear++;
+                                    } else {
+                                        this.currentMonth++;
+                                    }
+                                },
+                                init() {
+                                    if (startDate) {
+                                        let parts = startDate.split('-');
+                                        this.currentYear = parseInt(parts[0]);
+                                        this.currentMonth = parseInt(parts[1]) - 1;
+                                    }
+                                    this.$watch('startDate', val => {
+                                        if (val) {
+                                            let parts = val.split('-');
+                                            this.currentYear = parseInt(parts[0]);
+                                            this.currentMonth = parseInt(parts[1]) - 1;
+                                        }
+                                    });
+                                }
+                            }" class="relative w-full">
+                                <button 
+                                    type="button" 
+                                    @click="open = !open" 
+                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white py-3 px-4 text-left text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none transition-all duration-200"
+                                    :class="startDate ? 'font-semibold text-gray-900 border-[#8C1E1E]/40' : 'text-gray-400'"
+                                >
+                                    <span x-text="startDate ? formatDisplayDate(startDate) : 'Từ ngày'"></span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span 
+                                            x-show="startDate" 
+                                            @click.stop="clearDate()" 
+                                            class="flex h-5 w-5 items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-[#8C1E1E] transition-all duration-150"
+                                        >
+                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </span>
+                                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                </button>
+                                <div 
+                                    x-show="open" 
+                                    @click.outside="open = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute top-full left-0 z-40 mt-1.5 w-[280px] rounded-2xl border border-gray-200 bg-white p-3.5 shadow-xl focus:outline-none"
+                                >
+                                    <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
+                                        <button type="button" @click="prevMonth()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-red-50 hover:text-[#8C1E1E] transition-all">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        <span class="text-sm font-bold text-gray-900" x-text="`Tháng ${currentMonth + 1} ${currentYear}`"></span>
+                                        <button type="button" @click="nextMonth()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-red-50 hover:text-[#8C1E1E] transition-all">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-0.5 pt-2 text-center text-[10px] font-bold text-gray-400">
+                                        <template x-for="name in dayNames" :key="name">
+                                            <span class="py-1" :class="name === 'CN' ? 'text-red-500' : ''" x-text="name"></span>
+                                        </template>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-0.5 pt-1">
+                                        <template x-for="(day, idx) in calendarDays" :key="idx">
+                                            <button 
+                                                type="button" 
+                                                @click="selectDay(day.dateStr)"
+                                                class="flex aspect-square w-full items-center justify-center rounded-lg text-xs font-semibold transition-all relative"
+                                                :class="{
+                                                    'text-gray-300': !day.isCurrentMonth,
+                                                    'text-gray-700 hover:bg-red-50 hover:text-[#8C1E1E]': day.isCurrentMonth && day.dateStr !== startDate,
+                                                    'text-red-500': day.isCurrentMonth && (idx % 7 === 6) && day.dateStr !== startDate,
+                                                    'bg-[#8C1E1E] text-white shadow-md': day.dateStr === startDate,
+                                                    'border border-[#8C1E1E] text-[#8C1E1E] bg-red-50/20': day.dateStr === new Date().toISOString().split('T')[0] && day.dateStr !== startDate
+                                                }"
+                                                x-text="day.day"
+                                            ></button>
+                                        </template>
+                                    </div>
+                                    <div class="mt-2.5 flex items-center justify-between border-t border-gray-100 pt-2 bg-white">
+                                        <button 
+                                            type="button" 
+                                            @click="selectDay(new Date().toISOString().split('T')[0])" 
+                                            class="rounded-md px-2 py-1 text-[11px] font-bold text-[#8C1E1E] hover:bg-red-50 transition-colors"
+                                        >
+                                            Hôm nay
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            x-show="startDate" 
+                                            @click="clearDate()" 
+                                            class="rounded-md px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+                                        >
+                                            Xóa ngày
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom End Date Picker -->
+                            <div x-data="{
+                                open: false,
+                                currentYear: new Date().getFullYear(),
+                                currentMonth: new Date().getMonth(),
+                                dayNames: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                                get calendarDays() {
+                                    let firstDay = new Date(this.currentYear, this.currentMonth, 1);
+                                    let lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+                                    let daysInMonth = lastDay.getDate();
+                                    let startDayOfWeek = firstDay.getDay();
+                                    let firstDayIndex = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+                                    let days = [];
+                                    let prevLastDay = new Date(this.currentYear, this.currentMonth, 0).getDate();
+                                    for (let i = firstDayIndex - 1; i >= 0; i--) {
+                                        let d = prevLastDay - i;
+                                        let m = this.currentMonth === 0 ? 11 : this.currentMonth - 1;
+                                        let y = this.currentMonth === 0 ? this.currentYear - 1 : this.currentYear;
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: false,
+                                            dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    for (let d = 1; d <= daysInMonth; d++) {
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: true,
+                                            dateStr: `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    let remainingCells = 42 - days.length;
+                                    for (let d = 1; d <= remainingCells; d++) {
+                                        let m = this.currentMonth === 11 ? 0 : this.currentMonth + 1;
+                                        let y = this.currentMonth === 11 ? this.currentYear + 1 : this.currentYear;
+                                        days.push({
+                                            day: d,
+                                            isCurrentMonth: false,
+                                            dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                                        });
+                                    }
+                                    return days;
+                                },
+                                formatDisplayDate(dateStr) {
+                                    if (!dateStr) return '';
+                                    let parts = dateStr.split('-');
+                                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                },
+                                selectDay(dateStr) {
+                                    endDate = dateStr;
+                                    this.open = false;
+                                },
+                                clearDate() {
+                                    endDate = '';
+                                    this.open = false;
+                                },
+                                prevMonth() {
+                                    if (this.currentMonth === 0) {
+                                        this.currentMonth = 11;
+                                        this.currentYear--;
+                                    } else {
+                                        this.currentMonth--;
+                                    }
+                                },
+                                nextMonth() {
+                                    if (this.currentMonth === 11) {
+                                        this.currentMonth = 0;
+                                        this.currentYear++;
+                                    } else {
+                                        this.currentMonth++;
+                                    }
+                                },
+                                init() {
+                                    if (endDate) {
+                                        let parts = endDate.split('-');
+                                        this.currentYear = parseInt(parts[0]);
+                                        this.currentMonth = parseInt(parts[1]) - 1;
+                                    }
+                                    this.$watch('endDate', val => {
+                                        if (val) {
+                                            let parts = val.split('-');
+                                            this.currentYear = parseInt(parts[0]);
+                                            this.currentMonth = parseInt(parts[1]) - 1;
+                                        }
+                                    });
+                                }
+                            }" class="relative w-full">
+                                <button 
+                                    type="button" 
+                                    @click="open = !open" 
+                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white py-3 px-4 text-left text-sm text-gray-700 focus:border-[#8C1E1E] focus:ring-2 focus:ring-[#8C1E1E]/20 focus:outline-none transition-all duration-200"
+                                    :class="endDate ? 'font-semibold text-gray-900 border-[#8C1E1E]/40' : 'text-gray-400'"
+                                >
+                                    <span x-text="endDate ? formatDisplayDate(endDate) : 'Đến ngày'"></span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span 
+                                            x-show="endDate" 
+                                            @click.stop="clearDate()" 
+                                            class="flex h-5 w-5 items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-[#8C1E1E] transition-all duration-150"
+                                        >
+                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </span>
+                                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                </button>
+                                <div 
+                                    x-show="open" 
+                                    @click.outside="open = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute top-full left-0 z-40 mt-1.5 w-[280px] rounded-2xl border border-gray-200 bg-white p-3.5 shadow-xl focus:outline-none"
+                                >
+                                    <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
+                                        <button type="button" @click="prevMonth()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-red-50 hover:text-[#8C1E1E] transition-all">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        <span class="text-sm font-bold text-gray-900" x-text="`Tháng ${currentMonth + 1} ${currentYear}`"></span>
+                                        <button type="button" @click="nextMonth()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-red-50 hover:text-[#8C1E1E] transition-all">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-0.5 pt-2 text-center text-[10px] font-bold text-gray-400">
+                                        <template x-for="name in dayNames" :key="name">
+                                            <span class="py-1" :class="name === 'CN' ? 'text-red-500' : ''" x-text="name"></span>
+                                        </template>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-0.5 pt-1">
+                                        <template x-for="(day, idx) in calendarDays" :key="idx">
+                                            <button 
+                                                type="button" 
+                                                @click="selectDay(day.dateStr)"
+                                                class="flex aspect-square w-full items-center justify-center rounded-lg text-xs font-semibold transition-all relative"
+                                                :class="{
+                                                    'text-gray-300': !day.isCurrentMonth,
+                                                    'text-gray-700 hover:bg-red-50 hover:text-[#8C1E1E]': day.isCurrentMonth && day.dateStr !== endDate,
+                                                    'text-red-500': day.isCurrentMonth && (idx % 7 === 6) && day.dateStr !== endDate,
+                                                    'bg-[#8C1E1E] text-white shadow-md': day.dateStr === endDate,
+                                                    'border border-[#8C1E1E] text-[#8C1E1E] bg-red-50/20': day.dateStr === new Date().toISOString().split('T')[0] && day.dateStr !== endDate
+                                                }"
+                                                x-text="day.day"
+                                            ></button>
+                                        </template>
+                                    </div>
+                                    <div class="mt-2.5 flex items-center justify-between border-t border-gray-100 pt-2 bg-white">
+                                        <button 
+                                            type="button" 
+                                            @click="selectDay(new Date().toISOString().split('T')[0])" 
+                                            class="rounded-md px-2 py-1 text-[11px] font-bold text-[#8C1E1E] hover:bg-red-50 transition-colors"
+                                        >
+                                            Hôm nay
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            x-show="endDate" 
+                                            @click="clearDate()" 
+                                            class="rounded-md px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+                                        >
+                                            Xóa ngày
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

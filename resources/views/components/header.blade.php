@@ -23,7 +23,7 @@
     <div class="mx-auto flex h-18 max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex w-full items-center justify-between">
             <!-- Logo Container -->
-            <div class="flex flex-1 justify-start">
+            <div class="flex justify-start shrink-0">
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-3" @click="isMobileMenuOpen = false">
                     <svg
@@ -93,7 +93,7 @@
             </div>
 
             <!-- Desktop Navigation Menu -->
-            <nav class="hidden items-center gap-6 text-sm font-semibold text-gray-600 lg:flex">
+            <nav class="hidden items-center lg:gap-3 xl:gap-5 text-xs xl:text-sm font-semibold text-gray-600 lg:flex">
                 <a
                     href="/"
                     class="{{ $isHomePath ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
@@ -104,34 +104,39 @@
                     href="/danh-sach-bien-so-xe-o-to"
                     class="{{ $isCarActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    Biển số xe ô tô
+                    <span class="inline xl:hidden">Biển ô tô</span>
+                    <span class="hidden xl:inline">Biển số xe ô tô</span>
                 </a>
                 <a
                     href="/danh-sach-bien-so-xe-may"
                     class="{{ $isMotorcycleActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    Biển số xe máy, mô tô
+                    <span class="inline xl:hidden">Biển xe máy</span>
+                    <span class="hidden xl:inline">Biển số xe máy, mô tô</span>
                 </a>
                 <a
                     href="/bai-viet"
                     class="{{ $isPostActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    Bài viết & Tin tức
+                    <span class="inline xl:hidden">Bài viết</span>
+                    <span class="hidden xl:inline">Bài viết & Tin tức</span>
                 </a>
                 <a
                     href="/dinh-gia"
                     class="{{ $isValuationActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    Định giá biển số
+                    <span class="inline xl:hidden">Định giá</span>
+                    <span class="hidden xl:inline">Định giá biển số</span>
                 </a>
                 <a
-                    href="{{ $isHomePath ? '#meanings-section' : '/#meanings-section' }}"
+                    href="{{ $isHomePath ? '#y-nghia-bien-so' : '/#y-nghia-bien-so' }}"
                     class="transition hover:text-[#8C1E1E]"
                 >
-                    Ý nghĩa biển số
+                    <span class="inline xl:hidden">Ý nghĩa</span>
+                    <span class="hidden xl:inline">Ý nghĩa biển số</span>
                 </a>
                 <a
-                    href="{{ $isHomePath ? '#faq-section' : '/#faq-section' }}"
+                    href="{{ $isHomePath ? '#faq' : '/#faq' }}"
                     class="transition hover:text-[#8C1E1E]"
                 >
                     Hỏi đáp
@@ -139,8 +144,8 @@
             </nav>
 
             <!-- Hamburger Button Container (Mobile & Tablet) -->
-            <div class="flex flex-1 justify-end">
-                <div class="flex items-center lg:hidden">
+            <div class="flex lg:hidden justify-end shrink-0">
+                <div class="flex items-center">
                     <button
                         type="button"
                         @click="isMobileMenuOpen = !isMobileMenuOpen"
@@ -225,14 +230,14 @@
                 Định giá biển số
             </a>
             <a
-                href="{{ $isHomePath ? '#meanings-section' : '/#meanings-section' }}"
+                href="{{ $isHomePath ? '#y-nghia-bien-so' : '/#y-nghia-bien-so' }}"
                 class="py-3 transition hover:text-[#8C1E1E]"
                 @click="isMobileMenuOpen = false"
             >
                 Ý nghĩa biển số
             </a>
             <a
-                href="{{ $isHomePath ? '#faq-section' : '/#faq-section' }}"
+                href="{{ $isHomePath ? '#faq' : '/#faq' }}"
                 class="py-3 transition hover:text-[#8C1E1E]"
                 @click="isMobileMenuOpen = false"
             >

@@ -5,13 +5,13 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ValuationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [LicensePlateController::class, 'index'])->name('home');
-Route::get('/danh-sach-bien-so-xe-o-to', [LicensePlateController::class, 'carIndex'])->name('plates.car');
-Route::get('/danh-sach-bien-so-xe-may', [LicensePlateController::class, 'motorcycleIndex'])->name('plates.motorcycle');
-Route::get('/danh-sach-bien-so-xe-o-to-duoi-{search}', [LicensePlateController::class, 'carSearchIndex'])->name('plates.car.search')->where('search', '[a-zA-Z0-9]+');
-Route::get('/danh-sach-bien-so-xe-may-duoi-{search}', [LicensePlateController::class, 'motorcycleSearchIndex'])->name('plates.motorcycle.search')->where('search', '[a-zA-Z0-9]+');
-Route::get('/danh-sach-bien-so-xe-{province_slug}-duoi-{search}', [LicensePlateController::class, 'provinceSearchIndex'])->name('plates.province.search')->where(['search' => '[a-zA-Z0-9]+', 'province_slug' => '[a-z0-9-]+?']);
-Route::get('/danh-sach-bien-so-xe-{province_slug}', [LicensePlateController::class, 'provinceIndex'])->name('plates.province')->where('province_slug', '(?!.*-duoi-)[a-z0-9-]+');
+Route::get('/{tab?}', [LicensePlateController::class, 'index'])->name('home')->where('tab', 'cong-bo|chinh-thuc|ket-qua');
+Route::get('/danh-sach-bien-so-xe-o-to/{tab?}', [LicensePlateController::class, 'carIndex'])->name('plates.car')->where('tab', 'cong-bo|chinh-thuc|ket-qua');
+Route::get('/danh-sach-bien-so-xe-may/{tab?}', [LicensePlateController::class, 'motorcycleIndex'])->name('plates.motorcycle')->where('tab', 'cong-bo|chinh-thuc|ket-qua');
+Route::get('/danh-sach-bien-so-xe-o-to-duoi-{search}/{tab?}', [LicensePlateController::class, 'carSearchIndex'])->name('plates.car.search')->where(['search' => '[a-zA-Z0-9]+', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
+Route::get('/danh-sach-bien-so-xe-may-duoi-{search}/{tab?}', [LicensePlateController::class, 'motorcycleSearchIndex'])->name('plates.motorcycle.search')->where(['search' => '[a-zA-Z0-9]+', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
+Route::get('/danh-sach-bien-so-xe-{province_slug}-duoi-{search}/{tab?}', [LicensePlateController::class, 'provinceSearchIndex'])->name('plates.province.search')->where(['search' => '[a-zA-Z0-9]+', 'province_slug' => '[a-z0-9-]+?', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
+Route::get('/danh-sach-bien-so-xe-{province_slug}/{tab?}', [LicensePlateController::class, 'provinceIndex'])->name('plates.province')->where(['province_slug' => '(?!.*-duoi-)[a-z0-9-]+', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
 Route::get('/bien-so-{slug}', [LicensePlateController::class, 'show'])->name('plate.detail');
 Route::get('/bien-so/{slug}', function (string $slug) {
     $newSlug = $slug;
@@ -28,6 +28,7 @@ Route::get('/api/bien-so/{full_number}/dinh-gia', [LicensePlateController::class
 
 Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
 Route::get('/c/{category}', [PostController::class, 'index'])->name('posts.category');
+Route::get('/c/{category}/{search}', [PostController::class, 'index'])->name('posts.category.search');
 Route::get('/b/{slug}', [PostController::class, 'show'])->name('posts.show');
 Route::get('/bai-viet/{slug}', function (string $slug) {
     return redirect()->to('/b/' . $slug, 301);

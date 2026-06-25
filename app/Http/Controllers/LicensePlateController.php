@@ -21,47 +21,47 @@ class LicensePlateController extends Controller
     /**
      * Hiển thị danh sách biển số xe ô tô.
      */
-    public function carIndex(Request $request): View
+    public function carIndex(Request $request, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         $request->merge(['vehicle' => 'car']);
 
-        return $this->index($request);
+        return $this->index($request, $tab);
     }
 
     /**
      * Hiển thị danh sách biển số xe ô tô lọc theo tìm kiếm qua Pretty URL.
      */
-    public function carSearchIndex(Request $request, string $search): View
+    public function carSearchIndex(Request $request, string $search, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         $request->merge(['vehicle' => 'car', 'search' => strtoupper($search)]);
 
-        return $this->index($request);
+        return $this->index($request, $tab);
     }
 
     /**
      * Hiển thị danh sách biển số xe máy.
      */
-    public function motorcycleIndex(Request $request): View
+    public function motorcycleIndex(Request $request, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         $request->merge(['vehicle' => 'motorcycle']);
 
-        return $this->index($request);
+        return $this->index($request, $tab);
     }
 
     /**
      * Hiển thị danh sách biển số xe máy lọc theo tìm kiếm qua Pretty URL.
      */
-    public function motorcycleSearchIndex(Request $request, string $search): View
+    public function motorcycleSearchIndex(Request $request, string $search, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         $request->merge(['vehicle' => 'motorcycle', 'search' => strtoupper($search)]);
 
-        return $this->index($request);
+        return $this->index($request, $tab);
     }
 
     /**
      * Hiển thị danh sách biển số xe lọc theo tỉnh thành qua Pretty URL.
      */
-    public function provinceIndex(Request $request, string $provinceSlug): View|\Illuminate\Http\RedirectResponse
+    public function provinceIndex(Request $request, string $provinceSlug, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         // Lấy tất cả các tỉnh thành và tìm tỉnh thành có slug khớp với $provinceSlug
         $province = Province::all()->first(function ($p) use ($provinceSlug) {
@@ -78,31 +78,84 @@ class LicensePlateController extends Controller
             $query = $request->query();
             unset($query['province']);
             $queryString = count($query) > 0 ? '?' . http_build_query($query) : '';
-            return redirect()->to('/danh-sach-bien-so-xe-' . $provinceSlug . $queryString, 301);
+            $path = '/danh-sach-bien-so-xe-' . $provinceSlug;
+            if ($tab) {
+                $path .= '/' . $tab;
+            }
+            return redirect()->to($path . $queryString, 301);
         }
 
         // Merge mã tỉnh vào request input
         $request->merge(['province' => $province->code]);
 
-        return $this->index($request);
+        return $this->index($request, $tab);
     }
 
     /**
      * Hiển thị danh sách biển số xe lọc theo tỉnh thành + tìm kiếm qua Pretty URL.
      */
-    public function provinceSearchIndex(Request $request, string $provinceSlug, string $search): View|\Illuminate\Http\RedirectResponse
+    public function provinceSearchIndex(Request $request, string $provinceSlug, string $search, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         $request->merge(['search' => strtoupper($search)]);
 
-        return $this->provinceIndex($request, $provinceSlug);
+        return $this->provinceIndex($request, $provinceSlug, $tab);
     }
 
     /**
      * Hiển thị danh sách biển số xe trên trang chủ.
      */
-    public function index(Request $request): View
+    public function index(Request $request, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
-        $tab = $request->input('tab', 'announce');
+        // 1. Nếu URL vẫn chứa tab dạng query string, redirect 301 về URL sạch
+        if ($request->has('tab')) {
+            $tabValue = $request->query('tab');
+            $tabSegmentMap = [
+                'announce' => '',
+                'official' => 'chinh-thuc',
+                'result' => 'ket-qua',
+            ];
+            if (array_key_exists($tabValue, $tabSegmentMap)) {
+                $segment = $tabSegmentMap[$tabValue];
+                $query = $request->query();
+                unset($query['tab']);
+
+                $baseUrl = $request->url();
+                $newUrl = rtrim($baseUrl, '/');
+                if ($segment !== '') {
+                    $newUrl .= '/' . $segment;
+                }
+                if (count($query) > 0) {
+                    $newUrl .= '?' . http_build_query($query);
+                }
+                return redirect()->to($newUrl, 301);
+            }
+        }
+
+        // 2. Chuyển đổi tab segment sang trạng thái tương ứng của app
+        $tabSegment = $tab ?? $request->route('tab');
+        
+        // Nếu người dùng vào /cong-bo trực tiếp, redirect 301 về base URL không có /cong-bo để tránh trùng lặp nội dung
+        if ($tabSegment === 'cong-bo') {
+            $query = $request->query();
+            $baseUrl = $request->url();
+            $newUrl = preg_replace('/\/cong-bo$/', '', rtrim($baseUrl, '/'));
+            if ($newUrl === '') {
+                $newUrl = '/';
+            }
+            if (count($query) > 0) {
+                $newUrl .= '?' . http_build_query($query);
+            }
+            return redirect()->to($newUrl, 301);
+        }
+
+        $tabMap = [
+            'cong-bo' => 'announce',
+            'chinh-thuc' => 'official',
+            'ket-qua' => 'result',
+        ];
+        
+        $activeTab = $tabMap[$tabSegment] ?? 'announce';
+        $tab = $activeTab;
         $search = $request->input('search');
         $color = $request->input('color');
         $province = $request->input('province');

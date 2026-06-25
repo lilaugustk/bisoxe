@@ -59,22 +59,8 @@
 @section('content')
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
     
-    <!-- Hero Section -->
-    <section class="relative overflow-hidden border-b border-gray-200 bg-white py-12 lg:py-16">
-        <div class="pointer-events-none absolute inset-0 opacity-40">
-            <div class="absolute top-[10%] left-[10%] h-[30rem] w-[30rem] rounded-full bg-red-100 blur-3xl"></div>
-            <div class="absolute right-[10%] bottom-[10%] h-[30rem] w-[30rem] rounded-full bg-amber-100 blur-3xl"></div>
-        </div>
-
-        <div class="relative z-10 mx-auto max-w-[1440px] px-4 text-center sm:px-6 lg:px-8">
-            <h1 class="mb-4 text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl leading-tight">
-                Bài Viết & <span class="text-[#8C1E1E]">Cẩm Nang Biển Số</span>
-            </h1>
-            <p class="mx-auto max-w-2xl text-base leading-relaxed font-normal text-gray-600 sm:text-lg">
-                Khám phá cẩm nang đấu giá, quy luật tính nút biển số và tin tức cập nhật mới nhất từ thị trường đấu giá biển số xe Việt Nam.
-            </p>
-        </div>
-    </section>
+    <!-- Hero Section (Ẩn đi theo yêu cầu) -->
+    <h1 class="sr-only">Bài Viết & Cẩm Nang Biển Số</h1>
 
     <!-- Main Body -->
     <main class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
@@ -83,7 +69,19 @@
             <!-- Tabs -->
             <div class="flex w-full overflow-x-auto gap-2 whitespace-nowrap scrollbar-none pb-1 md:w-auto md:flex-wrap">
                 @foreach($categories as $cat)
-                    <a href="{{ $cat['value'] ? url('/c/' . $cat['value']) : url('/bai-viet') }}{{ $searchQuery ? '?search=' . urlencode($searchQuery) : '' }}"
+                    @php
+                        $tabUrl = '';
+                        if ($searchQuery) {
+                            if ($cat['value']) {
+                                $tabUrl = url('/c/' . $cat['value'] . '/' . \Illuminate\Support\Str::slug($searchQuery));
+                            } else {
+                                $tabUrl = url('/b/' . \Illuminate\Support\Str::slug($searchQuery));
+                            }
+                        } else {
+                            $tabUrl = $cat['value'] ? url('/c/' . $cat['value']) : url('/bai-viet');
+                        }
+                    @endphp
+                    <a href="{{ $tabUrl }}"
                        class="shrink-0 rounded-xl border px-4 py-2 text-xs font-bold transition duration-200 sm:text-sm {{ $activeCategory === $cat['value'] ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
                         {{ $cat['label'] }}
                     </a>

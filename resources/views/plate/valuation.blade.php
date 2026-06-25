@@ -152,15 +152,8 @@
     
     <!-- Giao diện công cụ chính -->
     <main class="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <!-- Tiêu đề trang cho SEO & UX -->
-        <div class="mb-8 border-b border-gray-100 pb-6">
-            <h1 class="text-3xl font-black tracking-tight text-gray-900 sm:text-4xl">
-                Định giá biển số xe trực tuyến
-            </h1>
-            <p class="mt-2 text-sm text-gray-500">
-                Công cụ phân tích, luận giải ý nghĩa và ước lượng giá trị biển số xe ô tô & xe máy thông minh.
-            </p>
-        </div>
+        <!-- Tiêu đề trang cho SEO & UX (Ẩn đi theo yêu cầu) -->
+        <h1 class="sr-only">Định giá biển số xe trực tuyến</h1>
 
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
             
