@@ -218,13 +218,13 @@
 @section('content')
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
     <form id="filter-form" method="GET" @submit.prevent="submitForm()" x-data="{
-        search: '{{ $search }}',
-        color: '{{ $color }}',
-        province: '{{ $province }}',
-        tab: '{{ $activeTab }}',
-        vehicle: '{{ $activeVehicle }}',
-        startDate: '{{ $startDate }}',
-        endDate: '{{ $endDate }}',
+        search: {{ json_encode($search) }},
+        color: {{ json_encode($color) }},
+        province: {{ json_encode($province) }},
+        tab: {{ json_encode($activeTab) }},
+        vehicle: {{ json_encode($activeVehicle) }},
+        startDate: {{ json_encode($startDate) }},
+        endDate: {{ json_encode($endDate) }},
         kinds: {{ json_encode(array_map('strval', $selectedKindIds)) }},
         birthYears: {{ json_encode($selectedBirthYears) }},
         avoidNumbers: {{ json_encode($selectedAvoidNumbers) }},
@@ -350,7 +350,7 @@
                 <button
                     type="button"
                     @click="changeVehicle('car')"
-                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
+                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm {{ $activeVehicle === 'car' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}"
                     :class="vehicle === 'car' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
                 >
                     Biển số xe ô tô
@@ -358,7 +358,7 @@
                 <button
                     type="button"
                     @click="changeVehicle('motorcycle')"
-                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
+                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm {{ $activeVehicle === 'motorcycle' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}"
                     :class="vehicle === 'motorcycle' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
                 >
                     Biển số xe máy, mô tô
@@ -370,7 +370,7 @@
                 <button
                     type="button"
                     @click="tab = 'announce'; submitForm();"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
+                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition {{ $activeTab === 'announce' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800' }}"
                     :class="tab === 'announce' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
                 >
                     Biển số mới công bố
@@ -378,7 +378,7 @@
                 <button
                     type="button"
                     @click="tab = 'official'; submitForm();"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
+                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition {{ $activeTab === 'official' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800' }}"
                     :class="tab === 'official' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
                 >
                     Biển số chính thức
@@ -386,7 +386,7 @@
                 <button
                     type="button"
                     @click="tab = 'result'; submitForm();"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
+                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition {{ $activeTab === 'result' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800' }}"
                     :class="tab === 'result' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
                 >
                     Kết quả đã công bố
