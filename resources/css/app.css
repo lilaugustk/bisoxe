@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Alpine.js: ẩn các element có x-cloak trước khi Alpine khởi tạo */
+[x-cloak] { display: none !important; }
+
 html {
     scroll-behavior: smooth;
     scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears/disappears */
