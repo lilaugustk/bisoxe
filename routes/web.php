@@ -75,3 +75,54 @@ Route::get('/sitemap.xml', function () {
 
     return response($xml, 200, ['Content-Type' => 'application/xml']);
 });
+
+Route::get('/debug-server-queue', function () {
+    $status = [];
+
+    // 1. Check Gemini Config
+    $key = config('services.gemini.key');
+    $status['gemini_config'] = [
+        'key_set' => !empty($key),
+        'key_length' => strlen($key),
+        'model' => config('services.gemini.model'),
+    ];
+
+    // 2. Test Gemini Connection
+    try {
+        $response = Illuminate\Support\Facades\Http::withoutVerifying()
+            ->timeout(10)
+            ->post('https://generativelanguage.googleapis.com/v1beta/models/' . ($status['gemini_config']['model'] ?? 'gemini-2.5-flash') . ':generateContent?key=' . $key, [
+                'contents' => [['parts' => [['text' => 'Ping']]]],
+            ]);
+        $status['gemini_test_api'] = [
+            'status' => $response->status(),
+            'body_snippet' => substr($response->body(), 0, 500),
+        ];
+    } catch (\Exception $e) {
+        $status['gemini_test_api'] = [
+            'error' => $e->getMessage(),
+        ];
+    }
+
+    // 3. Check Queue Jobs
+    try {
+        $status['jobs_count'] = Illuminate\Support\Facades\DB::table('jobs')->count();
+        $status['failed_jobs_count'] = Illuminate\Support\Facades\DB::table('failed_jobs')->count();
+        $status['latest_failed_jobs'] = Illuminate\Support\Facades\DB::table('failed_jobs')
+            ->orderBy('id', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($job) {
+                return [
+                    'id' => $job->id,
+                    'queue' => $job->queue,
+                    'failed_at' => $job->failed_at,
+                    'exception' => substr($job->exception, 0, 1000),
+                ];
+            });
+    } catch (\Exception $e) {
+        $status['queue_db_error'] = $e->getMessage();
+    }
+
+    return response()->json($status);
+});
