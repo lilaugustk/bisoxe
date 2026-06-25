@@ -125,7 +125,7 @@ Nhiệm vụ của bạn là trả về một đối tượng JSON chứa chính
    - Luận giải ý nghĩa các con số theo quan niệm dân gian truyền thống (như các cặp số lộc phát 68/86, thần tài 39/79, ông địa 38/78 hoặc các số cần tránh theo dân gian như 49, 53, 4, 7).
    - Đánh giá giá trị thực tế, độ độc lạ và cơ hội đầu tư của biển số này trên thị trường xe.
    - Đánh giá chấm điểm biển số: Đưa ra nhận định chấm điểm cụ thể cho biển số này trên thang điểm 10 (Ví dụ: Chấm điểm: 8.5/10 hoặc 9.0/10) kèm theo tóm tắt ngắn gọn các ưu điểm/nhược điểm chính của biển số để người đọc dễ theo dõi.
-5. 'video_script': Kịch bản video ngắn (TikTok/Reels/Shorts) dài khoảng 30-45 giây để giới thiệu về biển số này, bao gồm: Lời thoại thuyết minh (Voiceover) tiếng Việt và gợi ý hình ảnh/video minh họa tương ứng.
+5. 'video_script': Kịch bản video ngắn (TikTok/Reels/Shorts) dài khoảng 30-45 giây để giới thiệu về biển số này, bao gồm: Lời thoại thuyết minh (Voiceover) tiếng Việt và gợi ý hình ảnh/video minh họa tương ứng. Viết dưới dạng văn bản thuần (plain text), không dùng định dạng JSON hay cấu trúc mảng lồng nhau.
 
 {$internalLinksPrompt}
 
@@ -468,6 +468,18 @@ Yêu cầu quan trọng khác:
             $url = "{$this->baseUrl}/{$model}:generateContent?key={$this->apiKey}";
 
             try {
+                $generationConfig = [
+                    'responseMimeType' => 'application/json',
+                    'responseSchema' => $schema,
+                    'maxOutputTokens' => 8192,
+                ];
+
+                if (str_contains($model, '2.5-flash')) {
+                    $generationConfig['thinkingConfig'] = [
+                        'thinkingBudget' => 0,
+                    ];
+                }
+
                 $response = Http::timeout(120)
                     ->withoutVerifying()
                     ->withHeaders(['Content-Type' => 'application/json'])
@@ -477,17 +489,25 @@ Yêu cầu quan trọng khác:
                                 'parts' => [['text' => $prompt]],
                             ],
                         ],
-                        'generationConfig' => [
-                            'responseMimeType' => 'application/json',
-                            'responseSchema' => $schema,
-                            'maxOutputTokens' => 8192,
-                        ],
+                        'generationConfig' => $generationConfig,
                     ]);
 
+                // Nếu gặp lỗi có thể retry (quá tải, server lỗi, rate limit), thử model tiếp theo
+                if (in_array($response->status(), [429, 500, 503])) {
+                    Log::warning("Gemini model [{$model}] returned {$response->status()}, trying next fallback model...", [
+                        'body' => substr($response->body(), 0, 300),
+                    ]);
+                    $lastException = new \Exception("Gemini model [{$model}] returned HTTP {$response->status()}");
+                    continue; // Thử model tiếp theo
+                }
+
+                // Lỗi khác (401, 400...) — không cần thử fallback
                 if ($response->failed()) {
-                    Log::warning("Gemini model [{$model}] request failed with status {$response->status()}: " . substr($response->body(), 0, 300));
-                    $lastException = new \Exception("Gemini model [{$model}] returned status code {$response->status()}");
-                    continue; // Try next model
+                    Log::error("Gemini API request failed with model [{$model}]", [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                    throw new \Exception("Gemini API [{$model}] returned status code {$response->status()}");
                 }
 
                 $result = $response->json();
@@ -513,9 +533,10 @@ Yêu cầu quan trọng khác:
                 return $decoded;
 
             } catch (\Exception $e) {
-                Log::warning("Gemini model [{$model}] encountered an exception: " . $e->getMessage());
-                $lastException = $e;
-                continue; // Try next model
+                // Nếu exception không phải do 503/429/500 (đã handle ở trên), re-throw ngay
+                if ($lastException === null || $e !== $lastException) {
+                    throw $e;
+                }
             }
         }
 

@@ -474,19 +474,46 @@ class LicensePlateController extends Controller
             return redirect()->route('valuation.index')->with('error', 'Biển số tự định giá không có trang chi tiết.');
         }
 
-        // Nếu chưa có bài viết, kích hoạt sinh bài viết bất đồng bộ ngầm bằng AI!
+        // Nếu chưa có bài viết, kích hoạt sinh bài viết đồng bộ ngay trong request này!
         try {
-            $lockKey = "generating_article_{$plate->id}";
-            if (!Cache::has($lockKey)) {
-                Cache::put($lockKey, true, 300); // Khóa trong 5 phút để tránh dispatch trùng lặp
-                GenerateSeoArticleJob::dispatch($plate);
+            GenerateSeoArticleJob::dispatchSync($plate);
+
+            // Lấy lại bài viết vừa được tạo
+            $article = SeoArticle::where('plate_id', $plate->id)
+                ->with(['licensePlate.province', 'licensePlate.kinds'])
+                ->first();
+
+            if ($article) {
+                // Chuyển hướng 301 nếu slug yêu cầu khác với slug bài viết chuẩn
+                if ($slug !== $article->slug) {
+                    return redirect()->to('/bien-so-' . $article->slug, 301);
+                }
+
+                return view('plate.detail', [
+                    'article' => [
+                        'title' => $article->title,
+                        'meta_title' => $article->meta_title,
+                        'meta_description' => $article->meta_description,
+                        'content' => $article->content,
+                        'video_script' => $article->video_script,
+                        'slug' => $article->slug,
+                        'generation_model' => $article->generation_model,
+                        'generated_at' => $article->generated_at ? $article->generated_at->toISOString() : null,
+                        'image_url' => $article->image_path ? asset($article->image_path) : null,
+                    ],
+                    'plate' => $this->transformPlate($plate),
+                    'is_pending' => false,
+                    'price_prediction' => $prediction,
+                    'price_trend' => $trend,
+                    'plate_score' => $score,
+                    'related_plates' => $relatedPlates,
+                ]);
             }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Kích hoạt sinh bài viết ngầm thất bại cho biển {$plate->full_number}: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error("Sinh bài viết đồng bộ thất bại cho biển {$plate->full_number}: " . $e->getMessage());
         }
 
-
-        // Trường hợp lỗi hoặc thất bại, hiển thị trang rỗng/chờ
+        // Trường hợp lỗi hoặc thất bại, hiển thị trang rỗng/chờ làm phương án dự phòng
         return view('plate.detail', [
             'article' => [
                 'title' => "Giải mã ý nghĩa biển số {$plate->display_number}",
