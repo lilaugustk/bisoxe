@@ -185,14 +185,14 @@
                         </li>
                         <li>
                             <Link
-                                href="/bien-so-xe-o-to"
+                                href="/danh-sach-bien-so-xe-o-to"
                                 class="transition-colors duration-200 hover:text-[#F5B800]"
                                 >Biển số xe ô tô</Link
                             >
                         </li>
                         <li>
                             <Link
-                                href="/bien-so-xe-may"
+                                href="/danh-sach-bien-so-xe-may"
                                 class="transition-colors duration-200 hover:text-[#F5B800]"
                                 >Biển số xe máy, mô tô</Link
                             >
@@ -280,13 +280,13 @@
                         >
                         <span>•</span>
                         <Link
-                            href="/bien-so-xe-o-to"
+                            href="/danh-sach-bien-so-xe-o-to"
                             class="transition-colors hover:text-gray-200"
                             >Biển số ô tô</Link
                         >
                         <span>•</span>
                         <Link
-                            href="/bien-so-xe-may"
+                            href="/danh-sach-bien-so-xe-may"
                             class="transition-colors hover:text-gray-200"
                             >Biển số xe máy</Link
                         >

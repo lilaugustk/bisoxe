@@ -81,15 +81,7 @@ const selectedAvoidNumbers = ref<string[]>(
     props.filters.avoid_numbers ? props.filters.avoid_numbers.split(',') : [],
 );
 
-const selectedLimit = ref(
-    props.filters.limit ? Number(props.filters.limit) : 20,
-);
-const isLimitDropdownOpen = ref(false);
-const limitOptions = [10, 20, 50, 100];
-const selectLimit = (val: number) => {
-    selectedLimit.value = val;
-    isLimitDropdownOpen.value = false;
-};
+const selectedLimit = ref(50);
 
 const kindsOpen = ref(true);
 const birthYearsOpen = ref(true);
@@ -155,7 +147,7 @@ const clearAllFilters = () => {
     endDate.value = '';
     selectedBirthYears.value = [];
     selectedAvoidNumbers.value = [];
-    selectedLimit.value = 20;
+    selectedLimit.value = 50;
     reload();
 };
 
@@ -164,18 +156,46 @@ const currentPath = computed(() => page.url.split('?')[0]);
 const isHomePath = computed(() => currentPath.value === '/');
 
 const pageTitle = computed(() => {
-    if (isHomePath.value) {
-        return 'Tra cứu biển số xe toàn quốc & Kết quả Đấu giá - BISOXE.COM';
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Đấu giá biển số xe máy ${provName} | Biển số xe máy đẹp - BISOXE.COM`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Đấu giá biển số ô tô ${provName} | Biển số oto đẹp - BISOXE.COM`;
+        }
+
+        return `Danh sách biển số xe đấu giá ${provName} | Biển số đẹp - BISOXE.COM`;
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Tra cứu biển số xe máy, mô tô toàn quốc & Kết quả Đấu giá - BISOXE.COM';
+        return 'Đấu giá biển số xe máy | Biển số xe máy đẹp toàn quốc - BISOXE.COM';
     }
 
-    return 'Tra cứu biển số xe ô tô toàn quốc & Kết quả Đấu giá - BISOXE.COM';
+    if (activeVehicle.value === 'car') {
+        return 'Đấu giá biển số ô tô | Biển số oto đẹp toàn quốc - BISOXE.COM';
+    }
+
+    return 'Tra cứu biển số xe toàn quốc & Kết quả Đấu giá - BISOXE.COM';
 });
 
 const pageDescription = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Đấu giá biển số xe máy ${provName} mới nhất hôm nay. Cập nhật danh sách biển số xe máy đẹp ${provName}, phân tích ý nghĩa phong thủy và định giá xe máy tự động chính xác.`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Đấu giá biển số ô tô ${provName} mới nhất hôm nay. Cập nhật danh sách biển số oto đẹp ${provName}, phân tích ý nghĩa phong thủy và định giá xe ô tô tự động chính xác.`;
+        }
+
+        return `Cập nhật danh sách biển số xe đấu giá ${provName} mới nhất. Tra cứu biển số đẹp ${provName}, đấu giá biển số xe máy ${provName}, đấu giá biển số ô tô ${provName} và biển số oto đẹp ${provName}.`;
+    }
+
     if (isHomePath.value) {
         return 'Xem ý nghĩa biển số xe ô tô, xe máy chính xác nhất. Cập nhật danh sách biển số xe đẹp và kết quả đấu giá toàn quốc mới nhất hôm nay.';
     }
@@ -188,18 +208,46 @@ const pageDescription = computed(() => {
 });
 
 const heroH1Html = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Đấu Giá <span class="text-[#8C1E1E]">Biển Số Xe Máy ${provName}</span>`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Đấu Giá <span class="text-[#8C1E1E]">Biển Số Ô Tô ${provName}</span>`;
+        }
+
+        return `Danh Sách <span class="text-[#8C1E1E]">Biển Số Xe Đấu Giá ${provName}</span>`;
+    }
+
     if (isHomePath.value) {
         return 'Tra Cứu & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Toàn Quốc</span>';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Tra Cứu & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Máy & Mô Tô</span>';
+        return 'Đấu Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Máy & Mô Tô</span>';
     }
 
-    return 'Tra Cứu & Định Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô</span>';
+    return 'Đấu Giá <br /> <span class="text-[#8C1E1E]">Biển Số Xe Ô Tô</span>';
 });
 
 const heroDescription = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Phân tích ý nghĩa phong thủy và tra cứu biển số xe máy đẹp ${provName}. Định giá và cập nhật kết quả đấu giá biển số xe máy tự động.`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Phân tích ý nghĩa phong thủy và tra cứu biển số oto đẹp ${provName}. Định giá và cập nhật kết quả đấu giá biển số ô tô tự động.`;
+        }
+
+        return `Tra cứu biển số đẹp ${provName}, đấu giá biển số xe máy ${provName}, đấu giá biển số ô tô ${provName} và biển số oto đẹp ${provName} chính xác.`;
+    }
+
     if (isHomePath.value) {
         return 'Phân tích ý nghĩa con số, luận giải thế số và định giá biển số xe ô tô, xe máy tự động.';
     }
@@ -211,16 +259,44 @@ const heroDescription = computed(() => {
     return 'Phân tích ý nghĩa con số, luận giải thế số và định giá biển số xe ô tô tự động.';
 });
 
+const selectedProvinceNameCleaned = computed(() => {
+    if (!selectedProvince.value) {
+        return '';
+    }
+
+    const prov = props.provinces.find(p => String(p.code) === String(selectedProvince.value));
+
+    if (!prov) {
+        return '';
+    }
+
+    return prov.name.replace(/^(Thành phố|Tỉnh)\s+/i, '');
+});
+
 const tableTitle = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+    
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Đấu giá biển số xe máy ${provName}`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Đấu giá biển số ô tô ${provName}`;
+        }
+
+        return `Danh sách biển số xe đấu giá ${provName}`;
+    }
+
     if (isHomePath.value) {
-        return 'Tra cứu danh sách biển số xe';
+        return 'Danh sách biển số xe đấu giá';
     }
 
     if (activeVehicle.value === 'motorcycle') {
-        return 'Tra cứu danh sách biển số xe máy';
+        return 'Đấu giá biển số xe máy';
     }
 
-    return 'Tra cứu danh sách biển số xe ô tô';
+    return 'Đấu giá biển số ô tô';
 });
 
 const tableDescription = computed(() => {
@@ -233,6 +309,132 @@ const tableDescription = computed(() => {
     }
 
     return 'Lọc nhanh hoặc nhập số xe ô tô cần tra ý nghĩa biển số';
+});
+
+const seoHeading = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Tìm hiểu biển số xe máy đẹp ${provName} & Ý nghĩa phong thủy`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Tìm hiểu biển số oto đẹp ${provName} & Ý nghĩa phong thủy`;
+        }
+
+        return `Tra cứu biển số đẹp ${provName} & Ý nghĩa các con số`;
+    }
+
+    return 'Ý nghĩa của các con số trong biển số xe';
+});
+
+const seoSubheading = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Luận giải chi tiết cách chọn biển số xe máy đẹp ${provName} hợp phong thủy`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Luận giải chi tiết cách chọn biển số oto đẹp ${provName} hợp phong thủy`;
+        }
+
+        return `Kinh nghiệm chọn biển số đẹp ${provName} theo quan niệm dân gian`;
+    }
+
+    return 'Theo quan niệm dân gian phương Đông và cách luận số đẹp xấu';
+});
+
+const seoParagraph = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Khi quan tâm đến đấu giá biển số xe máy ${provName} hoặc tìm kiếm biển số xe máy đẹp ${provName}, việc hiểu rõ ý nghĩa của từng con số là vô cùng quan trọng. Hãy cùng chúng tôi giải mã chi tiết các con số từ 0 đến 9 và các thế số đẹp thịnh hành:`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Khi quan tâm đến đấu giá biển số ô tô ${provName} hoặc tìm kiếm biển số oto đẹp ${provName}, việc hiểu rõ ý nghĩa của từng con số là vô cùng quan trọng. Hãy cùng chúng tôi giải mã chi tiết các con số từ 0 đến 9 và các thế số đẹp thịnh hành:`;
+        }
+
+        return `Nếu bạn đang tìm kiếm cơ hội sở hữu biển số đẹp ${provName}, tham gia đấu giá biển số xe máy ${provName} hay đấu giá biển số ô tô ${provName}, việc hiểu rõ ý nghĩa phong thủy sẽ giúp bạn lựa chọn chính xác. Dưới đây là ý nghĩa các con số để chọn biển số oto đẹp ${provName} và biển số xe máy đẹp ${provName}:`;
+    }
+
+    return 'Mỗi con số từ 0 đến 9 xuất hiện trên biển số xe ô tô hay xe máy đều sở hữu một năng lượng riêng biệt, ảnh hưởng gián tiếp tới vận khí của chủ sở hữu trên các cung đường. Hãy cùng chúng tôi giải mã sơ bộ ý nghĩa của từng con số:';
+});
+
+const faq1Question = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Thế nào là một biển số xe máy đẹp ${provName}?`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Thế nào là một biển số oto đẹp ${provName}?`;
+        }
+
+        return `Thế nào là một biển số đẹp ${provName}?`;
+    }
+
+    return 'Thế nào là một biển số xe đẹp?';
+});
+
+const faq1Answer = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Một biển số xe máy đẹp ${provName} theo quan niệm dân gian thường là biển số dễ nhớ, độc đáo hoặc chứa những cặp số mang ý nghĩa may mắn, phát lộc như Phát tài (86), Song hỷ (22), Lộc phát (68/86), Thần tài (79). Ngoài ra, các biển số xe máy đẹp ${provName} có thế số sảnh tiến, tứ quý, ngũ quý cũng được định giá rất cao trong danh sách đấu giá biển số xe máy ${provName}.`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Một biển số oto đẹp ${provName} theo quan niệm dân gian thường là biển số dễ nhớ, độc đáo hoặc chứa những cặp số mang ý nghĩa may mắn, phát lộc như Phát tài (86), Song hỷ (22), Lộc phát (68/86), Thần tài (79). Ngoài ra, các biển số oto đẹp ${provName} có thế số sảnh tiến, tứ quý, ngũ quý cũng được săn đón nhiều khi tham gia đấu giá biển số ô tô ${provName}.`;
+        }
+
+        return `Một biển số đẹp ${provName} là biển số có sự kết hợp hài hòa của các con số mang lại may mắn, dễ nhớ và hợp phong thủy. Dù là biển số oto đẹp ${provName} hay biển số xe máy đẹp ${provName}, những thế số như sảnh tiến, tứ quý, ngũ quý luôn được người dân săn đón nhiều trong danh sách biển số xe đấu giá ${provName}.`;
+    }
+
+    return 'Một biển số xe đẹp theo quan niệm dân gian thường là những biển số có các con số sắp xếp dễ nhớ, độc đáo hoặc chứa những cặp số mang ý nghĩa may mắn, phát đạt như Phát tài (86), Song hỷ (22), Lộc phát (68/86), Thần tài (79). Ngoài ra, tổng số nút cao (9 hoặc 10 nút) cũng là một yếu tố đánh giá biển số xe đẹp.';
+});
+
+const faq2Question = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Làm sao để tham gia đấu giá biển số xe máy ${provName}?`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Làm sao để tham gia đấu giá biển số ô tô ${provName}?`;
+        }
+
+        return `Làm sao để theo dõi danh sách biển số xe đấu giá ${provName}?`;
+    }
+
+    return 'Mô hình giải mã ý nghĩa biển số tự động dựa trên yếu tố nào?';
+});
+
+const faq2Answer = computed(() => {
+    const provName = selectedProvinceNameCleaned.value;
+
+    if (provName) {
+        if (activeVehicle.value === 'motorcycle') {
+            return `Để tham gia đấu giá biển số xe máy ${provName}, bạn có thể truy cập danh sách biển số xe đấu giá ${provName} trên trang web của chúng tôi, chọn biển số xe máy đẹp ${provName} mong muốn để xem chi tiết thời gian đấu giá và liên kết trực tiếp tới trang đấu giá chính thức để đăng ký hồ sơ nộp tiền cọc theo quy định.`;
+        }
+
+        if (activeVehicle.value === 'car') {
+            return `Để tham gia đấu giá biển số ô tô ${provName}, bạn có thể truy cập danh sách biển số xe đấu giá ${provName} trên trang web của chúng tôi, chọn biển số oto đẹp ${provName} mong muốn để xem chi tiết thời gian đấu giá và liên kết trực tiếp tới trang đấu giá chính thức để đăng ký hồ sơ nộp tiền cọc theo quy định.`;
+        }
+
+        return `Để theo dõi danh sách biển số xe đấu giá ${provName}, bạn chỉ cần chọn bộ lọc tỉnh thành là ${provName} trên hệ thống của chúng tôi. Hệ thống sẽ hiển thị toàn bộ biển số đang công bố đấu giá, giúp bạn dễ dàng tìm kiếm biển số đẹp ${provName}, biển số oto đẹp ${provName} hoặc biển số xe máy đẹp ${provName} đi kèm dự báo định giá và luận giải ý nghĩa chi tiết.`;
+    }
+
+    return 'Hệ thống của chúng tôi tự động phân tích biển số xe dựa trên các yếu tố cốt lõi: Thứ nhất là ý nghĩa của các con số theo quan niệm dân gian; Thứ hai là các thế số đẹp như sảnh tiến, tứ quý, ngũ quý, lặp đôi, số gánh; Thứ ba là độ dễ nhớ, cân đối và mức độ được ưa chuộng của biển số trên thị trường.';
 });
 
 // Định dạng tiền tệ VND
@@ -291,35 +493,56 @@ const uniqueKinds = computed(() =>
 // Dữ liệu đã được lọc và phân trang từ phía server
 const filteredPlates = computed(() => props.plates.data);
 
+// Chuyển đổi tên tỉnh sang slug không dấu tiếng Việt
+const toSlug = (str: string) => {
+    return str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // xóa dấu tiếng Việt
+        .replace(/[đĐ]/g, 'd')
+        .replace(/([^0-9a-z-\s])/g, '') // xóa ký tự đặc biệt
+        .replace(/(\s+)/g, '-') // thay khoảng trắng bằng gạch nối
+        .replace(/-+/g, '-') // xóa nhiều gạch nối liên tiếp
+        .replace(/^-+|-+$/g, ''); // xóa gạch nối ở đầu/cuối
+};
+
 // Hàm reload lại trang qua Inertia với các bộ lọc
 const reload = () => {
     let targetPath = currentPath.value;
 
-    // Nếu chuyển tab loại xe, đổi sang URL tương ứng
-    if (
-        activeVehicle.value === 'car' &&
-        currentPath.value === '/bien-so-xe-may'
-    ) {
-        targetPath = '/bien-so-xe-o-to';
-    } else if (
-        activeVehicle.value === 'motorcycle' &&
-        (currentPath.value === '/' || currentPath.value === '/bien-so-xe-o-to')
-    ) {
-        targetPath = '/bien-so-xe-may';
+    // Tìm thông tin tỉnh đang được chọn
+    const selectedProv = props.provinces.find(p => String(p.code) === String(selectedProvince.value));
+    
+    if (selectedProv) {
+        // Loại bỏ tiền tố "Thành phố" hoặc "Tỉnh" trước khi tạo slug
+        const cleanName = selectedProv.name.replace(/^(Thành phố|Tỉnh)\s+/i, '');
+        const slug = toSlug(cleanName);
+        targetPath = `/danh-sach-bien-so-xe-${slug}`;
+    } else {
+        // Nếu không chọn tỉnh, quay về URL mặc định
+        if (activeVehicle.value === 'motorcycle') {
+            targetPath = '/bien-so-xe-may';
+        } else if (currentPath.value === '/' || currentPath.value.startsWith('/danh-sach-bien-so-xe-')) {
+            targetPath = '/danh-sach-bien-so-xe-o-to';
+        }
     }
 
     const params: Record<string, any> = {
         search: searchQuery.value,
         color: selectedColor.value,
-        province: selectedProvince.value,
         kind: selectedKind.value.join(','),
-        tab: activeTab.value,
+        tab: activeTab.value === 'announce' ? undefined : activeTab.value,
+        vehicle: activeVehicle.value === 'car' ? undefined : activeVehicle.value,
         start_date: startDate.value,
         end_date: endDate.value,
         birth_years: selectedBirthYears.value.join(','),
         avoid_numbers: selectedAvoidNumbers.value.join(','),
-        limit: selectedLimit.value,
     };
+
+    // Nếu không chọn tỉnh, không cần truyền vehicle lên query parameters vì đã phân biệt bằng path
+    if (!selectedProv) {
+        delete params.vehicle;
+    }
 
     // Lọc bỏ các tham số rỗng, null hoặc undefined
     const cleanParams = Object.fromEntries(
@@ -1032,72 +1255,9 @@ onUnmounted(() => {
                             v-if="props.plates.total > 0"
                             class="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-4 select-none sm:px-6"
                         >
-                            <!-- Left side: Custom Limit dropdown selector -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-[#8C1E1E]"
-                                    >Xem</span
-                                >
-                                <div class="relative inline-block text-left">
-                                    <!-- Trigger Button -->
-                                    <button
-                                        type="button"
-                                        @click="
-                                            isLimitDropdownOpen =
-                                                !isLimitDropdownOpen
-                                        "
-                                        class="inline-flex min-w-[70px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-gray-200 bg-white py-1.5 pr-2.5 pl-3.5 text-sm font-bold text-[#8C1E1E] transition-colors duration-150 hover:border-gray-300 focus:border-gray-300 focus:outline-none"
-                                    >
-                                        <span>{{ selectedLimit }}</span>
-                                        <svg
-                                            class="h-3 w-3 text-gray-400 transition-transform duration-200"
-                                            :class="
-                                                isLimitDropdownOpen
-                                                    ? 'rotate-180'
-                                                    : ''
-                                            "
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            stroke-width="2.5"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </button>
-
-                                    <!-- Click Outside Overlay -->
-                                    <div
-                                        v-if="isLimitDropdownOpen"
-                                        class="fixed inset-0 z-10"
-                                        @click="isLimitDropdownOpen = false"
-                                    ></div>
-
-                                    <!-- Dropdown Menu Options -->
-                                    <div
-                                        v-if="isLimitDropdownOpen"
-                                        class="ring-opacity-5 absolute bottom-full left-0 z-20 mb-1 w-full overflow-hidden rounded-lg border border-gray-100 bg-white shadow-lg ring-1 ring-black focus:outline-none"
-                                    >
-                                        <div class="py-1">
-                                            <button
-                                                v-for="opt in limitOptions"
-                                                :key="opt"
-                                                type="button"
-                                                @click="selectLimit(opt)"
-                                                class="w-full px-4 py-2 text-center text-sm font-bold transition-colors duration-150"
-                                                :class="
-                                                    selectedLimit === opt
-                                                        ? 'bg-[#8C1E1E] text-white'
-                                                        : 'text-[#8C1E1E] hover:bg-red-50'
-                                                "
-                                            >
-                                                {{ opt }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Left side: Total counts -->
+                            <div class="text-sm font-medium text-gray-500">
+                                Tìm thấy <span class="font-bold text-[#8C1E1E]">{{ props.plates.total }}</span> biển số
                             </div>
 
                             <!-- Right side: Page navigation numbers without border grids -->
@@ -1350,10 +1510,10 @@ onUnmounted(() => {
                     <h2
                         class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900"
                     >
-                        Ý nghĩa của các con số trong biển số xe
+                        {{ seoHeading }}
                     </h2>
                     <p class="mt-2 text-gray-500">
-                        Theo quan niệm dân gian phương Đông và cách luận số đẹp xấu
+                        {{ seoSubheading }}
                     </p>
                 </header>
 
@@ -1361,11 +1521,7 @@ onUnmounted(() => {
                     class="prose prose-red max-w-none space-y-6 text-sm leading-relaxed text-gray-600 sm:text-base"
                 >
                     <p>
-                        Mỗi con số từ 0 đến 9 xuất hiện trên biển số xe ô tô hay
-                        xe máy đều sở hữu một năng lượng riêng biệt, ảnh hưởng
-                        gián tiếp tới vận khí của chủ sở hữu trên các cung
-                        đường. Hãy cùng chúng tôi giải mã sơ bộ ý nghĩa của từng
-                        con số:
+                        {{ seoParagraph }}
                     </p>
 
                     <div
@@ -1494,7 +1650,7 @@ onUnmounted(() => {
                         <summary
                             class="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-gray-900 sm:text-base"
                         >
-                            <span>Thế nào là một biển số xe đẹp?</span>
+                            <span>{{ faq1Question }}</span>
                             <span
                                 class="text-gray-400 transition group-open:rotate-180"
                                 >▼</span
@@ -1503,7 +1659,7 @@ onUnmounted(() => {
                         <p
                             class="mt-3 text-xs leading-relaxed text-gray-600 sm:text-sm"
                         >
-                            Một biển số xe đẹp theo quan niệm dân gian thường là những biển số có các con số sắp xếp dễ nhớ, độc đáo hoặc chứa những cặp số mang ý nghĩa may mắn, phát đạt như Phát tài (86), Song hỷ (22), Lộc phát (68/86), Thần tài (79). Ngoài ra, tổng số nút cao (9 hoặc 10 nút) cũng là một yếu tố đánh giá biển số xe đẹp.
+                            {{ faq1Answer }}
                         </p>
                     </details>
 
@@ -1514,10 +1670,7 @@ onUnmounted(() => {
                         <summary
                             class="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-gray-900 sm:text-base"
                         >
-                            <span
-                                >Mô hình giải mã ý nghĩa biển số tự động dựa
-                                trên yếu tố nào?</span
-                            >
+                            <span>{{ faq2Question }}</span>
                             <span
                                 class="text-gray-400 transition group-open:rotate-180"
                                 >▼</span
@@ -1526,7 +1679,7 @@ onUnmounted(() => {
                         <p
                             class="mt-3 text-xs leading-relaxed text-gray-600 sm:text-sm"
                         >
-                            Hệ thống của chúng tôi tự động phân tích biển số xe dựa trên các yếu tố cốt lõi: Thứ nhất là ý nghĩa của các con số theo quan niệm dân gian; Thứ hai là các thế số đẹp như sảnh tiến, tứ quý, ngũ quý, lặp đôi, số gánh; Thứ ba là độ dễ nhớ, cân đối và mức độ được ưa chuộng của biển số trên thị trường.
+                            {{ faq2Answer }}
                         </p>
                     </details>
                 </div>

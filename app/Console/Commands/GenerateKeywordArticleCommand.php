@@ -215,9 +215,10 @@ class GenerateKeywordArticleCommand extends Command
 
                 // Đảm bảo tỉnh liên kết tồn tại trong database (nếu chưa có thì tạo mới)
                 if (!empty($item['province_code']) && !empty($item['province_name'])) {
+                    $prefix = in_array($item['province_name'], ['Hà Nội', 'Hồ Chí Minh', 'Hải Phòng', 'Đà Nẵng', 'Cần Thơ']) ? 'Thành phố ' : 'Tỉnh ';
                     Province::updateOrCreate(
                         ['code' => $item['province_code']],
-                        ['name' => 'Tỉnh ' . $item['province_name']]
+                        ['name' => $prefix . $item['province_name']]
                     );
                 }
 

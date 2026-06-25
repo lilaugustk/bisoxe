@@ -226,7 +226,7 @@ const formatDate = (dateStr: string | null) => {
                 >
                     <!-- Thumbnail with animation -->
                     <Link
-                        :href="`/bai-viet/${post.slug}`"
+                        :href="`/b/${post.slug}`"
                         class="block aspect-[16/9] overflow-hidden"
                     >
                         <div v-if="post.image_path">
@@ -280,7 +280,7 @@ const formatDate = (dateStr: string | null) => {
                                 }}</span>
                             </div>
 
-                            <Link :href="`/bai-viet/${post.slug}`">
+                            <Link :href="`/b/${post.slug}`">
                                 <h2
                                     class="mb-2 line-clamp-2 text-base font-extrabold text-gray-900 transition duration-150 group-hover:text-[#8C1E1E]"
                                 >
@@ -300,7 +300,7 @@ const formatDate = (dateStr: string | null) => {
                             class="mt-auto flex items-center justify-between border-t border-gray-100 pt-3.5"
                         >
                             <Link
-                                :href="`/bai-viet/${post.slug}`"
+                                :href="`/b/${post.slug}`"
                                 class="text-xs font-bold text-[#8C1E1E] hover:underline"
                             >
                                 Đọc bài viết 

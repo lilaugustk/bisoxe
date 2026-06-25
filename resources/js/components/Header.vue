@@ -18,7 +18,7 @@ const closeMobileMenu = () => {
 
 // Unified active navigation checking logic
 const isCarActive = computed(() => {
-    if (currentPath.value === '/bien-so-xe-o-to') {
+    if (currentPath.value === '/danh-sach-bien-so-xe-o-to') {
 return true;
 }
 
@@ -32,7 +32,7 @@ return true;
 });
 
 const isMotorcycleActive = computed(() => {
-    if (currentPath.value === '/bien-so-xe-may') {
+    if (currentPath.value === '/danh-sach-bien-so-xe-may') {
 return true;
 }
 
@@ -46,7 +46,7 @@ return true;
 });
 
 const isPostActive = computed(() => {
-    return currentPath.value.startsWith('/bai-viet');
+    return currentPath.value.startsWith('/bai-viet') || currentPath.value.startsWith('/b/');
 });
 
 const isValuationActive = computed(() => {
@@ -141,7 +141,7 @@ const isValuationActive = computed(() => {
                         Trang chủ
                     </Link>
                     <Link
-                        href="/bien-so-xe-o-to"
+                        href="/danh-sach-bien-so-xe-o-to"
                         :class="
                             isCarActive
                                 ? 'text-[#8C1E1E]'
@@ -151,7 +151,7 @@ const isValuationActive = computed(() => {
                         Biển số xe ô tô
                     </Link>
                     <Link
-                        href="/bien-so-xe-may"
+                        href="/danh-sach-bien-so-xe-may"
                         :class="
                             isMotorcycleActive
                                 ? 'text-[#8C1E1E]'
@@ -268,7 +268,7 @@ const isValuationActive = computed(() => {
                         Trang chủ
                     </Link>
                     <Link
-                        href="/bien-so-xe-o-to"
+                        href="/danh-sach-bien-so-xe-o-to"
                         class="py-3 transition hover:text-[#8C1E1E]"
                         :class="{ 'text-[#8C1E1E]': isCarActive }"
                         @click="closeMobileMenu"

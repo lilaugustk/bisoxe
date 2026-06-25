@@ -38,6 +38,35 @@ class LicensePlateController extends Controller
     }
 
     /**
+     * Hiển thị danh sách biển số xe lọc theo tỉnh thành qua Pretty URL.
+     */
+    public function provinceIndex(Request $request, string $provinceSlug): Response|\Illuminate\Http\RedirectResponse
+    {
+        // Lấy tất cả các tỉnh thành và tìm tỉnh thành có slug khớp với $provinceSlug
+        $province = Province::all()->first(function ($p) use ($provinceSlug) {
+            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
+            return \Illuminate\Support\Str::slug($cleanName) === $provinceSlug;
+        });
+
+        if (!$province) {
+            abort(404, 'Tỉnh thành không tồn tại.');
+        }
+
+        // Nếu URL vẫn chứa province dạng query string, redirect 301 về URL sạch
+        if ($request->has('province')) {
+            $query = $request->query();
+            unset($query['province']);
+            $queryString = count($query) > 0 ? '?' . http_build_query($query) : '';
+            return redirect()->to('/danh-sach-bien-so-xe-' . $provinceSlug . $queryString, 301);
+        }
+
+        // Merge mã tỉnh vào request input
+        $request->merge(['province' => $province->code]);
+
+        return $this->index($request);
+    }
+
+    /**
      * Hiển thị danh sách biển số xe trên trang chủ.
      */
     public function index(Request $request): Response
@@ -147,9 +176,9 @@ class LicensePlateController extends Controller
             $query->orderBy('min_kind_priority', 'asc');
         }
 
-        $limit = (int) $request->input('limit', 20);
+        $limit = (int) $request->input('limit', 50);
         if (! in_array($limit, [10, 20, 50, 100])) {
-            $limit = 20;
+            $limit = 50;
         }
 
         $page = (int) $request->input('page', 1);
@@ -177,6 +206,11 @@ class LicensePlateController extends Controller
 
         $items = $query->forPage($page, $limit)->get();
 
+        $paginatorQuery = $request->query();
+        if ($request->route('province_slug')) {
+            unset($paginatorQuery['province']);
+        }
+
         $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
             $items,
             $total,
@@ -184,7 +218,7 @@ class LicensePlateController extends Controller
             $page,
             [
                 'path' => $request->url(),
-                'query' => $request->query(),
+                'query' => $paginatorQuery,
             ]
         );
 

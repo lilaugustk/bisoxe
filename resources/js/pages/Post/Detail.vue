@@ -79,7 +79,7 @@ const schemaStructuredData = computed(() => {
         },
         mainEntityOfPage: {
             '@type': 'WebPage',
-            '@id': `https://bisoxe.com/bai-viet/${props.post.slug}`,
+            '@id': `https://bisoxe.com/b/${props.post.slug}`,
         },
     };
 });
@@ -200,7 +200,7 @@ const formatDate = (dateStr: string | null) => {
             name="description"
             :content="post.meta_description || post.summary || ''"
         />
-        <link rel="canonical" :href="'https://bisoxe.com/bai-viet/' + post.slug" />
+        <link rel="canonical" :href="'https://bisoxe.com/b/' + post.slug" />
         <meta
             property="og:title"
             :content="post.meta_title || post.title || ''"
@@ -210,7 +210,7 @@ const formatDate = (dateStr: string | null) => {
             :content="post.meta_description || post.summary || ''"
         />
         <meta property="og:type" content="article" />
-        <meta property="og:url" :content="'https://bisoxe.com/bai-viet/' + post.slug" />
+        <meta property="og:url" :content="'https://bisoxe.com/b/' + post.slug" />
         <meta
             v-if="post.image_path"
             property="og:image"
@@ -420,7 +420,7 @@ const formatDate = (dateStr: string | null) => {
                                 class="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition duration-200 hover:shadow"
                             >
                                 <Link
-                                    :href="`/bai-viet/${rel.slug}`"
+                                    :href="`/b/${rel.slug}`"
                                     class="block aspect-[16/9] overflow-hidden"
                                 >
                                     <img
@@ -449,7 +449,7 @@ const formatDate = (dateStr: string | null) => {
                                 <div
                                     class="flex flex-1 flex-col justify-between p-4"
                                 >
-                                    <Link :href="`/bai-viet/${rel.slug}`">
+                                    <Link :href="`/b/${rel.slug}`">
                                         <h4
                                             class="mb-2 line-clamp-2 text-sm font-bold text-gray-900 transition hover:text-[#8C1E1E]"
                                         >

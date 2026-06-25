@@ -6,8 +6,9 @@ use App\Http\Controllers\ValuationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LicensePlateController::class, 'index'])->name('home');
-Route::get('/bien-so-xe-o-to', [LicensePlateController::class, 'carIndex'])->name('plates.car');
-Route::get('/bien-so-xe-may', [LicensePlateController::class, 'motorcycleIndex'])->name('plates.motorcycle');
+Route::get('/danh-sach-bien-so-xe-o-to', [LicensePlateController::class, 'carIndex'])->name('plates.car');
+Route::get('/danh-sach-bien-so-xe-may', [LicensePlateController::class, 'motorcycleIndex'])->name('plates.motorcycle');
+Route::get('/danh-sach-bien-so-xe-{province_slug}', [LicensePlateController::class, 'provinceIndex'])->name('plates.province');
 Route::get('/bien-so-{slug}', [LicensePlateController::class, 'show'])->name('plate.detail');
 Route::get('/bien-so/{slug}', function (string $slug) {
     $newSlug = $slug;
@@ -24,7 +25,10 @@ Route::get('/api/bien-so/{full_number}/dinh-gia', [LicensePlateController::class
 
 Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
 Route::get('/c/{category}', [PostController::class, 'index'])->name('posts.category');
-Route::get('/bai-viet/{slug}', [PostController::class, 'show'])->name('posts.show');
+Route::get('/b/{slug}', [PostController::class, 'show'])->name('posts.show');
+Route::get('/bai-viet/{slug}', function (string $slug) {
+    return redirect()->to('/b/' . $slug, 301);
+});
 
 Route::get('/sitemap.xml', function () {
     $plates = \App\Models\LicensePlate::has('seoArticle')->with('seoArticle')->get();
@@ -35,8 +39,8 @@ Route::get('/sitemap.xml', function () {
     
     // Trang tĩnh
     $xml .= '<url><loc>https://bisoxe.com</loc><priority>1.0</priority><changefreq>daily</changefreq></url>';
-    $xml .= '<url><loc>https://bisoxe.com/bien-so-xe-o-to</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
-    $xml .= '<url><loc>https://bisoxe.com/bien-so-xe-may</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/danh-sach-bien-so-xe-o-to</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/danh-sach-bien-so-xe-may</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/dinh-gia</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/bai-viet</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/y-nghia-bien-so</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
@@ -56,7 +60,7 @@ Route::get('/sitemap.xml', function () {
     // Trang chi tiết bài viết/tin tức
     foreach ($posts as $post) {
         $xml .= '<url>';
-        $xml .= '<loc>https://bisoxe.com/bai-viet/' . $post->slug . '</loc>';
+        $xml .= '<loc>https://bisoxe.com/b/' . $post->slug . '</loc>';
         $xml .= '<lastmod>' . ($post->updated_at ?? $post->created_at)->toAtomString() . '</lastmod>';
         $xml .= '<priority>0.6</priority>';
         $xml .= '<changefreq>weekly</changefreq>';
