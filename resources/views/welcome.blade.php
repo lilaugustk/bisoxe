@@ -1110,7 +1110,7 @@
                                             <td class="px-6 py-4 text-center text-sm text-gray-500 hidden sm:table-cell">
                                                 {{ $index + 1 }}
                                             </td>
-                                            <td class="px-6 py-4 text-sm text-gray-700 font-bold whitespace-nowrap">
+                                            <td class="px-6 py-4 text-sm font-bold whitespace-nowrap {{ $plate['color'] === 1 ? 'text-amber-600' : 'text-gray-700' }}">
                                                 {{ $plate['display_number'] }}
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap font-bold text-[#8C1E1E]">

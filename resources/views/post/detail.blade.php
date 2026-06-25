@@ -317,10 +317,10 @@
                                         @endphp
                                         <div class="group relative flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/30 p-2.5 transition hover:bg-gray-50">
                                             <a href="{{ url('/bien-so-' . $plateSlug) }}"
-                                               class="relative flex aspect-[520/110] w-[110px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102 {{ $plate->color === 1 ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}"
+                                               class="relative flex aspect-[520/110] w-[110px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102 {{ in_array($plate->color, [1, 3]) ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}"
                                             >
                                                 <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                                                <div class="flex h-full w-full items-center justify-center rounded border px-1 {{ $plate->color === 1 ? 'border-black/30' : 'border-gray-200' }}">
+                                                <div class="flex h-full w-full items-center justify-center rounded border px-1 {{ in_array($plate->color, [1, 3]) ? 'border-black/30' : 'border-gray-200' }}">
                                                     <span class="font-sans font-black tracking-tight text-[10px]">{{ $plate->display_number }}</span>
                                                 </div>
                                             </a>
@@ -345,10 +345,10 @@
                                         @endphp
                                         <div class="group relative flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/30 p-2.5 transition hover:bg-gray-50">
                                             <a href="{{ url('/bien-so-' . $plateSlug) }}"
-                                               class="relative flex aspect-[520/110] w-[110px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102 {{ $plate->color === 1 ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}"
+                                               class="relative flex aspect-[520/110] w-[110px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102 {{ in_array($plate->color, [1, 3]) ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}"
                                             >
                                                 <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                                                <div class="flex h-full w-full items-center justify-center rounded border px-1 {{ $plate->color === 1 ? 'border-black/30' : 'border-gray-200' }}">
+                                                <div class="flex h-full w-full items-center justify-center rounded border px-1 {{ in_array($plate->color, [1, 3]) ? 'border-black/30' : 'border-gray-200' }}">
                                                     <span class="font-sans font-black tracking-tight text-[10px]">{{ $plate->display_number }}</span>
                                                 </div>
                                             </a>

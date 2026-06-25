@@ -194,7 +194,12 @@ class LicensePlateController extends Controller
 
         // 4. Lọc theo màu sắc
         if ($color !== null && $color !== '') {
-            $query->where('color', (int) $color);
+            $colorVal = (int) $color;
+            if ($colorVal === 1) {
+                $query->where('color', 3);
+            } else {
+                $query->where('color', $colorVal);
+            }
         }
 
         // 5. Lọc theo tỉnh thành
@@ -636,7 +641,7 @@ class LicensePlateController extends Controller
             'local_symbol' => $plate->local_symbol,
             'serial_letter' => $plate->serial_letter,
             'serial_number' => $plate->serial_number,
-            'color' => $plate->color,
+            'color' => $plate->color === 3 ? 1 : $plate->color,
             'status' => $plate->status,
             'starting_price' => $plate->starting_price,
             'winning_price' => $plate->winning_price,
