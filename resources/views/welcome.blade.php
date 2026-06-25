@@ -475,6 +475,7 @@
                             </button>
                             <div 
                                 x-show="open" 
+                                x-cloak
                                 @click.outside="open = false" 
                                 x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="transform opacity-0 scale-95"
@@ -540,6 +541,7 @@
                             </button>
                             <div 
                                 x-show="open" 
+                                x-cloak
                                 @click.outside="open = false; searchQuery = '';" 
                                 x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="transform opacity-0 scale-95"
@@ -706,6 +708,7 @@
                                 </button>
                                 <div 
                                     x-show="open" 
+                                    x-cloak
                                     @click.outside="open = false"
                                     x-transition:enter="transition ease-out duration-100"
                                     x-transition:enter-start="transform opacity-0 scale-95"
@@ -884,6 +887,7 @@
                                 </button>
                                 <div 
                                     x-show="open" 
+                                    x-cloak
                                     @click.outside="open = false"
                                     x-transition:enter="transition ease-out duration-100"
                                     x-transition:enter-start="transform opacity-0 scale-95"
@@ -1523,6 +1527,7 @@
                             </button>
                             <div 
                                 x-show="open" 
+                                x-cloak
                                 @click.outside="open = false" 
                                 x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="transform opacity-0 scale-95"
@@ -1587,6 +1592,7 @@
                             </button>
                             <div 
                                 x-show="open" 
+                                x-cloak
                                 @click.outside="open = false; searchQuery = '';" 
                                 x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="transform opacity-0 scale-95"
@@ -1750,6 +1756,7 @@
                                 </button>
                                 <div 
                                     x-show="open" 
+                                    x-cloak
                                     @click.outside="open = false"
                                     x-transition:enter="transition ease-out duration-100"
                                     x-transition:enter-start="transform opacity-0 scale-95"
@@ -1925,6 +1932,7 @@
                                 </button>
                                 <div 
                                     x-show="open" 
+                                    x-cloak
                                     @click.outside="open = false"
                                     x-transition:enter="transition ease-out duration-100"
                                     x-transition:enter-start="transform opacity-0 scale-95"
