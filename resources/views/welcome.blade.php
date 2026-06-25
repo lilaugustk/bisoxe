@@ -216,8 +216,9 @@
 @endsection
 
 @section('content')
+<div id="global-loading-bar" class="fixed top-0 left-0 right-0 h-1 bg-[#8C1E1E] z-50 transition-all duration-300 opacity-0 pointer-events-none shadow-[0_1px_10px_#8c1e1e]" style="width: 0%;"></div>
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
-    <form id="filter-form" method="GET" @submit.prevent="submitForm()" x-data="{
+    <form id="filter-form" method="GET" @submit.prevent="submitForm(true)" x-data="{
         search: {{ json_encode($search) }},
         color: {{ json_encode($color) }},
         province: {{ json_encode($province) }},
@@ -280,15 +281,20 @@
             return base + (queryStr ? '?' + queryStr : '');
         },
         changeProvince() {
-            this.submitForm();
+            this.submitForm(false);
         },
         changeVehicle(val) {
             this.vehicle = val;
-            this.submitForm();
+            this.submitForm(true);
         },
-        submitForm() {
+        submitForm(shouldScroll = false) {
             this.$nextTick(() => {
-                window.location.href = this.buildUrl();
+                let url = this.buildUrl();
+                if (window.loadLicensePlatePage) {
+                    window.loadLicensePlatePage(url, shouldScroll);
+                } else {
+                    window.location.href = url;
+                }
             });
         },
         clearAllFilters() {
@@ -300,7 +306,7 @@
             this.kinds = [];
             this.birthYears = [];
             this.avoidNumbers = [];
-            this.submitForm();
+            this.submitForm(true);
         }
     }">
 
@@ -350,7 +356,7 @@
                 <button
                     type="button"
                     @click="changeVehicle('car')"
-                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm {{ $activeVehicle === 'car' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}"
+                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
                     :class="vehicle === 'car' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
                 >
                     Biển số xe ô tô
@@ -358,7 +364,7 @@
                 <button
                     type="button"
                     @click="changeVehicle('motorcycle')"
-                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm {{ $activeVehicle === 'motorcycle' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}"
+                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
                     :class="vehicle === 'motorcycle' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
                 >
                     Biển số xe máy, mô tô
@@ -369,24 +375,24 @@
             <div class="mb-4 flex gap-2 border-b border-gray-200 overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
                 <button
                     type="button"
-                    @click="tab = 'announce'; submitForm();"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition {{ $activeTab === 'announce' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800' }}"
+                    @click="tab = 'announce'; submitForm(true);"
+                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
                     :class="tab === 'announce' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
                 >
                     Biển số mới công bố
                 </button>
                 <button
                     type="button"
-                    @click="tab = 'official'; submitForm();"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition {{ $activeTab === 'official' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800' }}"
+                    @click="tab = 'official'; submitForm(true);"
+                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
                     :class="tab === 'official' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
                 >
                     Biển số chính thức
                 </button>
                 <button
                     type="button"
-                    @click="tab = 'result'; submitForm();"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition {{ $activeTab === 'result' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800' }}"
+                    @click="tab = 'result'; submitForm(true);"
+                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
                     :class="tab === 'result' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
                 >
                     Kết quả đã công bố
@@ -2104,7 +2110,7 @@
                     </button>
                     <button 
                         type="button"
-                        @click="isMobileFiltersOpen = false; submitForm();"
+                        @click="isMobileFiltersOpen = false; submitForm(true);"
                         class="flex-1 rounded-full bg-[#8C1E1E] py-3 text-xs font-bold text-white shadow-md transition hover:bg-[#701818] text-center cursor-pointer"
                     >
                         Áp dụng
@@ -2114,6 +2120,138 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Đối tượng điều khiển thanh tiến trình (Loading progress bar)
+    const LoadingBar = {
+        el: null,
+        timer: null,
+        start() {
+            if (!this.el) {
+                this.el = document.getElementById('global-loading-bar');
+            }
+            if (!this.el) return;
+            
+            clearTimeout(this.timer);
+            this.el.style.transition = 'width 0.4s ease-out, opacity 0.2s ease-in-out';
+            this.el.style.opacity = '1';
+            this.el.style.width = '0%';
+            
+            // Force reflow
+            this.el.offsetWidth;
+            
+            this.el.style.width = '70%';
+            
+            this.timer = setTimeout(() => {
+                this.el.style.transition = 'width 10s ease-out';
+                this.el.style.width = '90%';
+            }, 400);
+        },
+        stop() {
+            if (!this.el) return;
+            clearTimeout(this.timer);
+            this.el.style.transition = 'width 0.2s ease-out, opacity 0.2s ease-in-out';
+            this.el.style.width = '100%';
+            this.timer = setTimeout(() => {
+                this.el.style.opacity = '0';
+                setTimeout(() => {
+                    this.el.style.width = '0%';
+                }, 200);
+            }, 200);
+        }
+    };
+
+    // 2. Hàm tải trang qua AJAX
+    window.loadLicensePlatePage = async function(url, shouldScroll = false, pushState = true) {
+        LoadingBar.start();
+        
+
+        
+        try {
+            let response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!response.ok) throw new Error('Yêu cầu không thành công');
+            
+            let html = await response.text();
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, 'text/html');
+            
+            // Cập nhật title của trang
+            let newTitle = doc.querySelector('title');
+            if (newTitle) {
+                document.title = newTitle.textContent;
+            }
+            
+            // Thay thế thẻ form cũ bằng form mới
+            let newForm = doc.getElementById('filter-form');
+            let currentForm = document.getElementById('filter-form');
+            if (newForm && currentForm) {
+                currentForm.replaceWith(newForm);
+                
+                // Khởi tạo lại Alpine trên form mới
+                if (window.Alpine) {
+                    window.Alpine.initTree(newForm);
+                }
+            }
+            
+            // Cập nhật URL trên thanh địa chỉ nếu cần
+            if (pushState) {
+                history.pushState({ url: url }, '', url);
+            }
+            
+            // Cuộn trang mượt mà lên vùng bảng hiển thị nếu được yêu cầu
+            if (shouldScroll) {
+                const target = document.getElementById('table-section');
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi tải trang AJAX:', error);
+            // Fallback tải lại trang truyền thống nếu có lỗi xảy ra
+            if (pushState) {
+                window.location.href = url;
+            } else {
+                window.location.reload();
+            }
+        } finally {
+            LoadingBar.stop();
+
+        }
+    };
+
+    // 3. Xử lý nút Back/Forward của trình duyệt
+    window.addEventListener('popstate', (e) => {
+        let url = window.location.href;
+        window.loadLicensePlatePage(url, false, false);
+    });
+
+    // 4. Đánh chặn (Intercept) click vào phân trang
+    document.addEventListener('click', (e) => {
+        let anchor = e.target.closest('a');
+        if (!anchor || !anchor.href) return;
+        
+        try {
+            let urlObj = new URL(anchor.href, window.location.origin);
+            if (urlObj.origin !== window.location.origin) return;
+            
+            let path = urlObj.pathname;
+            // Chỉ bắt các link nằm bên trong phần phân trang hoặc bảng
+            let isListingPath = (path === '/' || path.startsWith('/danh-sach-bien-so-xe-'));
+            if (isListingPath && urlObj.searchParams.has('page')) {
+                e.preventDefault();
+                window.loadLicensePlatePage(anchor.href, true, true);
+            }
+        } catch (err) {
+            // bỏ qua lỗi URL không hợp lệ
+        }
+    });
+});
+</script>
 @endsection
 
 @section('style')
