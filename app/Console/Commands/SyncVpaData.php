@@ -15,7 +15,7 @@ class SyncVpaData extends Command
 {
     /**
      * Execute the console command.
-     */
+     */ 
     public function handle(): int
     {
         // Tối ưu hóa bộ nhớ cho quá trình xử lý dữ liệu lớn
@@ -259,6 +259,13 @@ class SyncVpaData extends Command
         // Trạng thái dự kiến trong database tương ứng với cấu hình cào hiện tại
         $expectedDbStatus = $config['is_result'] ? 'completed' : ($config['status'] === 'published' ? 'announced' : $config['status']);
 
+        $statusWeights = [
+            'announced' => 1,
+            'waiting_auction' => 2,
+            'completed' => 3,
+        ];
+        $expectedWeight = $statusWeights[$expectedDbStatus] ?? 0;
+
         $allUpToDate = true;
         foreach ($records as $item) {
             $localSymbol = $item['localSymbol'] ?? '';
@@ -276,36 +283,34 @@ class SyncVpaData extends Command
                 break;
             }
 
-            // Nếu trạng thái trong DB khác trạng thái mong muốn của luồng này (ví dụ: đang waiting_auction mà API đã có kết quả) -> Chưa cập nhật
-            if ($existing->status !== $expectedDbStatus) {
+            $existingWeight = $statusWeights[$existing->status] ?? 0;
+            // Nếu trạng thái trong DB cũ hơn trạng thái mong muốn từ API -> Chưa cập nhật
+            if ($existingWeight < $expectedWeight) {
                 $allUpToDate = false;
                 break;
             }
 
             $apiUpdatedAtStr = $item['updatedAt'] ?? null;
-            if (! $apiUpdatedAtStr) {
-                $allUpToDate = false;
-                break;
-            }
+            if ($apiUpdatedAtStr) {
+                try {
+                    // So sánh updatedAt của API (đưa về UTC) với crawled_at lưu trong database
+                    $apiUpdatedAt = Carbon::parse($apiUpdatedAtStr)->setTimezone('UTC');
+                    $dbCrawledAt = $existing->crawled_at ? Carbon::parse($existing->crawled_at) : null;
 
-            try {
-                // So sánh updatedAt của API (đưa về UTC) với crawled_at lưu trong database
-                $apiUpdatedAt = Carbon::parse($apiUpdatedAtStr)->setTimezone('UTC');
-                $dbCrawledAt = $existing->crawled_at ? Carbon::parse($existing->crawled_at) : null;
+                    if (! $dbCrawledAt) {
+                        $allUpToDate = false;
+                        break;
+                    }
 
-                if (! $dbCrawledAt) {
+                    // Nếu thời gian cập nhật trên API mới hơn trong cơ sở dữ liệu -> Cần cào tiếp
+                    if ($apiUpdatedAt->getTimestamp() > $dbCrawledAt->getTimestamp()) {
+                        $allUpToDate = false;
+                        break;
+                    }
+                } catch (\Exception $e) {
                     $allUpToDate = false;
                     break;
                 }
-
-                // Nếu thời gian cập nhật trên API mới hơn trong cơ sở dữ liệu -> Cần cào tiếp
-                if ($apiUpdatedAt->getTimestamp() > $dbCrawledAt->getTimestamp()) {
-                    $allUpToDate = false;
-                    break;
-                }
-            } catch (\Exception $e) {
-                $allUpToDate = false;
-                break;
             }
         }
 
