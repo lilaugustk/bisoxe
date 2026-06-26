@@ -32,23 +32,17 @@ Route::get('/api/bien-so/{id}/generate-article', [LicensePlateController::class,
 // Programmatic SEO Landing Pages (Phân tích & Bảng xếp hạng)
 Route::get('/top', [AnalysisController::class, 'index'])->name('analysis.index');
 
-// Redirects cho các slug bảng xếp hạng cũ
-Route::get('/top/{old_slug}', function (string $old_slug) {
-    $redirects = [
-        'top-100-bien-so-ha-noi' => 'ha-noi',
-        'top-100-bien-so-tp-hcm' => 'tp-hcm',
-        'top-bien-so-ngu-quy' => 'ngu-quy',
-        'top-bien-so-tu-quy' => 'tu-quy',
-        'top-bien-so-than-tai' => 'than-tai',
-        'top-bien-so-loc-phat' => 'loc-phat',
-    ];
-    if (isset($redirects[$old_slug])) {
-        return redirect()->to('/top/' . $redirects[$old_slug], 301);
+// Redirects từ các slug cũ sang URL trực tiếp mới theo tiêu đề
+Route::get('/top/{slug}', function (string $slug) {
+    $newSlug = (new \App\Http\Controllers\AnalysisController())->getNewSlugFromOld($slug);
+    if ($newSlug) {
+        return redirect()->to('/' . $newSlug, 301);
     }
     abort(404);
-})->where('old_slug', 'top-100-bien-so-ha-noi|top-100-bien-so-tp-hcm|top-bien-so-ngu-quy|top-bien-so-tu-quy|top-bien-so-than-tai|top-bien-so-loc-phat');
+})->where('slug', '[a-z0-9-]+');
 
-Route::get('/top/{slug}', [AnalysisController::class, 'show'])->name('analysis.show')->where('slug', '[a-z0-9-]+');
+Route::get('/{slug}', [AnalysisController::class, 'show'])->name('analysis.show')->where('slug', '^top-[a-z0-9-]+$');
+
 Route::get('/c/phan-tich', function () {
     return redirect()->to('/top', 301);
 });
@@ -87,16 +81,16 @@ Route::get('/sitemap.xml', function () {
     // Các bảng xếp hạng tiêu biểu/đặc biệt
     $baseSlugs = [
         'top-100-bien-so-dat-nhat-viet-nam',
-        '2026',
-        'ngu-quy',
-        'tu-quy',
-        'than-tai',
-        'loc-phat',
-        'bien-duoi-1-ty',
-        'gia-tren-10-ty',
+        'top-bien-so-dat-nhat-nam-2026',
+        'top-bien-so-ngu-quy-dat-nhat-viet-nam',
+        'top-bien-so-tu-quy-dat-nhat-viet-nam',
+        'top-bien-so-than-tai-dat-nhat-viet-nam',
+        'top-bien-so-loc-phat-dat-nhat-viet-nam',
+        'top-bien-so-dep-gia-duoi-1-ty-dong',
+        'top-sieu-bien-so-gia-trung-tren-10-ty-dong',
     ];
     foreach ($baseSlugs as $slug) {
-        $xml .= '<url><loc>https://bisoxe.com/top/' . $slug . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+        $xml .= '<url><loc>https://bisoxe.com/' . $slug . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
     }
 
     // Các tỉnh thành (Sinh động từ DB)
@@ -107,7 +101,7 @@ Route::get('/sitemap.xml', function () {
         })->toArray();
     });
     foreach ($sitemapProvinces as $provSlug) {
-        $xml .= '<url><loc>https://bisoxe.com/top/' . $provSlug . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+        $xml .= '<url><loc>https://bisoxe.com/top-100-bien-so-dep-dat-nhat-' . $provSlug . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
     }
 
     // Các đầu số xe phổ biến (Sinh động từ DB)
@@ -126,7 +120,7 @@ Route::get('/sitemap.xml', function () {
         return array_map('strtolower', $filtered);
     });
     foreach ($sitemapSeriesList as $series) {
-        $xml .= '<url><loc>https://bisoxe.com/top/' . $series . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+        $xml .= '<url><loc>https://bisoxe.com/top-bien-so-dep-dau-so-' . $series . '-dat-nhat</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
     }
 
     // Trang chi tiết biển số đã phân tích

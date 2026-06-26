@@ -53,10 +53,18 @@ class GenerateSeoArticleJob implements ShouldQueue
             $generationModel = config('services.gemini.model', 'gemini-2.5-flash');
             $data = $geminiService->generateForLicensePlate($this->plate);
 
-            // Tạo slug chuẩn SEO cho trang chi tiết biển số
-            // Ví dụ: 30K-999.99 -> bien-so-30k-99999
-            $cleanNumber = str_replace(['-', '.'], '', $this->plate->full_number);
-            $slug = Str::slug($this->plate->local_symbol.$this->plate->serial_letter.'-'.$this->plate->serial_number);
+            // Loại bỏ dấu hai chấm và dấu gạch ngang phân tách nếu AI tự ý sinh ra trong tiêu đề
+            $title = $data['title'];
+            $title = str_replace(':', ' ', $title);
+            $title = preg_replace('/\s+[-\–\—]\s+/', ' ', $title);
+            $title = preg_replace('/\s+/', ' ', $title);
+            $title = trim($title);
+
+            // Tạo slug chuẩn SEO cho trang chi tiết biển số dựa trên tiêu đề bài viết
+            $slug = Str::slug($title);
+            if (empty($slug)) {
+                $slug = Str::slug($this->plate->local_symbol.$this->plate->serial_letter.'-'.$this->plate->serial_number);
+            }
 
             // Đảm bảo slug là duy nhất
             $originalSlug = $slug;
@@ -65,13 +73,6 @@ class GenerateSeoArticleJob implements ShouldQueue
                 $slug = $originalSlug.'-'.$counter;
                 $counter++;
             }
-
-            // Loại bỏ dấu hai chấm và dấu gạch ngang phân tách nếu AI tự ý sinh ra trong tiêu đề
-            $title = $data['title'];
-            $title = str_replace(':', ' ', $title);
-            $title = preg_replace('/\s+[-\–\—]\s+/', ' ', $title);
-            $title = preg_replace('/\s+/', ' ', $title);
-            $title = trim($title);
 
             $article = SeoArticle::create([
                 'plate_id' => $this->plate->id,

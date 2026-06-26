@@ -30,23 +30,85 @@ class AnalysisController extends Controller
     }
 
     /**
+     * Chuyển đổi slug cũ sang slug trực tiếp mới dạng tiêu đề (cho redirect 301).
+     */
+    public function getNewSlugFromOld(string $oldSlug): ?string
+    {
+        // 1. Phân loại biển đẹp (Kinds)
+        $kindsMap = [
+            'ngu-quy' => 'top-bien-so-ngu-quy-dat-nhat-viet-nam',
+            'sanh-tien' => 'top-bien-so-sanh-tien-dat-nhat-viet-nam',
+            'tien' => 'top-bien-so-tien-dat-nhat-viet-nam',
+            'tu-quy' => 'top-bien-so-tu-quy-dat-nhat-viet-nam',
+            'tam-hoa' => 'top-bien-so-tam-hoa-dat-nhat-viet-nam',
+            'than-tai' => 'top-bien-so-than-tai-dat-nhat-viet-nam',
+            'loc-phat' => 'top-bien-so-loc-phat-dat-nhat-viet-nam',
+            'ong-dia' => 'top-bien-so-ong-dia-dat-nhat-viet-nam',
+            'lap-doi' => 'top-bien-so-lap-doi-dat-nhat-viet-nam',
+            'so-ganh' => 'top-bien-so-ganh-dat-nhat-viet-nam',
+            'palindrome' => 'top-bien-so-doi-xung-palindrome-dat-nhat-viet-nam',
+        ];
+        if (isset($kindsMap[$oldSlug])) {
+            return $kindsMap[$oldSlug];
+        }
+
+        // 2. Lọc theo năm
+        if (preg_match('/^(202[3-9]|2030)$/', $oldSlug)) {
+            return "top-bien-so-dat-nhat-nam-{$oldSlug}";
+        }
+
+        // 3. Khoảng giá dưới
+        if (preg_match('/^(?:bien-)?duoi-([0-9]+)-(ty|trieu)$/i', $oldSlug, $matches)) {
+            return "top-bien-so-dep-gia-duoi-{$matches[1]}-{$matches[2]}-dong";
+        }
+
+        // 4. Khoảng giá trên
+        if (preg_match('/^(?:gia-)?tren-([0-9]+)-(ty|trieu)$/i', $oldSlug, $matches)) {
+            return "top-sieu-bien-so-gia-trung-tren-{$matches[1]}-{$matches[2]}-dong";
+        }
+
+        // 5. Các trường hợp tĩnh/đặc biệt
+        if ($oldSlug === 'top-100-bien-so-dat-nhat-viet-nam' || $oldSlug === 'dat-nhat-viet-nam') {
+            return 'top-100-bien-so-dat-nhat-viet-nam';
+        }
+
+        // 6. Lọc theo tỉnh thành cũ
+        $provinces = Province::all();
+        foreach ($provinces as $prov) {
+            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $prov->name);
+            $provSlug = \Illuminate\Support\Str::slug($cleanName);
+            if ($oldSlug === $provSlug) {
+                return "top-100-bien-so-dep-dat-nhat-{$provSlug}";
+            }
+        }
+
+        // 7. Lọc theo đầu số cũ
+        if (preg_match('/^([0-9]{2}[a-z]{1,2})$/i', $oldSlug, $matches)) {
+            $series = strtolower($matches[1]);
+            return "top-bien-so-dep-dau-so-{$series}-dat-nhat";
+        }
+
+        return null;
+    }
+
+    /**
      * Phân tích và sinh cấu hình SEO & Query động dựa trên slug (Programmatic SEO).
      */
     private function resolveDynamicRanking($slug)
     {
         // 1. Phân loại biển số đẹp (Kinds)
         $kindsMap = [
-            'ngu-quy' => [1, 'Ngũ quý', 'Bảng Xếp Hạng Biển Số Ngũ Quý Đắt Nhất Việt Nam (2026)', 'Khám phá danh sách các biển số ngũ quý (111.11 đến 999.99) trúng đấu giá giá cao nhất tại các phiên đấu giá trực tuyến toàn quốc.', 'Top Biển Số Ngũ Quý Đắt Nhất Việt Nam', 'Tổng hợp các siêu phẩm biển số ngũ quý (lặp 5 số) trị giá từ vài tỷ đến hàng chục tỷ đồng. Những con số đại diện cho đẳng cấp tối thượng của giới chơi xe.'],
-            'sanh-tien' => [2, 'Sảnh tiến', 'Top Biển Số Sảnh Tiến Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Danh sách bảng xếp hạng các biển số sảnh tiến (ví dụ: 123.45, 567.89...) có giá trị trúng đấu giá đắt nhất. Cập nhật mới nhất.', 'Top Biển Số Sảnh Tiến Đắt Nhất Việt Nam', 'Biển số sảnh tiến hay số tiến liên tục tượng trưng cho sự thăng tiến, phát triển không ngừng trong công việc và cuộc sống.'],
-            'tien' => [2, 'Sảnh tiến', 'Top Biển Số Tiến Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Danh sách bảng xếp hạng các biển số sảnh tiến có giá trị trúng đấu giá đắt nhất. Cập nhật mới nhất.', 'Top Biển Số Tiến Đắt Nhất Việt Nam', 'Biển số sảnh tiến hay số tiến liên tục tượng trưng cho sự thăng tiến, phát triển không ngừng trong công việc và cuộc sống.'],
-            'tu-quy' => [3, 'Tứ quý', 'Top Biển Số Tứ Quý Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Xem danh sách bảng xếp hạng các biển số tứ quý (ví dụ: 8888, 9999) có giá trị trúng đấu giá cao nhất toàn quốc.', 'Top Biển Số Tứ Quý Đắt Nhất Việt Nam', 'Biển số tứ quý mang ý nghĩa của sự may mắn, phát lộc vững bền, khẳng định địa vị xã hội của chủ sở hữu.'],
-            'tam-hoa' => [4, 'Tam hoa', 'Top Biển Số Tam Hoa Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Bảng xếp hạng các biển số xe tam hoa (lặp 3 số) có giá trúng đấu giá đắt giá nhất. Dữ liệu thực tế trực quan.', 'Top Biển Số Tam Hoa Đắt Nhất Việt Nam', 'Biển số tam hoa là phân khúc biển số đẹp phổ biến và rất được ưa chuộng nhờ sự cân đối, dễ nhớ và mức giá đa dạng.'],
-            'than-tai' => [5, 'Thần tài', 'Top Biển Số Thần Tài Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Thống kê danh sách các biển số xe Thần Tài (39, 79) trúng đấu giá cao nhất toàn quốc. Cập nhật trực tiếp.', 'Top Biển Số Thần Tài Đắt Nhất Việt Nam', 'Cặp số Thần Tài mang ý nghĩa hút tài chiêu lộc, mang đến sự hanh thông và cát tường cho chủ sở hữu.'],
-            'loc-phat' => [6, 'Lộc phát', 'Top Biển Số Lộc Phát Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Danh sách các biển số xe Lộc Phát (68, 86) trúng đấu giá giá trị cao nhất Việt Nam. Cập nhật tự động mới nhất.', 'Top Biển Số Lộc Phát Đắt Nhất Việt Nam', 'Theo quan niệm phong thủy phương Đông, Lộc Phát (68 - 86) là những con số đại diện cho tiền tài thịnh vượng.'],
-            'ong-dia' => [7, 'Ông địa', 'Top Biển Số Ông Địa Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Xem danh sách các biển số Ông Địa (38, 78) trúng đấu giá cao nhất. Dữ liệu cập nhật liên tục.', 'Top Biển Số Ông Địa Đắt Nhất Việt Nam', 'Cặp số Ông Địa (38, 78) mang ý nghĩa được thần đất bảo hộ, đem lại bình an và đất đai phú quý.'],
-            'lap-doi' => [8, 'Lặp đôi', 'Top Biển Số Lặp Đôi Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Bảng xếp hạng các biển số gánh lặp đôi có giá trị trúng đấu giá cao nhất Việt Nam. Cập nhật chi tiết.', 'Top Biển Số Lặp Đôi Đắt Nhất Việt Nam', 'Biển số gánh lặp đôi với các cặp số đối xứng hoàn hảo mang lại sự cân đối nghệ thuật và rất dễ ghi nhớ.'],
-            'so-ganh' => [9, 'Số gánh', 'Top Biển Số Gánh Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Danh sách các biển số xe gánh, đối xứng có mức giá trúng đấu giá cao nhất tại Việt Nam.', 'Top Biển Số Gánh Đắt Nhất Việt Nam', 'Biển số gánh là những con số có cấu trúc đối xứng vững chãi, mang lại sự cân bằng, vững bền cho hành trình của gia chủ.'],
-            'palindrome' => [9, 'Số gánh', 'Top Biển Số Đối Xứng (Palindrome) Đắt Nhất (Cập Nhật 2026)', 'Danh sách các biển số xe gánh, đối xứng (Palindrome) có mức giá trúng đấu giá cao nhất tại Việt Nam.', 'Top Biển Số Đối Xứng (Palindrome) Đắt Nhất', 'Biển số đối xứng hay Palindrome với cấu trúc trước sau như một mang đậm tính cân đối nghệ thuật và độc đáo.']
+            'top-bien-so-ngu-quy-dat-nhat-viet-nam' => [1, 'Ngũ quý', 'Bảng Xếp Hạng Biển Số Ngũ Quý Đắt Nhất Việt Nam (2026)', 'Khám phá danh sách các biển số ngũ quý (111.11 đến 999.99) trúng đấu giá giá cao nhất tại các phiên đấu giá trực tuyến toàn quốc.', 'Top Biển Số Ngũ Quý Đắt Nhất Việt Nam', 'Tổng hợp các siêu phẩm biển số ngũ quý (lặp 5 số) trị giá từ vài tỷ đến hàng chục tỷ đồng. Những con số đại diện cho đẳng cấp tối thượng của giới chơi xe.'],
+            'top-bien-so-sanh-tien-dat-nhat-viet-nam' => [2, 'Sảnh tiến', 'Top Biển Số Sảnh Tiến Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Danh sách bảng xếp hạng các biển số sảnh tiến (ví dụ: 123.45, 567.89...) có giá trị trúng đấu giá đắt nhất. Cập nhật mới nhất.', 'Top Biển Số Sảnh Tiến Đắt Nhất Việt Nam', 'Biển số sảnh tiến hay số tiến liên tục tượng trưng cho sự thăng tiến, phát triển không ngừng trong công việc và cuộc sống.'],
+            'top-bien-so-tien-dat-nhat-viet-nam' => [2, 'Sảnh tiến', 'Top Biển Số Tiến Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Danh sách bảng xếp hạng các biển số sảnh tiến có giá trị trúng đấu giá đắt nhất. Cập nhật mới nhất.', 'Top Biển Số Tiến Đắt Nhất Việt Nam', 'Biển số sảnh tiến hay số tiến liên tục tượng trưng cho sự thăng tiến, phát triển không ngừng trong công việc và cuộc sống.'],
+            'top-bien-so-tu-quy-dat-nhat-viet-nam' => [3, 'Tứ quý', 'Top Biển Số Tứ Quý Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Xem danh sách bảng xếp hạng các biển số tứ quý (ví dụ: 8888, 9999) có giá trị trúng đấu giá cao nhất toàn quốc.', 'Top Biển Số Tứ Quý Đắt Nhất Việt Nam', 'Biển số tứ quý mang ý nghĩa của sự may mắn, phát lộc vững bền, khẳng định địa vị xã hội của chủ sở hữu.'],
+            'top-bien-so-tam-hoa-dat-nhat-viet-nam' => [4, 'Tam hoa', 'Top Biển Số Tam Hoa Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Bảng xếp hạng các biển số xe tam hoa (lặp 3 số) có giá trúng đấu giá đắt giá nhất. Dữ liệu thực tế trực quan.', 'Top Biển Số Tam Hoa Đắt Nhất Việt Nam', 'Biển số tam hoa là phân khúc biển số đẹp phổ biến và rất được ưa chuộng nhờ sự cân đối, dễ nhớ và mức giá đa dạng.'],
+            'top-bien-so-than-tai-dat-nhat-viet-nam' => [5, 'Thần tài', 'Top Biển Số Thần Tài Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Thống kê danh sách các biển số xe Thần Tài (39, 79) trúng đấu giá cao nhất toàn quốc. Cập nhật trực tiếp.', 'Top Biển Số Thần Tài Đắt Nhất Việt Nam', 'Cặp số Thần Tài mang ý nghĩa hút tài chiêu lộc, mang đến sự hanh thông và cát tường cho chủ sở hữu.'],
+            'top-bien-so-loc-phat-dat-nhat-viet-nam' => [6, 'Lộc phát', 'Top Biển Số Lộc Phát Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Danh sách các biển số xe Lộc Phát (68, 86) trúng đấu giá giá trị cao nhất Việt Nam. Cập nhật tự động mới nhất.', 'Top Biển Số Lộc Phát Đắt Nhất Việt Nam', 'Theo quan niệm phong thủy phương Đông, Lộc Phát (68 - 86) là những con số đại diện cho tiền tài thịnh vượng.'],
+            'top-bien-so-ong-dia-dat-nhat-viet-nam' => [7, 'Ông địa', 'Top Biển Số Ông Địa Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Xem danh sách các biển số Ông Địa (38, 78) trúng đấu giá cao nhất. Dữ liệu cập nhật liên tục.', 'Top Biển Số Ông Địa Đắt Nhất Việt Nam', 'Cặp số Ông Địa (38, 78) mang ý nghĩa được thần đất bảo hộ, đem lại bình an và đất đai phú quý.'],
+            'top-bien-so-lap-doi-dat-nhat-viet-nam' => [8, 'Lặp đôi', 'Top Biển Số Lặp Đôi Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Bảng xếp hạng các biển số gánh lặp đôi có giá trị trúng đấu giá cao nhất Việt Nam. Cập nhật chi tiết.', 'Top Biển Số Lặp Đôi Đắt Nhất Việt Nam', 'Biển số gánh lặp đôi với các cặp số đối xứng hoàn hảo mang lại sự cân đối nghệ thuật và rất dễ ghi nhớ.'],
+            'top-bien-so-ganh-dat-nhat-viet-nam' => [9, 'Số gánh', 'Top Biển Số Gánh Đắt Nhất Việt Nam (Cập Nhật 2026)', 'Danh sách các biển số xe gánh, đối xứng có mức giá trúng đấu giá cao nhất tại Việt Nam.', 'Top Biển Số Gánh Đắt Nhất Việt Nam', 'Biển số gánh là những con số có cấu trúc đối xứng vững chãi, mang lại sự cân bằng, vững bền cho hành trình của gia chủ.'],
+            'top-bien-so-doi-xung-palindrome-dat-nhat-viet-nam' => [9, 'Số gánh', 'Top Biển Số Đối Xứng (Palindrome) Đắt Nhất (Cập Nhật 2026)', 'Danh sách các biển số xe gánh, đối xứng (Palindrome) có mức giá trúng đấu giá cao nhất tại Việt Nam.', 'Top Biển Số Đối Xứng (Palindrome) Đắt Nhất', 'Biển số đối xứng hay Palindrome với cấu trúc trước sau như một mang đậm tính cân đối nghệ thuật và độc đáo.']
         ];
 
         if (isset($kindsMap[$slug])) {
@@ -66,28 +128,30 @@ class AnalysisController extends Controller
         }
 
         // 2. Lọc theo Tỉnh thành (Động hoàn toàn)
-        $provinces = Province::all();
-        foreach ($provinces as $prov) {
-            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $prov->name);
-            $provSlug = \Illuminate\Support\Str::slug($cleanName);
-            if ($slug === $provSlug) {
-                return [
-                    'title' => "Top 100 Biển Số Đẹp Đắt Nhất {$cleanName} (Cập Nhật 2026)",
-                    'meta_description' => "Cập nhật bảng xếp hạng 100 biển số đấu giá có giá trị cao nhất tại khu vực {$cleanName}. Xem giá trúng đấu giá và thông tin chi tiết.",
-                    'h1' => "Top 100 Biển Số Đẹp Đắt Nhất {$cleanName}",
-                    'description' => "Danh sách chi tiết 100 biển số xe đẹp trúng đấu giá với mức giá cao nhất tại {$cleanName} (bao gồm cả xe ô tô và xe máy). Toàn bộ dữ liệu được cập nhật tự động trực tiếp từ phiên đấu giá chính thức.",
-                    'query' => function() use ($prov) {
-                        return LicensePlate::where('status', 'completed')
-                            ->where('province_code', $prov->code)
-                            ->orderBy('winning_price', 'desc')
-                            ->limit(100);
-                    }
-                ];
+        if (str_starts_with($slug, 'top-100-bien-so-dep-dat-nhat-')) {
+            $provSlug = substr($slug, 29); // độ dài của 'top-100-bien-so-dep-dat-nhat-'
+            $provinces = Province::all();
+            foreach ($provinces as $prov) {
+                $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $prov->name);
+                if ($provSlug === \Illuminate\Support\Str::slug($cleanName)) {
+                    return [
+                        'title' => "Top 100 Biển Số Đẹp Đắt Nhất {$cleanName} (Cập Nhật 2026)",
+                        'meta_description' => "Cập nhật bảng xếp hạng 100 biển số đấu giá có giá trị cao nhất tại khu vực {$cleanName}. Xem giá trúng đấu giá và thông tin chi tiết.",
+                        'h1' => "Top 100 Biển Số Đẹp Đắt Nhất {$cleanName}",
+                        'description' => "Danh sách chi tiết 100 biển số xe đẹp trúng đấu giá với mức giá cao nhất tại {$cleanName} (bao gồm cả xe ô tô và xe máy). Toàn bộ dữ liệu được cập nhật tự động trực tiếp từ phiên đấu giá chính thức.",
+                        'query' => function() use ($prov) {
+                            return LicensePlate::where('status', 'completed')
+                                ->where('province_code', $prov->code)
+                                ->orderBy('winning_price', 'desc')
+                                ->limit(100);
+                        }
+                    ];
+                }
             }
         }
 
         // 3. Lọc theo Đầu số (Series xe - Động hoàn toàn)
-        if (preg_match('/^([0-9]{2}[a-z]{1,2})$/i', $slug, $matches)) {
+        if (preg_match('/^top-bien-so-dep-dau-so-([0-9]{2}[a-z]{1,2})-dat-nhat$/i', $slug, $matches)) {
             $series = strtoupper($matches[1]);
             return [
                 'title' => "Top Biển Số Đẹp Đầu Số {$series} Đắt Nhất (Cập Nhật 2026)",
@@ -104,8 +168,8 @@ class AnalysisController extends Controller
         }
 
         // 4. Lọc theo Năm (Động hoàn toàn)
-        if (preg_match('/^(202[3-9]|2030)$/', $slug)) {
-            $year = intval($slug);
+        if (preg_match('/^top-bien-so-dat-nhat-nam-(202[3-9]|2030)$/', $slug, $matches)) {
+            $year = intval($matches[1]);
             return [
                 'title' => "Bảng Xếp Hạng Biển Số Đẹp Đắt Nhất Năm {$year}",
                 'meta_description' => "Xem danh sách các biển số xe trúng đấu giá giá trị cao nhất trong năm {$year}. Cập nhật chi tiết kết quả đấu giá tự động.",
@@ -121,7 +185,7 @@ class AnalysisController extends Controller
         }
 
         // 5. Lọc theo Khoảng giá (Động hoàn toàn bằng regex)
-        if (preg_match('/^(?:bien-)?duoi-([0-9]+)-(ty|trieu)$/i', $slug, $matches)) {
+        if (preg_match('/^top-bien-so-dep-gia-duoi-([0-9]+)-(ty|trieu)-dong$/i', $slug, $matches)) {
             $value = intval($matches[1]);
             $unit = strtolower($matches[2]);
             $limitAmount = $unit === 'ty' ? $value * 1000000000 : $value * 1000000;
@@ -142,7 +206,7 @@ class AnalysisController extends Controller
             ];
         }
 
-        if (preg_match('/^(?:gia-)?tren-([0-9]+)-(ty|trieu)$/i', $slug, $matches)) {
+        if (preg_match('/^top-sieu-bien-so-gia-trung-tren-([0-9]+)-(ty|trieu)-dong$/i', $slug, $matches)) {
             $value = intval($matches[1]);
             $unit = strtolower($matches[2]);
             $limitAmount = $unit === 'ty' ? $value * 1000000000 : $value * 1000000;
@@ -177,8 +241,6 @@ class AnalysisController extends Controller
             ];
         }
 
-
-
         return null;
     }
 
@@ -196,45 +258,44 @@ class AnalysisController extends Controller
                 'description' => 'Bảng xếp hạng tổng hợp 100 biển số xe có mức giá đấu giá kỷ lục trên toàn quốc.',
                 'icon' => 'trophy'
             ],
-
             [
-                'slug' => '2026',
+                'slug' => 'top-bien-so-dat-nhat-nam-2026',
                 'name' => 'Top Biển Số Đắt Nhất Năm 2026',
                 'description' => 'Danh sách cập nhật các kỷ lục trúng đấu giá mới nhất diễn ra trong năm 2026.',
                 'icon' => 'calendar'
             ],
             [
-                'slug' => 'ngu-quy',
+                'slug' => 'top-bien-so-ngu-quy-dat-nhat-viet-nam',
                 'name' => 'Top Biển Số Ngũ Quý Đắt Nhất',
                 'description' => 'Thống kê những biển số ngũ quý siêu phẩm trị giá hàng chục tỷ đồng.',
                 'icon' => 'star'
             ],
             [
-                'slug' => 'tu-quy',
+                'slug' => 'top-bien-so-tu-quy-dat-nhat-viet-nam',
                 'name' => 'Top Biển Số Tứ Quý Đắt Nhất',
                 'description' => 'Bảng xếp hạng các biển số tứ quý có giá trị trúng đấu giá kỷ lục.',
                 'icon' => 'diamond'
             ],
             [
-                'slug' => 'than-tai',
+                'slug' => 'top-bien-so-than-tai-dat-nhat-viet-nam',
                 'name' => 'Top Biển Số Thần Tài Đắt Nhất',
                 'description' => 'Danh sách biển số xe Thần Tài (39, 79) mang lại may mắn tài lộc đắt giá nhất.',
                 'icon' => 'dollar'
             ],
             [
-                'slug' => 'loc-phat',
+                'slug' => 'top-bien-so-loc-phat-dat-nhat-viet-nam',
                 'name' => 'Top Biển Số Lộc Phát Đắt Nhất',
                 'description' => 'Bảng xếp hạng biển số Lộc Phát (68, 86) mang ý nghĩa phong thủy hanh thông.',
                 'icon' => 'gift'
             ],
             [
-                'slug' => 'bien-duoi-1-ty',
+                'slug' => 'top-bien-so-dep-gia-duoi-1-ty-dong',
                 'name' => 'Top Biển Đẹp Giá Dưới 1 Tỷ',
                 'description' => 'Danh sách biển đẹp trúng giá dưới 1 tỷ đồng dễ tiếp cận cho người sưu tầm.',
                 'icon' => 'wallet'
             ],
             [
-                'slug' => 'gia-tren-10-ty',
+                'slug' => 'top-sieu-bien-so-gia-trung-tren-10-ty-dong',
                 'name' => 'Top Siêu Biển Giá Trên 10 Tỷ',
                 'description' => 'Tập hợp những siêu tài sản - các biển số trúng đấu giá trị giá trên 10 tỷ đồng.',
                 'icon' => 'shield'
@@ -266,7 +327,7 @@ class AnalysisController extends Controller
                 $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
                 return [
                     'name' => $cleanName,
-                    'slug' => \Illuminate\Support\Str::slug($cleanName),
+                    'slug' => 'top-100-bien-so-dep-dat-nhat-' . \Illuminate\Support\Str::slug($cleanName),
                 ];
             })->sortBy('name')->values()->toArray();
         });
@@ -331,6 +392,67 @@ class AnalysisController extends Controller
             $kindGroups[$kindName]++;
         }
 
-        return view('analysis.show', compact('trustStats', 'config', 'plates', 'slug', 'priceGroups', 'kindGroups'));
+        // Truyền thêm rankings, seriesList, provincesList để dựng Sidebar đồng bộ
+        $rankings = [
+            [
+                'slug' => 'top-100-bien-so-dat-nhat-viet-nam',
+                'name' => 'Top 100 Biển Số Đắt Nhất Việt Nam',
+                'icon' => 'trophy'
+            ],
+            [
+                'slug' => 'top-bien-so-dat-nhat-nam-2026',
+                'name' => 'Top Biển Số Đắt Nhất Năm 2026',
+                'icon' => 'calendar'
+            ],
+            [
+                'slug' => 'top-bien-so-ngu-quy-dat-nhat-viet-nam',
+                'name' => 'Top Biển Số Ngũ Quý Đắt Nhất',
+                'icon' => 'star'
+            ],
+            [
+                'slug' => 'top-bien-so-tu-quy-dat-nhat-viet-nam',
+                'name' => 'Top Biển Số Tứ Quý Đắt Nhất',
+                'icon' => 'diamond'
+            ],
+            [
+                'slug' => 'top-bien-so-than-tai-dat-nhat-viet-nam',
+                'name' => 'Top Biển Số Thần Tài Đắt Nhất',
+                'icon' => 'dollar'
+            ],
+            [
+                'slug' => 'top-bien-so-loc-phat-dat-nhat-viet-nam',
+                'name' => 'Top Biển Số Lộc Phát Đắt Nhất',
+                'icon' => 'gift'
+            ]
+        ];
+
+        $seriesList = Cache::remember('analysis_top_series_v2', 3600, function () {
+            $list = LicensePlate::selectRaw('SUBSTRING(full_number, 1, 3) as series, count(*) as count')
+                ->groupBy('series')
+                ->orderBy('count', 'desc')
+                ->limit(48)
+                ->pluck('series')
+                ->toArray();
+            
+            $filtered = array_filter($list, function($s) {
+                return preg_match('/^[0-9]{2}[a-zA-Z]{1,2}$/', $s);
+            });
+            
+            $filtered = array_map('strtoupper', $filtered);
+            sort($filtered);
+            return $filtered;
+        });
+
+        $provincesList = Cache::remember('analysis_provinces_v2', 3600, function () {
+            return Province::all()->map(function ($p) {
+                $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
+                return [
+                    'name' => $cleanName,
+                    'slug' => 'top-100-bien-so-dep-dat-nhat-' . \Illuminate\Support\Str::slug($cleanName),
+                ];
+            })->sortBy('name')->values()->toArray();
+        });
+
+        return view('analysis.show', compact('trustStats', 'config', 'plates', 'slug', 'priceGroups', 'kindGroups', 'rankings', 'seriesList', 'provincesList'));
     }
 }
