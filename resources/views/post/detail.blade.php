@@ -11,6 +11,8 @@
                 return 'Tin tức & Thị trường';
             case 'dau-gia-bien-so':
                 return 'Đấu giá biển số';
+            case 'chi-so-thi-truong':
+                return 'Chỉ số thị trường';
             case 'bien-so-cac-tinh':
                 return 'Biển số xe các tỉnh';
             case 'bien-so-dep':
@@ -30,6 +32,8 @@
                 return 'bg-gradient-to-br from-[#D97706] to-[#78350F]';
             case 'dau-gia-bien-so':
                 return 'bg-gradient-to-br from-[#0F766E] to-[#115E59]';
+            case 'chi-so-thi-truong':
+                return 'bg-gradient-to-br from-[#0284c7] to-[#0369a1]';
             case 'bien-so-cac-tinh':
                 return 'bg-gradient-to-br from-[#047857] to-[#065F46]';
             case 'bien-so-dep':

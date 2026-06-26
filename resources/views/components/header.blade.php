@@ -22,7 +22,7 @@
         && !$isResultActive;
 
     $isValuationActive = request()->is('dinh-gia*');
-    $isMarketActive = request()->is('c/tin-tuc*');
+    $isMarketActive = request()->is('c/chi-so-thi-truong*');
     $isAnalysisActive = request()->is('c/y-nghia-bien-so*');
     $isNewsActive = request()->is('bai-viet*') || request()->is('b/*') || (request()->is('c/*') && !$isMarketActive && !$isAnalysisActive);
 @endphp
@@ -108,7 +108,7 @@
                 >
                     Tra cứu biển số
                 </a>
-                <a
+                {{-- <a
                     href="/dinh-gia"
                     class="{{ $isValuationActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
@@ -127,23 +127,23 @@
                     Kết quả đấu giá
                 </a>
                 <a
-                    href="/c/tin-tuc"
+                    href="/c/chi-so-thi-truong"
                     class="{{ $isMarketActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
                     Chỉ số thị trường
-                </a>
+                </a> --}}
                 <a
                     href="/c/y-nghia-bien-so"
                     class="{{ $isAnalysisActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
                     Phân tích
                 </a>
-                <a
+                {{-- <a
                     href="/bai-viet"
                     class="{{ $isNewsActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
                     Tin tức
-                </a>
+                </a> --}}
             </nav>
 
             <!-- Hamburger Button Container (Mobile & Tablet) -->
@@ -204,7 +204,7 @@
             >
                 Tra cứu biển số
             </a>
-            <a
+            {{-- <a
                 href="/dinh-gia"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isValuationActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
@@ -226,12 +226,12 @@
                 Kết quả đấu giá
             </a>
             <a
-                href="/c/tin-tuc"
+                href="/c/chi-so-thi-truong"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isMarketActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
                 Chỉ số thị trường
-            </a>
+            </a> --}}
             <a
                 href="/c/y-nghia-bien-so"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isAnalysisActive ? 'text-[#8C1E1E]' : '' }}"
@@ -239,13 +239,13 @@
             >
                 Phân tích
             </a>
-            <a
+            {{-- <a
                 href="/bai-viet"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isNewsActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
                 Tin tức
-            </a>
+            </a> --}}
         </nav>
     </div>
 </header>

@@ -474,6 +474,94 @@ Yêu cầu quan trọng khác:
     }
 
     /**
+     * Sinh bài viết cho các chỉ số thị trường dựa trên bảng số liệu thực tế.
+     *
+     * @return array{title: string, summary: string, meta_title: string, meta_description: string, content: string, image_prompt: string}
+     *
+     * @throws \Exception
+     */
+    public function generateMarketArticle(string $topic, string $tableHtml, array $existingTitles = []): array
+    {
+        if (empty($this->apiKey)) {
+            throw new \Exception('Gemini API key is not configured.');
+        }
+
+        $existingTitlesStr = empty($existingTitles) ? 'Chưa có bài viết nào.' : implode("\n- ", $existingTitles);
+
+        $prompt = "Bạn là một Tổng biên tập chuyên nghiệp, chuyên gia phân tích thị trường biển số xe cộ và chuyên gia tối ưu hóa SEO tại Việt Nam.
+Nhiệm vụ của bạn là viết một bài viết SEO chất lượng cao, phân tích và bình luận sâu sắc về chủ đề: \"{$topic}\".
+
+Dưới đây là bảng số liệu thực tế được lấy trực tiếp từ cơ sở dữ liệu hệ thống:
+{$tableHtml}
+
+Hãy chèn bảng số liệu này vào vị trí phù hợp trong bài viết bằng cách sử dụng chính xác chuỗi giữ chỗ: [[TABLE_DATA]] (Hệ thống sẽ tự động thay thế chuỗi giữ chỗ này bằng bảng số liệu thực tế).
+
+Yêu cầu về nội dung và hình thức:
+1. Độ dài tối thiểu 800 từ (không tính phần bảng số liệu). Sử dụng định dạng HTML phong phú (thẻ h2, h3, p, strong, ul, li). Bắt đầu trực tiếp bằng đoạn mở đầu hoặc thẻ h2, tuyệt đối không dùng thẻ h1 trong nội dung.
+2. Bài viết cần phân tích sâu sắc dữ liệu trong bảng:
+   - Nêu bật các biển số đắt nhất, có mức tăng giá ấn tượng hoặc có ý nghĩa thế số đặc biệt trong danh sách.
+   - Nhận định về xu hướng sưu tầm, giá trị đầu tư và tính thanh khoản của nhóm biển số này trên thị trường Việt Nam.
+   - Giải luận ý nghĩa các con số theo quan niệm dân gian (ví dụ: thế số tiến, ngũ quý, tứ quý, thần tài, lộc phát...) và sự ảnh hưởng của chúng đến giá trị trúng đấu giá.
+3. TUYỆT ĐỐI KHÔNG sử dụng từ khóa 'phong thủy' hoặc các từ liên quan đến 'phong thủy'; thay vào đó, hãy dùng các từ thay thế như 'ý nghĩa con số', 'theo quan niệm dân gian', 'thế số đẹp/xấu', 'phân tích thế số', 'tổng nút'.
+4. TUYỆT ĐỐI CẤM đề cập tên các trang web, đơn vị tổ chức đấu giá bên thứ ba hoặc các thương hiệu khác như 'VPA', 'vpa.com.vn', 'Công ty Đấu giá hợp danh Việt Nam', 'Cục Cảnh sát giao thông' hay bất kỳ tên ứng dụng/website đấu giá nào khác trong toàn bộ bài viết (bao gồm cả tiêu đề, mô tả và nội dung). Hãy sử dụng các cụm từ chung chung như 'trang thông tin đấu giá trực tuyến', 'hệ thống đấu giá biển số xe', 'cơ quan chức năng', 'đơn vị tổ chức'.
+5. Trong nội dung bài viết HTML ('content'), hãy lồng ghép từ 1 đến 2 phần hình ảnh tại các vị trí thích hợp (ví dụ giữa các đoạn lớn hoặc dưới tiêu đề phụ) để bài viết sinh động và chuẩn SEO.
+   Quy tắc sinh prompt ảnh:
+   - TUYỆT ĐỐI CẤM (BAN):
+     + KHÔNG vẽ người nhìn vào/sử dụng các màn hình thiết bị (như điện thoại, laptop, máy tính bảng, máy tính để bàn).
+     + KHÔNG vẽ bàn tay cầm/giơ chìa khóa xe.
+     + KHÔNG vẽ các loại giấy tờ pháp lý, đăng ký xe (cavet xe), đăng kiểm, hay quốc huy Việt Nam.
+   - CẤM TUYỆT ĐỐI việc xuất hiện bất kỳ chữ viết, chữ cái, từ ngữ, số hiệu hay ký tự nào trên ảnh. Luôn bắt buộc phải có các từ khóa phủ định trong prompt tiếng Anh như: 'no text, no words, no letters, no characters, no signs, no banners, no writing, no labels'.
+   - HƯỚNG DẪN ĐA DẠNG HÓA VÀ SÁNG TẠO HÌNH ẢNH:
+     Hãy mô tả bối cảnh ảnh thực tế chụp tại Việt Nam (realistic photo, candid photography, shot on 35mm lens, natural lighting), góc máy độc đáo (wide-angle, low-angle), bối cảnh xe sang, sảnh tòa nhà hiện đại hoặc đường phố Việt Nam.
+     Nếu vẽ xe cộ có biển số, biển số xe bắt buộc phải tuân thủ đúng định dạng thực tế của Việt Nam (ví dụ: '30K-999.99' hoặc '17-B2 555.55').
+   Cấu trúc bắt buộc trong HTML cho ảnh:
+   <figure class='mx-auto my-6 text-center max-w-full'>
+       <img src='generate:[mô tả chi tiết nội dung ảnh bằng tiếng Anh để truyền cho AI vẽ]' alt='[Mô tả ảnh bằng tiếng Việt chuẩn SEO]' />
+       <figcaption class='mt-2 text-sm text-gray-500 italic'>[Mô tả sinh động chú thích/ghi chú của ảnh bằng tiếng Việt chuẩn SEO, liên quan đến nội dung bài viết, tuyệt đối không dùng từ minh họa]</figcaption>
+   </figure>
+6. Trả về một đối tượng JSON chứa chính xác các trường sau:
+   - 'title': Tiêu đề bài viết hấp dẫn, chứa từ khóa chính xác hoặc gần như chính xác (dưới 70 ký tự). Tuyệt đối không sử dụng dấu hai chấm (:) hoặc dấu gạch ngang (-) trong tiêu đề bài viết. Tiêu đề phải tuân thủ đúng quy tắc viết hoa của ngữ pháp tiếng Việt.
+   - 'summary': Tóm tắt ngắn nội dung bài viết (khoảng 150-200 ký tự).
+   - 'meta_title': Tiêu đề meta SEO (dưới 60 ký tự).
+   - 'meta_description': Mô tả meta SEO thu hút click (dưới 160 ký tự).
+   - 'content': Bài viết chi tiết định dạng HTML chứa chuỗi giữ chỗ [[TABLE_DATA]], thẻ <figure> minh họa và liên kết nội bộ tự nhiên.
+   - 'image_prompt': Một prompt tiếng Anh chi tiết để tạo ảnh đại diện (featured image) cho bài viết bằng AI.
+
+Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên. Không thêm bất kỳ văn bản giải thích nào ngoài JSON.";
+
+        $schema = [
+            'type' => 'OBJECT',
+            'properties' => [
+                'title' => ['type' => 'STRING'],
+                'summary' => ['type' => 'STRING'],
+                'meta_title' => ['type' => 'STRING'],
+                'meta_description' => ['type' => 'STRING'],
+                'content' => ['type' => 'STRING'],
+                'image_prompt' => ['type' => 'STRING'],
+            ],
+            'required' => ['title', 'summary', 'meta_title', 'meta_description', 'content', 'image_prompt'],
+        ];
+
+        try {
+            $result = $this->callApi($prompt, $schema);
+
+            return [
+                'title' => $result['title'] ?? '',
+                'summary' => $result['summary'] ?? '',
+                'meta_title' => $result['meta_title'] ?? '',
+                'meta_description' => $result['meta_description'] ?? '',
+                'content' => $result['content'] ?? '',
+                'image_prompt' => $result['image_prompt'] ?? '',
+            ];
+        } catch (\Exception $e) {
+            Log::error("Error generating market article for topic: {$topic}", [
+                'message' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
      * Gọi Gemini API với fallback tự động qua các model dự phòng.
      * Khi model chính trả về 503/429/500, tự động thử model tiếp theo trong danh sách.
      *
