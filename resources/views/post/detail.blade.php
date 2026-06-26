@@ -12,6 +12,7 @@
             case 'dau-gia-bien-so':
                 return 'Đấu giá biển số';
             case 'chi-so-thi-truong':
+            case 'phan-tich':
                 return 'Phân tích';
             case 'bien-so-cac-tinh':
                 return 'Biển số xe các tỉnh';
@@ -33,6 +34,7 @@
             case 'dau-gia-bien-so':
                 return 'bg-gradient-to-br from-[#0F766E] to-[#115E59]';
             case 'chi-so-thi-truong':
+            case 'phan-tich':
                 return 'bg-gradient-to-br from-[#0284c7] to-[#0369a1]';
             case 'bien-so-cac-tinh':
                 return 'bg-gradient-to-br from-[#047857] to-[#065F46]';

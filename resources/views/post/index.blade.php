@@ -12,6 +12,7 @@
             case 'dau-gia-bien-so':
                 return 'Đấu giá biển số';
             case 'chi-so-thi-truong':
+            case 'phan-tich':
                 return 'Phân tích';
             case 'bien-so-cac-tinh':
                 return 'Biển số xe các tỉnh';
@@ -33,6 +34,7 @@
             case 'dau-gia-bien-so':
                 return 'bg-gradient-to-br from-[#0F766E] to-[#115E59]';
             case 'chi-so-thi-truong':
+            case 'phan-tich':
                 return 'bg-gradient-to-br from-[#0284c7] to-[#0369a1]';
             case 'bien-so-cac-tinh':
                 return 'bg-gradient-to-br from-[#047857] to-[#065F46]';
@@ -54,7 +56,7 @@
         ['label' => 'Ý nghĩa biển số', 'value' => 'y-nghia-bien-so'],
         ['label' => 'Biển số đẹp', 'value' => 'bien-so-dep'],
         ['label' => 'Đấu giá biển số', 'value' => 'dau-gia-bien-so'],
-        ['label' => 'Phân tích', 'value' => 'chi-so-thi-truong'],
+        ['label' => 'Phân tích', 'value' => 'phan-tich'],
         ['label' => 'Biển số xe các tỉnh', 'value' => 'bien-so-cac-tinh'],
         ['label' => 'Hướng dẫn', 'value' => 'huong-dan'],
         ['label' => 'Tin tức & Thị trường', 'value' => 'tin-tuc'],

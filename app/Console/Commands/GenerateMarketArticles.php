@@ -154,7 +154,7 @@ class GenerateMarketArticles extends Command
                 $postData = [
                     'title' => $data['title'],
                     'slug' => $cfg['slug'],
-                    'category' => 'chi-so-thi-truong',
+                    'category' => 'phan-tich',
                     'summary' => $data['summary'],
                     'meta_title' => $data['meta_title'],
                     'meta_description' => $data['meta_description'],
