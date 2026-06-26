@@ -23,7 +23,7 @@
 
     $isValuationActive = request()->is('dinh-gia*');
     $isMarketActive = request()->is('c/chi-so-thi-truong*');
-    $isAnalysisActive = request()->is('c/y-nghia-bien-so*');
+    $isAnalysisActive = request()->is('c/chi-so-thi-truong*') || request()->is('c/y-nghia-bien-so*');
     $isNewsActive = request()->is('bai-viet*') || request()->is('b/*') || (request()->is('c/*') && !$isMarketActive && !$isAnalysisActive);
 @endphp
 
@@ -133,7 +133,7 @@
                     Chỉ số thị trường
                 </a> --}}
                 <a
-                    href="/c/y-nghia-bien-so"
+                    href="/c/chi-so-thi-truong"
                     class="{{ $isAnalysisActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
                     Phân tích
@@ -233,7 +233,7 @@
                 Chỉ số thị trường
             </a> --}}
             <a
-                href="/c/y-nghia-bien-so"
+                href="/c/chi-so-thi-truong"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isAnalysisActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >

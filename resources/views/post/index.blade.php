@@ -12,7 +12,7 @@
             case 'dau-gia-bien-so':
                 return 'Đấu giá biển số';
             case 'chi-so-thi-truong':
-                return 'Chỉ số thị trường';
+                return 'Phân tích';
             case 'bien-so-cac-tinh':
                 return 'Biển số xe các tỉnh';
             case 'bien-so-dep':
@@ -54,7 +54,7 @@
         ['label' => 'Ý nghĩa biển số', 'value' => 'y-nghia-bien-so'],
         ['label' => 'Biển số đẹp', 'value' => 'bien-so-dep'],
         ['label' => 'Đấu giá biển số', 'value' => 'dau-gia-bien-so'],
-        ['label' => 'Chỉ số thị trường', 'value' => 'chi-so-thi-truong'],
+        ['label' => 'Phân tích', 'value' => 'chi-so-thi-truong'],
         ['label' => 'Biển số xe các tỉnh', 'value' => 'bien-so-cac-tinh'],
         ['label' => 'Hướng dẫn', 'value' => 'huong-dan'],
         ['label' => 'Tin tức & Thị trường', 'value' => 'tin-tuc'],

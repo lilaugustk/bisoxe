@@ -12,7 +12,7 @@
             case 'dau-gia-bien-so':
                 return 'Đấu giá biển số';
             case 'chi-so-thi-truong':
-                return 'Chỉ số thị trường';
+                return 'Phân tích';
             case 'bien-so-cac-tinh':
                 return 'Biển số xe các tỉnh';
             case 'bien-so-dep':
