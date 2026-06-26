@@ -394,7 +394,7 @@
             </header>
 
             <!-- Bộ lọc ngang mới theo phong cách hiện đại -->
-            <div class="mb-8 rounded-3xl bg-white p-6 md:p-8 border border-gray-150 shadow-[0_4px_20px_rgba(0,0,0,0.02)] w-full space-y-6">
+            <div class="mb-8 rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-6 md:p-8 border border-gray-150 shadow-[0_4px_20px_rgba(0,0,0,0.02)] w-full space-y-6">
                 <!-- Thanh tìm kiếm & nút Toggle bộ lọc -->
                 <div class="flex flex-col sm:flex-row gap-3">
                     <!-- Ô tìm kiếm dạng viên thuốc -->
@@ -433,10 +433,10 @@
                 <!-- Danh sách bộ lọc chi tiết -->
                 <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 pt-4 border-t border-gray-100 mt-4">
                     <!-- Row 1: Tỉnh thành & Chữ cái -->
-                    <div class="flex flex-wrap items-center gap-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                         <!-- Tỉnh thành -->
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold text-gray-700 w-20 sm:w-auto">Tỉnh thành</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 w-full sm:w-auto">
+                            <span class="text-sm font-bold text-gray-700 w-20 sm:w-auto shrink-0">Tỉnh thành</span>
                             <div x-data="{ 
                                 open: false, 
                                 searchQuery: '',
@@ -451,7 +451,7 @@
                                     let found = provinces.find(p => String(p.code) === String(province));
                                     return found ? found.name : 'Tất cả';
                                 }
-                            }" class="relative w-48 z-30">
+                            }" class="relative w-full sm:w-48" :class="open ? 'z-40' : 'z-30'">
                                 <button 
                                     type="button" 
                                     @click="open = !open; if(open) $nextTick(() => $refs.searchField.focus())" 
@@ -472,7 +472,7 @@
                                     x-transition:leave="transition ease-in duration-75"
                                     x-transition:leave-start="transform opacity-100 scale-100"
                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="absolute top-full left-0 z-40 mt-1.5 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-lg focus:outline-none max-h-80 overflow-y-auto"
+                                    class="absolute top-full left-0 z-40 mt-1.5 w-full sm:w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-lg focus:outline-none max-h-80 overflow-y-auto"
                                 >
                                     <div class="relative mb-2">
                                         <input 
@@ -510,8 +510,8 @@
                         </div>
 
                         <!-- Chữ cái -->
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold text-gray-700">Chữ cái</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 w-full sm:w-auto">
+                            <span class="text-sm font-bold text-gray-700 w-20 sm:w-auto shrink-0">Chữ cái</span>
                             <div x-data="{ 
                                 open: false, 
                                 searchQuery: '',
@@ -524,7 +524,7 @@
                                 get selectedLetterName() {
                                     return letter ? letter : 'Tất cả';
                                 }
-                            }" class="relative w-36 z-30">
+                            }" class="relative w-full sm:w-36" :class="open ? 'z-40' : 'z-30'">
                                 <button 
                                     type="button" 
                                     @click="open = !open; if(open) $nextTick(() => $refs.searchLetterField.focus())" 
@@ -586,7 +586,7 @@
                     <!-- Row 2: Số nút -->
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                         <span class="w-20 sm:shrink-0 text-sm font-bold text-gray-700">Số nút</span>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full min-w-0">
                             <button 
                                 type="button"
                                 @click="numButtons = ''; submitForm();"
@@ -611,7 +611,7 @@
                     <!-- Row 3: Số cuối -->
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                         <span class="w-20 sm:shrink-0 text-sm font-bold text-gray-700">Số cuối</span>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full min-w-0">
                             <button 
                                 type="button"
                                 @click="lastDigits = ''; submitForm();"
@@ -636,7 +636,7 @@
                     <!-- Row 4: Loại biển -->
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                         <span class="w-20 sm:shrink-0 text-sm font-bold text-gray-700">Loại biển</span>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full min-w-0">
                             <button 
                                 type="button"
                                 @click="kind = ''; submitForm();"
