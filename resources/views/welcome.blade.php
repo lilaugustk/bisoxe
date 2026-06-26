@@ -393,25 +393,25 @@
                 <p class="mt-1 text-sm text-gray-500">{{ $tableDescription }}</p>
             </header>
 
-            <!-- Bộ lọc ngang mới theo phong cách hiện đại -->
-            <div class="mb-8 rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-6 md:p-8 border border-gray-150 shadow-[0_4px_20px_rgba(0,0,0,0.02)] w-full space-y-6">
+            <!-- Bộ lọc ngang mới theo phong cách hiện đại (đã thu gọn kích thước) -->
+            <div class="mb-6 rounded-xl bg-white p-4 border border-gray-150 shadow-[0_4px_20px_rgba(0,0,0,0.02)] w-full space-y-4">
                 <!-- Thanh tìm kiếm & nút Toggle bộ lọc -->
                 <div class="flex flex-col sm:flex-row gap-3">
                     <!-- Ô tìm kiếm dạng viên thuốc -->
-                    <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1.5 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
+                    <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
                         <input
                             type="text"
                             name="search"
                             x-model="search"
                             @keyup.enter="submitForm(true)"
                             placeholder="Nhập biển số cần tìm..."
-                            class="w-full border-0 bg-transparent py-2.5 px-6 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
+                            class="w-full border-0 bg-transparent py-2 px-5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
                         />
                         <button
                             type="submit"
-                            class="mr-1 flex h-10 w-10 items-center justify-center rounded-full bg-[#8C1E1E] text-white shadow-md transition duration-200 hover:bg-[#731919] shrink-0"
+                            class="mr-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#8C1E1E] text-white shadow-md transition duration-200 hover:bg-[#731919] shrink-0"
                         >
-                            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </button>
@@ -421,9 +421,9 @@
                     <button
                         type="button"
                         @click="isFiltersExpanded = !isFiltersExpanded"
-                        class="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-bold text-gray-700 shadow-3xs transition duration-200 hover:bg-gray-50 hover:text-gray-900 shrink-0"
+                        class="flex items-center justify-center gap-1.5 rounded-full border border-gray-200 bg-white px-5 py-2 text-sm font-bold text-gray-700 shadow-3xs transition duration-200 hover:bg-gray-50 hover:text-gray-900 shrink-0"
                     >
-                        <svg class="h-4 w-4 text-gray-500 transition-transform duration-200" :class="isFiltersExpanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="h-3.5 w-3.5 text-gray-500 transition-transform duration-200" :class="isFiltersExpanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
                         <span x-text="isFiltersExpanded ? 'Thu gọn bộ lọc' : 'Bộ lọc nâng cao'"></span>

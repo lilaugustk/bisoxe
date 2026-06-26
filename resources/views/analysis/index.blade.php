@@ -61,7 +61,7 @@
                 
                 <!-- Card 1: Số liệu thống kê nhanh -->
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
                         Số liệu thống kê
                     </h3>
                     <div class="grid grid-cols-2 gap-4 text-center">
@@ -88,7 +88,7 @@
 
                 <!-- Card 2: Bảng xếp hạng theo Tỉnh thành -->
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
                         Theo Tỉnh thành
                     </h3>
                     <div class="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: thin;">
@@ -102,7 +102,7 @@
 
                 <!-- Card 3: Bảng xếp hạng theo Đầu số xe -->
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
                         Theo Đầu số xe
                     </h3>
                     <div class="flex flex-wrap gap-1.5 max-h-60 overflow-y-auto pr-1" style="scrollbar-width: thin;">

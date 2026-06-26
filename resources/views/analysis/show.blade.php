@@ -101,6 +101,48 @@
         }
     }
     $nguQuyPercent = $totalValue > 0 ? round(($nguQuyValue / $totalValue) * 100) : 0;
+
+    // Đếm số biển mới lọt top trong 30 ngày gần đây
+    $newPlatesLast30Days = 0;
+    $thirtyDaysAgo = \Carbon\Carbon::now()->subDays(30);
+    foreach ($plates as $p) {
+        if ($p->auction_start_time && $p->auction_start_time->gte($thirtyDaysAgo)) {
+            $newPlatesLast30Days++;
+        }
+    }
+
+    // Địa phương dẫn đầu
+    $topProvinceNames = array_keys($topProvinces);
+
+    // Đếm số lượng biển tứ quý và lộc phát trong top
+    $tuQuyCount = 0;
+    $locPhatCount = 0;
+    foreach ($plates as $p) {
+        foreach ($p->kinds as $k) {
+            if ($k->id === 3) { // Tứ quý
+                $tuQuyCount++;
+            }
+            if ($k->id === 6) { // Lộc phát
+                $locPhatCount++;
+            }
+        }
+    }
+
+    // Tính toán số liệu động cho phần tỉnh thành áp đảo
+    $top1ProvinceCount = 0;
+    $top2ProvinceCount = 0;
+    $top1ProvinceName = 'Hà Nội';
+    $top2ProvinceName = 'TP.HCM';
+    if (count($topProvinceNames) >= 1) {
+        $top1ProvinceName = $topProvinceNames[0];
+        $top1ProvinceCount = $provinceStats[$top1ProvinceName] ?? 0;
+    }
+    if (count($topProvinceNames) >= 2) {
+        $top2ProvinceName = $topProvinceNames[1];
+        $top2ProvinceCount = $provinceStats[$top2ProvinceName] ?? 0;
+    }
+    $leadProvincesTotalCount = $top1ProvinceCount + $top2ProvinceCount;
+    $leadProvincesPercent = $totalCount > 0 ? round(($leadProvincesTotalCount / $totalCount) * 100) : 0;
 @endphp
 
 @section('content')
@@ -137,7 +179,7 @@
                     </header>
 
                     <!-- Sapo / Introduction -->
-                    <div class="text-sm text-gray-600 space-y-4 leading-relaxed">
+                    <div class="text-sm text-gray-600 space-y-4 leading-relaxed text-justify">
                         <p>
                             Bảng xếp hạng {{ $slug === 'top-100-bien-so-dat-nhat-viet-nam' ? 'Top 100 biển số đắt nhất Việt Nam' : $config['h1'] }} được tổng hợp từ dữ liệu đấu giá công khai trên toàn quốc. Danh sách được cập nhật tự động khi xuất hiện các phiên đấu giá mới, giúp người dùng theo dõi sự thay đổi của thị trường biển số đẹp theo thời gian.
                         </p>
@@ -147,52 +189,65 @@
                     </div>
 
                     <!-- Toàn cảnh thị trường -->
-                    <div class="space-y-4 border-t border-gray-100 pt-6">
+                    <div class="space-y-6 border-t border-gray-100 pt-6">
                         <h2 class="text-lg font-bold text-gray-900">Toàn cảnh thị trường {{ $slug === 'top-100-bien-so-dat-nhat-viet-nam' ? 'Top 100' : 'Bảng xếp hạng' }}</h2>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Thống kê nhanh -->
-                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200/60 space-y-3">
-                                <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 border-b border-gray-200 pb-1.5">Thống kê nhanh</h3>
-                                <ul class="space-y-2 text-sm text-gray-700">
-                                    <li class="flex justify-between">
-                                        <span>Tổng số biển trong bảng xếp hạng:</span>
-                                        <strong class="text-gray-900">{{ $totalCount }}</strong>
+                        <!-- Thống kê nhanh -->
+                        <div class="space-y-3">
+                            <h3 class="text-base font-bold text-gray-900">Thống kê nhanh</h3>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex justify-between border-b border-gray-100 pb-1">
+                                    <span>Tổng số biển trong bảng xếp hạng:</span>
+                                    <strong class="text-gray-900 font-semibold">{{ $totalCount }}</strong>
+                                </li>
+                                <li class="flex justify-between border-b border-gray-100 pb-1">
+                                    <span>Tổng giá trị đấu giá:</span>
+                                    <strong class="text-gray-900 font-semibold">{{ number_format($totalValue / 1000000000, 1, ',', '.') }} tỷ đồng</strong>
+                                </li>
+                                <li class="flex justify-between border-b border-gray-100 pb-1">
+                                    <span>Giá trung bình:</span>
+                                    <strong class="text-gray-900 font-semibold">{{ number_format($avgValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
+                                </li>
+                                @if($totalCount > 0)
+                                    <li class="flex justify-between border-b border-gray-100 pb-1">
+                                        <span>Giá cao nhất:</span>
+                                        <strong class="text-gray-900 font-semibold">{{ number_format($maxValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
                                     </li>
-                                    <li class="flex justify-between">
-                                        <span>Tổng giá trị đấu giá:</span>
-                                        <strong class="text-gray-900">{{ number_format($totalValue / 1000000000, 1, ',', '.') }} tỷ đồng</strong>
+                                    <li class="flex justify-between border-b border-gray-100 pb-1">
+                                        <span>Giá thấp nhất trong Top:</span>
+                                        <strong class="text-gray-900 font-semibold">{{ number_format($minValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
                                     </li>
-                                    <li class="flex justify-between">
-                                        <span>Giá trung bình:</span>
-                                        <strong class="text-gray-900">{{ number_format($avgValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
+                                @endif
+                            </ul>
+                        </div>
+
+                        <!-- Tổng quan thị trường -->
+                        <div class="space-y-3">
+                            <h3 class="text-base font-bold text-gray-900">Tổng quan thị trường</h3>
+                            <div class="text-sm text-gray-600 space-y-2 leading-relaxed text-justify">
+                                <p>Trong thời gian qua, thị trường biển số đẹp tiếp tục ghi nhận những giao dịch có giá trị giao dịch cao.</p>
+                                <ul class="list-disc pl-5 space-y-1">
+                                    @if($newPlatesLast30Days > 0)
+                                        <li>Có <strong class="text-gray-900 font-bold">{{ $newPlatesLast30Days }}</strong> biển số mới lọt vào bảng xếp hạng trong vòng 30 ngày qua.</li>
+                                    @else
+                                        <li>Bảng xếp hạng giữ sự ổn định, không ghi nhận thêm biển số mới lọt vào top trong 30 ngày qua.</li>
+                                    @endif
+                                    @if($nguQuyCount > 0)
+                                        <li>Nhóm biển ngũ quý chiếm khoảng <strong class="text-gray-900 font-bold">{{ $nguQuyPercent }}%</strong> tổng giá trị của bảng xếp hạng (đạt <strong class="text-gray-900 font-bold">{{ $nguQuyCount }}</strong> biển).</li>
+                                    @endif
+                                    <li>
+                                        @if(count($topProvinceNames) >= 2)
+                                            <strong class="text-gray-900 font-bold">{{ $topProvinceNames[0] }}</strong> và <strong class="text-gray-900 font-bold">{{ $topProvinceNames[1] }}</strong> là hai địa phương dẫn đầu về số lượng biển số giá trị cao.
+                                        @elseif(count($topProvinceNames) === 1)
+                                            <strong class="text-gray-900 font-bold">{{ $topProvinceNames[0] }}</strong> là địa phương dẫn đầu về số lượng biển số giá trị cao.
+                                        @else
+                                            Các tỉnh thành có sự phân bổ đồng đều về số lượng biển số đẹp.
+                                        @endif
                                     </li>
-                                    @if($totalCount > 0)
-                                        <li class="flex justify-between">
-                                            <span>Giá cao nhất:</span>
-                                            <strong class="text-gray-900">{{ number_format($maxValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
-                                        </li>
-                                        <li class="flex justify-between">
-                                            <span>Giá thấp nhất trong Top:</span>
-                                            <strong class="text-gray-900">{{ number_format($minValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
-                                        </li>
+                                    @if($tuQuyCount > 0 || $locPhatCount > 0)
+                                        <li>Ghi nhận có <strong class="text-gray-900 font-bold">{{ $tuQuyCount }}</strong> biển tứ quý và <strong class="text-gray-900 font-bold">{{ $locPhatCount }}</strong> biển lộc phát đang nắm giữ vị trí quan trọng.</li>
                                     @endif
                                 </ul>
-                            </div>
-
-                            <!-- Market Snapshot -->
-                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200/60 space-y-3">
-                                <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 border-b border-gray-200 pb-1.5">Market Snapshot</h3>
-                                <div class="text-sm text-gray-600 space-y-2 leading-relaxed">
-                                    <p>Trong thời gian qua, thị trường biển số đẹp tiếp tục duy trì xu hướng tích cực với lượng người quan tâm lớn.</p>
-                                    <ul class="list-disc pl-4 space-y-1">
-                                        @if($nguQuyCount > 0)
-                                            <li>Nhóm biển ngũ quý chiếm khoảng {{ $nguQuyPercent }}% tổng giá trị của bảng xếp hạng.</li>
-                                        @endif
-                                        <li>Hà Nội và TP.HCM tiếp tục là hai địa phương dẫn đầu về số lượng biển số giá trị cao.</li>
-                                        <li>Các biển chứa cặp số lộc phát (68, 86) và số trùng lặp ghi nhận mức quan tâm lớn từ người tham gia đấu giá.</li>
-                                    </ul>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -240,17 +295,17 @@
                                                     {{ $index + 1 }}
                                                 </td>
                                                 <!-- Biển số (Có link đổi màu sang màu đỏ thương hiệu hệ thống khi hover) -->
-                                                <td class="border border-gray-200 px-4 py-3 text-center whitespace-nowrap font-mono">
+                                                <td class="border border-gray-200 px-4 py-3 text-center whitespace-nowrap">
                                                     <a href="/bien-so-{{ $detailSlug }}" class="text-gray-900 hover:text-[#8C1E1E] hover:underline font-bold transition-colors">
                                                         {{ $plate->display_number }}
                                                     </a>
                                                 </td>
                                                 <!-- Giá đấu -->
-                                                <td class="border border-gray-200 px-4 py-3 text-right font-mono font-semibold text-gray-900 whitespace-nowrap">
+                                                <td class="border border-gray-200 px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                                                     {{ $formatMoney($plate->winning_price) }}
                                                 </td>
                                                 <!-- Giá AI hiện tại (Đồng bộ kiểu chữ và màu sắc, loại bỏ màu xanh lá không khớp hệ thống) -->
-                                                <td class="border border-gray-200 px-4 py-3 text-right font-mono font-semibold text-gray-900 whitespace-nowrap">
+                                                <td class="border border-gray-200 px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                                                     {{ $formatMoney($aiPriceVal) }}
                                                 </td>
                                                 <!-- Địa phương -->
@@ -275,25 +330,25 @@
                     <div class="space-y-6 border-t border-gray-100 pt-6">
                         <h2 class="text-lg font-bold text-gray-900">Phân tích xu hướng</h2>
                         
-                        <div class="space-y-4 text-sm text-gray-600 leading-relaxed">
+                        <div class="space-y-4 text-sm text-gray-600 leading-relaxed text-justify">
                             <div>
                                 <h3 class="font-bold text-gray-900 text-base mb-1">Vì sao nhóm biển ngũ quý luôn dẫn đầu?</h3>
                                 <p>
-                                    Qua dữ liệu đấu giá, nhóm biển ngũ quý vẫn là nhóm có giá trị cao nhất trên thị trường. Không chỉ có yếu tố phong thủy cát tường, nhóm biển này còn sở hữu mức độ khan hiếm rất lớn. Với mỗi đầu số địa phương, xác suất xuất hiện một biển ngũ quý cực kỳ nhỏ, khiến nhu cầu luôn vượt xa nguồn cung.
+                                    Qua dữ liệu đấu giá, nhóm biển ngũ quý vẫn là nhóm có giá trị cao nhất trên thị trường. Không chỉ có yếu tố phong thủy cát tường, nhóm biển này còn sở hữu mức độ khan hiếm rất lớn. Với mỗi đầu số địa phương, xác suất xuất hiện một biển ngũ quý cực kỳ nhỏ, khiến nhu cầu luôn vượt xa nguồn cung. Trong bảng xếp hạng hiện tại, nhóm biển ngũ quý chiếm khoảng <strong class="text-gray-900 font-bold">{{ $nguQuyPercent }}%</strong> tổng giá trị toàn bảng với <strong class="text-gray-900 font-bold">{{ $nguQuyCount }}</strong> biển góp mặt.
                                 </p>
                             </div>
 
                             <div>
-                                <h3 class="font-bold text-gray-900 text-base mb-1">Hà Nội và TP.HCM áp đảo</h3>
+                                <h3 class="font-bold text-gray-900 text-base mb-1">Địa phương dẫn đầu áp đảo</h3>
                                 <p>
-                                    Thống kê cho thấy phần lớn biển số giá trị cao trong bảng xếp hạng thuộc về khu vực Hà Nội và TP.HCM. Nguyên nhân chủ yếu đến từ nhu cầu sở hữu xe sang lớn, lượng doanh nhân tập trung đông và giá trị nhận diện thương hiệu của đầu số hai thành phố lớn này. Tính thanh khoản chuyển nhượng của các biển số tại đây cũng luôn ở mức rất tốt.
+                                    Thống kê cho thấy phần lớn biển số giá trị cao trong bảng xếp hạng thuộc về khu vực của các thành phố lớn. Cụ thể, hơn <strong class="text-gray-900 font-bold">{{ $leadProvincesPercent }}%</strong> biển số trong bảng xếp hạng thuộc về khu vực <strong class="text-gray-900 font-bold">{{ $top1ProvinceName }}</strong> (đạt <strong class="text-gray-900 font-bold">{{ $top1ProvinceCount }}</strong> biển) và <strong class="text-gray-900 font-bold">{{ $top2ProvinceName }}</strong> (đạt <strong class="text-gray-900 font-bold">{{ $top2ProvinceCount }}</strong> biển). Nguyên nhân chủ yếu đến từ nhu cầu sở hữu xe sang lớn, lượng doanh nhân tập trung đông và giá trị nhận diện thương hiệu của các đầu số này.
                                 </p>
                             </div>
 
                             <div>
                                 <h3 class="font-bold text-gray-900 text-base mb-1">Những nhóm biển tăng giá nhanh nhất</h3>
                                 <p>
-                                    Dựa trên dữ liệu lịch sử và mô hình định giá, những nhóm biển đang có tốc độ tăng giá tốt nhất gồm: Ngũ quý, Tứ quý, Lộc phát (68, 86), Thần tài (39, 79) và các dòng số tiến đẹp. Các biển số có cấu trúc ngẫu nhiên thường có mức tăng thấp hơn và phụ thuộc nhiều vào yếu tố vùng miền.
+                                    Dựa trên dữ liệu lịch sử và mô hình định giá, những nhóm biển đang có tốc độ tăng giá tốt nhất trong bảng xếp hạng gồm: Ngũ quý (đang có <strong class="text-gray-900 font-bold">{{ $nguQuyCount }}</strong> biển), Tứ quý (đang có <strong class="text-gray-900 font-bold">{{ $tuQuyCount }}</strong> biển), Lộc phát (đang có <strong class="text-gray-900 font-bold">{{ $locPhatCount }}</strong> biển) và các dòng số tiến đẹp. Các biển số có cấu trúc ngẫu nhiên thường có mức tăng thấp hơn và phụ thuộc nhiều vào yếu tố vùng miền.
                                 </p>
                             </div>
                         </div>
@@ -380,17 +435,12 @@
                             <h2 class="text-lg font-bold text-gray-900">Những biển số đáng chú ý</h2>
                             <div class="space-y-4">
                                 @foreach($plates->take(2) as $idx => $topPlate)
-                                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200/60 space-y-2">
-                                        <div class="flex items-center justify-between">
-                                            <span class="inline-block font-mono font-bold text-base text-gray-900 bg-white border border-gray-250 px-2.5 py-0.5 rounded shadow-2xs">
-                                                {{ $topPlate->display_number }}
-                                            </span>
-                                            <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-200">
-                                                Top {{ $idx + 1 }}
-                                            </span>
-                                        </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            Biển số sở hữu cấu trúc đẹp trúng đấu giá với mức giá kỷ lục <strong class="text-gray-900">{{ number_format($topPlate->winning_price / 1000000000, 2, ',', '.') }} tỷ đồng</strong> tại khu vực <strong>{{ $topPlate->province ? $topPlate->province->name : 'Chưa xác định' }}</strong>. Mô hình định giá dự báo giá trị hiện tại của biển số này có xu hướng tăng trưởng ổn định nhờ độ khan hiếm cực cao và nhu cầu lớn trên thị trường xe sang.
+                                    <div class="space-y-1">
+                                        <h3 class="text-base font-bold text-gray-900">
+                                            Top {{ $idx + 1 }}: <span class="font-mono text-[#8C1E1E]">{{ $topPlate->display_number }}</span>
+                                        </h3>
+                                        <p class="text-sm text-gray-600 leading-relaxed text-justify">
+                                            Biển số sở hữu cấu trúc đẹp trúng đấu giá với mức giá kỷ lục <strong class="text-gray-900 font-bold">{{ number_format($topPlate->winning_price / 1000000000, 2, ',', '.') }} tỷ đồng</strong> tại khu vực <strong class="text-gray-900 font-bold">{{ $topPlate->province ? $topPlate->province->name : 'Chưa xác định' }}</strong>. Mô hình định giá dự báo giá trị hiện tại của biển số này có xu hướng tăng trưởng ổn định nhờ độ khan hiếm cực cao và nhu cầu lớn trên thị trường xe sang.
                                         </p>
                                     </div>
                                 @endforeach
@@ -401,7 +451,7 @@
                     <!-- Xuuyên suốt thị trường 6 tháng tới -->
                     <div class="space-y-3 border-t border-gray-100 pt-6">
                         <h2 class="text-lg font-bold text-gray-900">Xu hướng thị trường 6 tháng tới</h2>
-                        <div class="text-sm text-gray-600 leading-relaxed space-y-2">
+                        <div class="text-sm text-gray-600 leading-relaxed space-y-2 text-justify">
                             <p>Dựa trên dữ liệu lịch sử và mô hình thống kê AI dự báo:</p>
                             <ul class="list-disc pl-4 space-y-1">
                                 <li>Nhóm ngũ quý tiếp tục giữ vững vị trí dẫn đầu tuyệt đối về mặt giá trị.</li>
@@ -418,25 +468,25 @@
                         <div class="space-y-3">
                             <div class="bg-gray-50/60 p-4 rounded-lg border border-gray-200/50">
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Biển số nào hiện có giá đấu cao nhất Việt Nam?</h4>
-                                <p class="text-sm text-gray-600 leading-relaxed">
+                                <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Bảng xếp hạng được cập nhật tự động ngay sau mỗi phiên đấu giá chính thức kết thúc, giúp người dùng luôn theo dõi được kỷ lục giá đấu cao nhất tại mọi thời điểm.
                                 </p>
                             </div>
                             <div class="bg-gray-50/60 p-4 rounded-lg border border-gray-200/50">
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Bảng xếp hạng được cập nhật bao lâu một lần?</h4>
-                                <p class="text-sm text-gray-600 leading-relaxed">
+                                <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Dữ liệu được đồng bộ hóa tự động ngay sau khi có kết quả đấu giá chính thức từ các phiên đấu giá công khai trên toàn quốc và hoàn tất quy trình đối soát dữ liệu của hệ thống.
                                 </p>
                             </div>
                             <div class="bg-gray-50/60 p-4 rounded-lg border border-gray-200/50">
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Giá định giá AI có phải giá giao dịch thực tế?</h4>
-                                <p class="text-sm text-gray-600 leading-relaxed">
+                                <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Không. Mức giá AI là ước tính dựa trên dữ liệu thống kê, lịch sử đấu giá các biển số tương đồng và thuật toán phân tích xu hướng. Giá trị giao dịch thực tế có thể biến động tùy thuộc vào thỏa thuận trực tiếp và cung cầu thị trường.
                                 </p>
                             </div>
                             <div class="bg-gray-50/60 p-4 rounded-lg border border-gray-200/50">
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Làm sao để biết biển số của tôi có nằm trong Top?</h4>
-                                <p class="text-sm text-gray-600 leading-relaxed">
+                                <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Bạn chỉ cần nhập biển số vào công cụ định giá để xem thứ hạng, giá trị ước tính và các biển số tương tự trong hệ thống của chúng tôi.
                                 </p>
                             </div>
@@ -446,7 +496,7 @@
                     <!-- Định giá biển số của bạn (CTA) -->
                     <div class="bg-[#8C1E1E]/5 border border-[#8C1E1E]/20 rounded-2xl p-6 text-center space-y-4 mt-8">
                         <h3 class="text-lg font-bold text-[#8C1E1E]">Định giá biển số của bạn</h3>
-                        <p class="text-sm text-gray-700 max-w-xl mx-auto leading-relaxed">
+                        <p class="text-sm text-gray-700 max-w-xl mx-auto leading-relaxed text-justify">
                             Bạn muốn biết biển số xe của mình hoặc biển số quan tâm có giá trị bao nhiêu trên thị trường hiện tại? Nhập ngay biển số để nhận ước tính giá trị từ mô hình AI, đánh giá điểm độ hiếm và lịch sử đấu giá liên quan.
                         </p>
                         <div>
@@ -476,7 +526,7 @@
                 
                 <!-- Card 1: Các bảng xếp hạng tiêu biểu khác -->
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
                         Bảng xếp hạng tiêu biểu
                     </h3>
                     <div class="space-y-3">
@@ -497,7 +547,7 @@
 
                 <!-- Card 2: Bảng xếp hạng theo Tỉnh thành -->
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
                         Theo Tỉnh thành
                     </h3>
                     <div class="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: thin;">
@@ -513,7 +563,7 @@
 
                 <!-- Card 3: Bảng xếp hạng theo Đầu số xe -->
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
                         Theo Đầu số xe
                     </h3>
                     <div class="flex flex-wrap gap-1.5 max-h-60 overflow-y-auto pr-1" style="scrollbar-width: thin;">

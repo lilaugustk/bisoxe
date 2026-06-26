@@ -430,6 +430,7 @@ class LicensePlateController extends Controller
         $primaryKind = $plate->kinds->where('priority', '<', 1000)->sortBy('priority')->first();
         $relatedQuery = LicensePlate::with(['province', 'kinds', 'seoArticle'])
             ->where('id', '!=', $plate->id)
+            ->where('color', 0) // Chỉ hiển thị biển trắng, không hiển thị biển vàng ở phần đề xuất
             ->where('vehicle_type', $plate->vehicle_type);
 
         if ($primaryKind) {
