@@ -578,75 +578,90 @@ Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên
         foreach ($this->fallbackModels as $model) {
             $url = "{$this->baseUrl}/{$model}:generateContent?key={$this->apiKey}";
 
-            try {
-                $generationConfig = [
-                    'responseMimeType' => 'application/json',
-                    'responseSchema' => $schema,
-                    'maxOutputTokens' => 4096,
-                ];
+            $maxRetries = 3;
+            $retryDelay = 2; // Giây
 
-                if (str_contains($model, '2.5-flash')) {
-                    $generationConfig['thinkingConfig'] = [
-                        'thinkingBudget' => 0,
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                try {
+                    $generationConfig = [
+                        'responseMimeType' => 'application/json',
+                        'responseSchema' => $schema,
+                        'maxOutputTokens' => 4096,
                     ];
-                }
 
-                $response = Http::timeout(120)
-                    ->withoutVerifying()
-                    ->withHeaders(['Content-Type' => 'application/json'])
-                    ->post($url, [
-                        'contents' => [
-                            [
-                                'parts' => [['text' => $prompt]],
+                    if (str_contains($model, '2.5-flash')) {
+                        $generationConfig['thinkingConfig'] = [
+                            'thinkingBudget' => 0,
+                        ];
+                    }
+
+                    $response = Http::timeout(120)
+                        ->withoutVerifying()
+                        ->withHeaders(['Content-Type' => 'application/json'])
+                        ->post($url, [
+                            'contents' => [
+                                [
+                                    'parts' => [['text' => $prompt]],
+                                ],
                             ],
-                        ],
-                        'generationConfig' => $generationConfig,
-                    ]);
+                            'generationConfig' => $generationConfig,
+                        ]);
 
-                // Nếu gặp lỗi có thể retry (quá tải, server lỗi, rate limit), thử model tiếp theo
-                if (in_array($response->status(), [429, 500, 503])) {
-                    Log::warning("Gemini model [{$model}] returned {$response->status()}, trying next fallback model...", [
-                        'body' => substr($response->body(), 0, 300),
-                    ]);
-                    $lastException = new \Exception("Gemini model [{$model}] returned HTTP {$response->status()}");
-                    continue; // Thử model tiếp theo
-                }
+                    // Nếu gặp lỗi rate limit (429), thử lại sau một khoảng thời gian chờ tăng dần (exponential backoff)
+                    if ($response->status() === 429) {
+                        if ($attempt < $maxRetries) {
+                            $sleepTime = $retryDelay * $attempt;
+                            Log::warning("Gemini model [{$model}] returned HTTP 429 (Rate Limit). Thử lại lần thứ {$attempt} sau {$sleepTime} giây...");
+                            sleep($sleepTime);
+                            continue; // Thử lại trong lần lặp tiếp theo
+                        }
+                    }
 
-                // Lỗi khác (401, 400...) — không cần thử fallback
-                if ($response->failed()) {
-                    Log::error("Gemini API request failed with model [{$model}]", [
-                        'status' => $response->status(),
-                        'body' => $response->body(),
-                    ]);
-                    throw new \Exception("Gemini API [{$model}] returned status code {$response->status()}");
-                }
+                    // Nếu gặp lỗi có thể retry khác (500, 503, hoặc 429 ở lần thử cuối cùng), chuyển sang model tiếp theo
+                    if (in_array($response->status(), [429, 500, 503])) {
+                        Log::warning("Gemini model [{$model}] returned {$response->status()}, trying next fallback model...", [
+                            'body' => substr($response->body(), 0, 300),
+                        ]);
+                        $lastException = new \Exception("Gemini model [{$model}] returned HTTP {$response->status()}");
+                        break; // Thoát khỏi vòng lặp thử lại của model này để chuyển sang model fallback tiếp theo
+                    }
 
-                $result = $response->json();
-                $textResult = $result['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                    // Lỗi khác (401, 400...) — không cần thử fallback
+                    if ($response->failed()) {
+                        Log::error("Gemini API request failed with model [{$model}]", [
+                            'status' => $response->status(),
+                            'body' => $response->body(),
+                        ]);
+                        throw new \Exception("Gemini API [{$model}] returned status code {$response->status()}");
+                    }
 
-                if (empty($textResult)) {
-                    throw new \Exception("Gemini API [{$model}] returned an empty response.");
-                }
+                    $result = $response->json();
+                    $textResult = $result['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
-                $decoded = json_decode($textResult, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    Log::error("Failed to decode Gemini JSON response from model [{$model}]", [
-                        'raw_text' => $textResult,
-                        'error' => json_last_error_msg(),
-                    ]);
-                    throw new \Exception("Gemini API [{$model}] response was not a valid JSON structure.");
-                }
+                    if (empty($textResult)) {
+                        throw new \Exception("Gemini API [{$model}] returned an empty response.");
+                    }
 
-                if ($model !== $this->model) {
-                    Log::info("Gemini fallback succeeded with model [{$model}] (primary: [{$this->model}])");
-                }
+                    $decoded = json_decode($textResult, true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        Log::error("Failed to decode Gemini JSON response from model [{$model}]", [
+                            'raw_text' => $textResult,
+                            'error' => json_last_error_msg(),
+                        ]);
+                        throw new \Exception("Gemini API [{$model}] response was not a valid JSON structure.");
+                    }
 
-                return $decoded;
+                    if ($model !== $this->model) {
+                        Log::info("Gemini fallback succeeded with model [{$model}] (primary: [{$this->model}])");
+                    }
 
-            } catch (\Exception $e) {
-                // Nếu exception không phải do 503/429/500 (đã handle ở trên), re-throw ngay
-                if ($lastException === null || $e !== $lastException) {
-                    throw $e;
+                    return $decoded;
+
+                } catch (\Exception $e) {
+                    // Nếu là lần thử cuối hoặc exception là lỗi nghiêm trọng không phải 429/500/503
+                    if ($attempt === $maxRetries || ($lastException !== null && $e === $lastException)) {
+                        throw $e;
+                    }
                 }
             }
         }
