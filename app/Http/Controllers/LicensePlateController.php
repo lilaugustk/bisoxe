@@ -165,6 +165,9 @@ class LicensePlateController extends Controller
         $endDate = $request->input('end_date');
         $birthYears = $request->input('birth_years');
         $avoidNumbers = $request->input('avoid_numbers');
+        $letter = $request->input('letter');
+        $numButtons = $request->input('num_buttons');
+        $lastDigits = $request->input('last_digits');
 
         $query = LicensePlate::query()->with(['province', 'kinds', 'seoArticle']);
 
@@ -192,23 +195,37 @@ class LicensePlateController extends Controller
             $query->where('full_number', 'like', "%{$cleanSearch}%");
         }
 
-        // 4. Lọc theo màu sắc
-        if ($color !== null && $color !== '') {
-            $colorVal = (int) $color;
-            if ($colorVal === 1) {
-                $query->where('color', 3);
-            } else {
-                $query->where('color', $colorVal);
-            }
-        }
+        // 4. Chỉ hiển thị biển trắng (color = 0), không hiển thị biển vàng
+        $query->where('color', 0);
 
         // 5. Lọc theo tỉnh thành
         if (! empty($province)) {
             $query->where('province_code', $province);
         }
 
-        // 6. Lọc theo loại biển chính (kind có priority nhỏ nhất = đẹp nhất)
-        // Ví dụ: lọc "Tứ quý" sẽ KHÔNG trả về biển Ngũ quý (vì kind chính của nó là Ngũ quý, không phải Tứ quý)
+        // 6. Lọc theo chữ cái series (Chữ cái)
+        if (! empty($letter)) {
+            $query->where('serial_letter', $letter);
+        }
+
+        // 7. Lọc theo số nút (Số nút)
+        if ($numButtons !== null && $numButtons !== '') {
+            $numVal = (int) $numButtons;
+            $query->whereRaw("(
+                SUBSTRING(REPLACE(serial_number, '.', ''), 1, 1) +
+                SUBSTRING(REPLACE(serial_number, '.', ''), 2, 1) +
+                SUBSTRING(REPLACE(serial_number, '.', ''), 3, 1) +
+                SUBSTRING(REPLACE(serial_number, '.', ''), 4, 1) +
+                SUBSTRING(REPLACE(serial_number, '.', ''), 5, 1)
+            ) % 10 = ?", [$numVal]);
+        }
+
+        // 8. Lọc theo số cuối (Số cuối)
+        if ($lastDigits !== null && $lastDigits !== '') {
+            $query->whereRaw("REPLACE(serial_number, '.', '') LIKE ?", ["%{$lastDigits}"]);
+        }
+
+        // 9. Lọc theo loại biển chính (kind có priority nhỏ nhất = đẹp nhất)
         if (! empty($kind)) {
             $kindIds = is_array($kind) ? array_map('intval', $kind) : array_filter(array_map('intval', explode(',', $kind)));
             if (! empty($kindIds)) {
@@ -221,37 +238,6 @@ class LicensePlateController extends Controller
                           WHERE lpk2.plate_id = license_plate_kinds.plate_id
                       )');
                 });
-            }
-        }
-
-        // 7. Lọc theo ngày đấu giá (start_date và end_date)
-        if (! empty($startDate)) {
-            $query->whereDate('auction_start_time', '>=', $startDate);
-        }
-        if (! empty($endDate)) {
-            $query->whereDate('auction_start_time', '<=', $endDate);
-        }
-
-        // 8. Lọc theo năm sinh (decade pattern, ví dụ: 196x -> 1960 - 1969)
-        if (! empty($birthYears)) {
-            $yearsArray = is_array($birthYears) ? $birthYears : array_filter(explode(',', $birthYears));
-            if (! empty($yearsArray)) {
-                $query->where(function ($q) use ($yearsArray) {
-                    foreach ($yearsArray as $by) {
-                        $prefix = substr($by, 0, 3);
-                        $q->orWhere('serial_number', 'like', "%{$prefix}_%");
-                    }
-                });
-            }
-        }
-
-        // 9. Lọc tránh số
-        if (! empty($avoidNumbers)) {
-            $avoidsArray = is_array($avoidNumbers) ? $avoidNumbers : array_filter(explode(',', $avoidNumbers));
-            foreach ($avoidsArray as $num) {
-                if (in_array($num, ['4', '7', '49', '53', '13'])) {
-                    $query->where('serial_number', 'not like', "%{$num}%");
-                }
             }
         }
 
@@ -326,16 +312,42 @@ class LicensePlateController extends Controller
             'links' => $paginated->linkCollection()->toArray(),
         ];
 
+        $trustStats = Cache::remember('home_trust_stats_v2', 3600, function () {
+            $totalPlates = LicensePlate::count();
+            $totalProvinces = Province::count();
+            $totalArticles = SeoArticle::count();
+            
+            return [
+                'total_plates' => number_format($totalPlates, 0, ',', '.'),
+                'total_completed' => number_format(LicensePlate::where('status', 'completed')->count(), 0, ',', '.'),
+                'total_provinces' => $totalProvinces,
+                'total_articles' => number_format($totalArticles, 0, ',', '.'),
+            ];
+        });
+
+        $uniqueLetters = Cache::remember('unique_serial_letters', 86400, function () {
+            return LicensePlate::distinct()
+                ->orderBy('serial_letter')
+                ->pluck('serial_letter')
+                ->filter()
+                ->toArray();
+        });
+
         return view('welcome', [
             'paginator' => $paginated,
             'plates' => $plates,
             'provinces' => Province::select('code', 'name')->get()->toArray(),
             'kinds' => PlateKind::select('id', 'name')->get()->toArray(),
+            'uniqueLetters' => $uniqueLetters,
+            'trustStats' => $trustStats,
             'filters' => [
                 'tab' => $tab,
                 'search' => $search,
                 'color' => $color,
                 'province' => $province,
+                'letter' => $letter,
+                'num_buttons' => $numButtons,
+                'last_digits' => $lastDigits,
                 'kind' => $kind,
                 'vehicle' => $vehicle,
                 'start_date' => $startDate,

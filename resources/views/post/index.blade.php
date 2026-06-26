@@ -65,15 +65,31 @@
     $activeCategory = $filters['category'] ?? '';
     $searchQuery = $filters['search'] ?? '';
     $currentPath = request()->getPathInfo();
+
+    // SEO Meta động dựa trên activeCategory
+    $seoTitle = 'Bài viết & Cẩm nang giải mã ý nghĩa biển số xe - BISOXE.COM';
+    $seoDescription = 'Khám phá cẩm nang đấu giá biển số xe, tin tức thị trường biển số đẹp và bài viết giải mã ý nghĩa biển số mới nhất tại BISOXE.COM';
+    $pageH1 = 'Bài Viết & Cẩm Nang Biển Số';
+
+    if ($activeCategory === 'phan-tich') {
+        $seoTitle = 'Top 100 Biển Số Đắt Nhất Việt Nam (Cập Nhật 2026)';
+        $seoDescription = 'Khám phá bảng xếp hạng 100 biển số đấu giá có giá trị cao nhất Việt Nam. Dữ liệu được cập nhật từ các phiên đấu giá chính thức trên toàn quốc.';
+        $pageH1 = 'Top 100 Biển Số Đắt Nhất Việt Nam';
+    } elseif ($activeCategory) {
+        $categoryLabel = $getCategoryLabel($activeCategory);
+        $seoTitle = $categoryLabel . ' - Bài viết & Cẩm nang - BISOXE.COM';
+        $seoDescription = 'Danh sách các bài viết về ' . mb_strtolower($categoryLabel) . ' mới nhất, thông tin chính xác và cập nhật liên tục tại BISOXE.COM';
+        $pageH1 = $categoryLabel;
+    }
 @endphp
 
-@section('title', 'Bài viết & Cẩm nang giải mã ý nghĩa biển số xe - BISOXE.COM')
-@section('description', 'Khám phá cẩm nang đấu giá biển số xe, tin tức thị trường biển số đẹp và bài viết giải mã ý nghĩa biển số mới nhất tại BISOXE.COM')
+@section('title', $seoTitle)
+@section('description', $seoDescription)
 
 @section('meta')
     <link rel="canonical" href="https://bisoxe.com{{ $currentPath }}" />
-    <meta property="og:title" content="Bài viết & Cẩm nang giải mã ý nghĩa biển số xe - BISOXE.COM" />
-    <meta property="og:description" content="Khám phá cẩm nang đấu giá biển số xe, tin tức thị trường biển số đẹp và bài viết giải mã ý nghĩa biển số mới nhất tại BISOXE.COM" />
+    <meta property="og:title" content="{{ $seoTitle }}" />
+    <meta property="og:description" content="{{ $seoDescription }}" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://bisoxe.com{{ $currentPath }}" />
 @endsection
@@ -82,7 +98,7 @@
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
     
     <!-- Hero Section (Ẩn đi theo yêu cầu) -->
-    <h1 class="sr-only">Bài Viết & Cẩm Nang Biển Số</h1>
+    <h1 class="sr-only">{{ $pageH1 }}</h1>
 
     <!-- Main Body -->
     <main class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">

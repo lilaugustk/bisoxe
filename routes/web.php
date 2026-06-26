@@ -3,6 +3,7 @@
 use App\Http\Controllers\LicensePlateController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ValuationController;
+use App\Http\Controllers\AnalysisController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/{tab?}', [LicensePlateController::class, 'index'])->name('home')->where('tab', 'cong-bo|chinh-thuc|ket-qua');
@@ -27,6 +28,30 @@ Route::post('/dinh-gia', [ValuationController::class, 'store'])->name('valuation
 Route::get('/api/bien-so/{full_number}/dinh-gia', [LicensePlateController::class, 'getValuationApi'])->name('plate.api_valuation');
 Route::get('/api/bien-so/{id}/generate-article', [LicensePlateController::class, 'generateArticleApi'])->name('plate.generate_article_api')->where('id', '[0-9]+');
 
+
+// Programmatic SEO Landing Pages (Phân tích & Bảng xếp hạng)
+Route::get('/top', [AnalysisController::class, 'index'])->name('analysis.index');
+
+// Redirects cho các slug bảng xếp hạng cũ
+Route::get('/top/{old_slug}', function (string $old_slug) {
+    $redirects = [
+        'top-100-bien-so-ha-noi' => 'ha-noi',
+        'top-100-bien-so-tp-hcm' => 'tp-hcm',
+        'top-bien-so-ngu-quy' => 'ngu-quy',
+        'top-bien-so-tu-quy' => 'tu-quy',
+        'top-bien-so-than-tai' => 'than-tai',
+        'top-bien-so-loc-phat' => 'loc-phat',
+    ];
+    if (isset($redirects[$old_slug])) {
+        return redirect()->to('/top/' . $redirects[$old_slug], 301);
+    }
+    abort(404);
+})->where('old_slug', 'top-100-bien-so-ha-noi|top-100-bien-so-tp-hcm|top-bien-so-ngu-quy|top-bien-so-tu-quy|top-bien-so-than-tai|top-bien-so-loc-phat');
+
+Route::get('/top/{slug}', [AnalysisController::class, 'show'])->name('analysis.show')->where('slug', '[a-z0-9-]+');
+Route::get('/c/phan-tich', function () {
+    return redirect()->to('/top', 301);
+});
 
 Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
 Route::get('/c/{category}', [PostController::class, 'index'])->name('posts.category');
@@ -55,6 +80,54 @@ Route::get('/sitemap.xml', function () {
     $xml .= '<url><loc>https://bisoxe.com/c/bien-so-cac-tinh</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/huong-dan</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/tin-tuc</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+
+    // Trang phân tích & Bảng xếp hạng (pSEO)
+    $xml .= '<url><loc>https://bisoxe.com/top</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
+    
+    // Các bảng xếp hạng tiêu biểu/đặc biệt
+    $baseSlugs = [
+        'top-100-bien-so-dat-nhat-viet-nam',
+        '2026',
+        'ngu-quy',
+        'tu-quy',
+        'than-tai',
+        'loc-phat',
+        'bien-duoi-1-ty',
+        'gia-tren-10-ty',
+    ];
+    foreach ($baseSlugs as $slug) {
+        $xml .= '<url><loc>https://bisoxe.com/top/' . $slug . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+    }
+
+    // Các tỉnh thành (Sinh động từ DB)
+    $sitemapProvinces = \Illuminate\Support\Facades\Cache::remember('sitemap_provinces_v2', 3600, function() {
+        return \App\Models\Province::all()->map(function($p) {
+            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
+            return \Illuminate\Support\Str::slug($cleanName);
+        })->toArray();
+    });
+    foreach ($sitemapProvinces as $provSlug) {
+        $xml .= '<url><loc>https://bisoxe.com/top/' . $provSlug . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+    }
+
+    // Các đầu số xe phổ biến (Sinh động từ DB)
+    $sitemapSeriesList = \Illuminate\Support\Facades\Cache::remember('sitemap_series_v2', 3600, function() {
+        $list = \App\Models\LicensePlate::selectRaw('SUBSTRING(full_number, 1, 3) as series, count(*) as count')
+            ->groupBy('series')
+            ->orderBy('count', 'desc')
+            ->limit(48)
+            ->pluck('series')
+            ->toArray();
+        
+        $filtered = array_filter($list, function($s) {
+            return preg_match('/^[0-9]{2}[a-zA-Z]{1,2}$/', $s);
+        });
+        
+        return array_map('strtolower', $filtered);
+    });
+    foreach ($sitemapSeriesList as $series) {
+        $xml .= '<url><loc>https://bisoxe.com/top/' . $series . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+    }
 
     // Trang chi tiết biển số đã phân tích
     foreach ($plates as $plate) {

@@ -33,5 +33,6 @@
 
         <x-footer />
         <x-back-to-top />
+        @yield('scripts')
     </body>
 </html>

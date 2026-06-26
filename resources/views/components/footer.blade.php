@@ -154,23 +154,23 @@
                 </ul>
             </div>
 
-            <!-- Links Column 2: Cẩm nang -->
+            <!-- Links Column 2: Phân tích -->
             <div class="space-y-4 lg:col-span-3">
                 <div class="border-l-2 border-[#8C1E1E] pl-2.5 text-xs font-black tracking-wider text-white uppercase">
-                    Ý nghĩa & Tin tức
+                    Phân tích & Xếp hạng
                 </div>
                 <ul class="space-y-2.5 text-xs font-medium">
                     <li>
-                        <a href="/bai-viet" class="transition-colors duration-200 hover:text-[#F5B800]">Tất cả bài viết</a>
+                        <a href="/top" class="transition-colors duration-200 hover:text-[#F5B800]">Trang chính Phân tích</a>
                     </li>
                     <li>
-                        <a href="/c/y-nghia-bien-so" class="transition-colors duration-200 hover:text-[#F5B800]">Ý nghĩa biển số</a>
+                        <a href="/top/top-100-bien-so-dat-nhat-viet-nam" class="transition-colors duration-200 hover:text-[#F5B800]">Top 100 biển số đắt nhất</a>
                     </li>
                     <li>
-                        <a href="/c/huong-dan" class="transition-colors duration-200 hover:text-[#F5B800]">Cẩm nang hướng dẫn</a>
+                        <a href="/top/ngu-quy" class="transition-colors duration-200 hover:text-[#F5B800]">Xếp hạng biển Ngũ quý</a>
                     </li>
                     <li>
-                        <a href="/c/tin-tuc" class="transition-colors duration-200 hover:text-[#F5B800]">Tin tức & Thị trường</a>
+                        <a href="/top/tu-quy" class="transition-colors duration-200 hover:text-[#F5B800]">Xếp hạng biển Tứ quý</a>
                     </li>
                 </ul>
             </div>
@@ -201,7 +201,9 @@
                     © 2026 BISOXE.COM. Bảo lưu mọi quyền.
                 </p>
                 <div class="flex gap-4 text-xs text-gray-400">
-                    <a href="/" class="transition-colors hover:text-gray-200">Trang chủ</a>
+                    <a href="/" class="transition-colors hover:text-gray-200">Tra cứu</a>
+                    <span>•</span>
+                    <a href="/top" class="transition-colors hover:text-gray-200">Phân tích</a>
                     <span>•</span>
                     <a href="/danh-sach-bien-so-xe-o-to" class="transition-colors hover:text-gray-200">Biển số ô tô</a>
                     <span>•</span>
