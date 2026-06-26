@@ -50,6 +50,9 @@ Route::get('/sitemap.xml', function () {
     $xml .= '<url><loc>https://bisoxe.com/dinh-gia</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/bai-viet</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/y-nghia-bien-so</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/c/bien-so-dep</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/c/dau-gia-bien-so</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/c/bien-so-cac-tinh</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/huong-dan</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/tin-tuc</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
 

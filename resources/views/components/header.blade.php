@@ -13,10 +13,18 @@
         $vehicleType = $plate['vehicle_type'] ?? null;
     }
 
-    $isCarActive = request()->is('danh-sach-bien-so-xe-o-to') || $vehicleType === 'car';
-    $isMotorcycleActive = request()->is('danh-sach-bien-so-xe-may') || $vehicleType === 'motorcycle';
-    $isPostActive = request()->is('bai-viet*') || request()->is('b/*') || request()->is('c/*');
+    $routeTab = request()->route('tab') ?? request()->query('tab');
+
+    $isOfficialActive = request()->is('chinh-thuc*') || $routeTab === 'chinh-thuc';
+    $isResultActive = request()->is('ket-qua*') || $routeTab === 'ket-qua';
+    $isSearchActive = (request()->is('/') || request()->is('danh-sach-bien-so-xe-o-to*') || request()->is('danh-sach-bien-so-xe-may*') || request()->is('bien-so-*')) 
+        && !$isOfficialActive 
+        && !$isResultActive;
+
     $isValuationActive = request()->is('dinh-gia*');
+    $isMarketActive = request()->is('c/tin-tuc*');
+    $isAnalysisActive = request()->is('c/y-nghia-bien-so*');
+    $isNewsActive = request()->is('bai-viet*') || request()->is('b/*') || (request()->is('c/*') && !$isMarketActive && !$isAnalysisActive);
 @endphp
 
 <header x-data="{ isMobileMenuOpen: false }" class="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
@@ -96,50 +104,45 @@
             <nav class="hidden items-center lg:gap-3 xl:gap-5 text-xs xl:text-sm font-semibold text-gray-600 lg:flex">
                 <a
                     href="/"
-                    class="{{ $isHomePath ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
+                    class="{{ $isSearchActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    Trang chủ
-                </a>
-                <a
-                    href="/danh-sach-bien-so-xe-o-to"
-                    class="{{ $isCarActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
-                >
-                    <span class="inline xl:hidden">Biển ô tô</span>
-                    <span class="hidden xl:inline">Biển số xe ô tô</span>
-                </a>
-                <a
-                    href="/danh-sach-bien-so-xe-may"
-                    class="{{ $isMotorcycleActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
-                >
-                    <span class="inline xl:hidden">Biển xe máy</span>
-                    <span class="hidden xl:inline">Biển số xe máy, mô tô</span>
-                </a>
-                <a
-                    href="/bai-viet"
-                    class="{{ $isPostActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
-                >
-                    <span class="inline xl:hidden">Bài viết</span>
-                    <span class="hidden xl:inline">Bài viết & Tin tức</span>
+                    Tra cứu biển số
                 </a>
                 <a
                     href="/dinh-gia"
                     class="{{ $isValuationActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    <span class="inline xl:hidden">Định giá</span>
-                    <span class="hidden xl:inline">Định giá biển số</span>
+                    Định giá AI
                 </a>
                 <a
-                    href="{{ $isHomePath ? '#y-nghia-bien-so' : '/#y-nghia-bien-so' }}"
-                    class="transition hover:text-[#8C1E1E]"
+                    href="/chinh-thuc"
+                    class="{{ $isOfficialActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    <span class="inline xl:hidden">Ý nghĩa</span>
-                    <span class="hidden xl:inline">Ý nghĩa biển số</span>
+                    Đấu giá hôm nay
                 </a>
                 <a
-                    href="{{ $isHomePath ? '#faq' : '/#faq' }}"
-                    class="transition hover:text-[#8C1E1E]"
+                    href="/ket-qua"
+                    class="{{ $isResultActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    Hỏi đáp
+                    Kết quả đấu giá
+                </a>
+                <a
+                    href="/c/tin-tuc"
+                    class="{{ $isMarketActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
+                >
+                    Chỉ số thị trường
+                </a>
+                <a
+                    href="/c/y-nghia-bien-so"
+                    class="{{ $isAnalysisActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
+                >
+                    Phân tích
+                </a>
+                <a
+                    href="/bai-viet"
+                    class="{{ $isNewsActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
+                >
+                    Tin tức
                 </a>
             </nav>
 
@@ -196,52 +199,52 @@
         <nav class="flex flex-col divide-y divide-gray-100 px-4 py-2 text-sm font-bold text-gray-700">
             <a
                 href="/"
-                class="py-3 transition hover:text-[#8C1E1E] {{ $isHomePath ? 'text-[#8C1E1E]' : '' }}"
+                class="py-3 transition hover:text-[#8C1E1E] {{ $isSearchActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
-                Trang chủ
-            </a>
-            <a
-                href="/danh-sach-bien-so-xe-o-to"
-                class="py-3 transition hover:text-[#8C1E1E] {{ $isCarActive ? 'text-[#8C1E1E]' : '' }}"
-                @click="isMobileMenuOpen = false"
-            >
-                Biển số xe ô tô
-            </a>
-            <a
-                href="/danh-sach-bien-so-xe-may"
-                class="py-3 transition hover:text-[#8C1E1E] {{ $isMotorcycleActive ? 'text-[#8C1E1E]' : '' }}"
-                @click="isMobileMenuOpen = false"
-            >
-                Biển số xe máy, mô tô
-            </a>
-            <a
-                href="/bai-viet"
-                class="py-3 transition hover:text-[#8C1E1E] {{ $isPostActive ? 'text-[#8C1E1E]' : '' }}"
-                @click="isMobileMenuOpen = false"
-            >
-                Bài viết & Tin tức
+                Tra cứu biển số
             </a>
             <a
                 href="/dinh-gia"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isValuationActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
-                Định giá biển số
+                Định giá AI
             </a>
             <a
-                href="{{ $isHomePath ? '#y-nghia-bien-so' : '/#y-nghia-bien-so' }}"
-                class="py-3 transition hover:text-[#8C1E1E]"
+                href="/chinh-thuc"
+                class="py-3 transition hover:text-[#8C1E1E] {{ $isOfficialActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
-                Ý nghĩa biển số
+                Đấu giá hôm nay
             </a>
             <a
-                href="{{ $isHomePath ? '#faq' : '/#faq' }}"
-                class="py-3 transition hover:text-[#8C1E1E]"
+                href="/ket-qua"
+                class="py-3 transition hover:text-[#8C1E1E] {{ $isResultActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
-                Hỏi đáp
+                Kết quả đấu giá
+            </a>
+            <a
+                href="/c/tin-tuc"
+                class="py-3 transition hover:text-[#8C1E1E] {{ $isMarketActive ? 'text-[#8C1E1E]' : '' }}"
+                @click="isMobileMenuOpen = false"
+            >
+                Chỉ số thị trường
+            </a>
+            <a
+                href="/c/y-nghia-bien-so"
+                class="py-3 transition hover:text-[#8C1E1E] {{ $isAnalysisActive ? 'text-[#8C1E1E]' : '' }}"
+                @click="isMobileMenuOpen = false"
+            >
+                Phân tích
+            </a>
+            <a
+                href="/bai-viet"
+                class="py-3 transition hover:text-[#8C1E1E] {{ $isNewsActive ? 'text-[#8C1E1E]' : '' }}"
+                @click="isMobileMenuOpen = false"
+            >
+                Tin tức
             </a>
         </nav>
     </div>

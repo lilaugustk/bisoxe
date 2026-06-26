@@ -8,7 +8,13 @@
             case 'huong-dan':
                 return 'Hướng dẫn';
             case 'tin-tuc':
-                return 'Tin tức';
+                return 'Tin tức & Thị trường';
+            case 'dau-gia-bien-so':
+                return 'Đấu giá biển số';
+            case 'bien-so-cac-tinh':
+                return 'Biển số xe các tỉnh';
+            case 'bien-so-dep':
+                return 'Biển số đẹp';
             default:
                 return 'Khác';
         }
@@ -22,6 +28,12 @@
                 return 'bg-gradient-to-br from-[#1E3A8A] to-[#1E1B4B]';
             case 'tin-tuc':
                 return 'bg-gradient-to-br from-[#D97706] to-[#78350F]';
+            case 'dau-gia-bien-so':
+                return 'bg-gradient-to-br from-[#0F766E] to-[#115E59]';
+            case 'bien-so-cac-tinh':
+                return 'bg-gradient-to-br from-[#047857] to-[#065F46]';
+            case 'bien-so-dep':
+                return 'bg-gradient-to-br from-[#6D28D9] to-[#4C1D95]';
             default:
                 return 'bg-gradient-to-br from-[#4B5563] to-[#1F2937]';
         }
@@ -36,6 +48,9 @@
     $categories = [
         ['label' => 'Tất cả bài viết', 'value' => ''],
         ['label' => 'Ý nghĩa biển số', 'value' => 'y-nghia-bien-so'],
+        ['label' => 'Biển số đẹp', 'value' => 'bien-so-dep'],
+        ['label' => 'Đấu giá biển số', 'value' => 'dau-gia-bien-so'],
+        ['label' => 'Biển số xe các tỉnh', 'value' => 'bien-so-cac-tinh'],
         ['label' => 'Hướng dẫn', 'value' => 'huong-dan'],
         ['label' => 'Tin tức & Thị trường', 'value' => 'tin-tuc'],
     ];

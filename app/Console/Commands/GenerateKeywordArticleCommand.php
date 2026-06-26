@@ -33,79 +33,18 @@ class GenerateKeywordArticleCommand extends Command
     protected $description = 'Tự động tạo các bài viết SEO theo các từ khóa cụ thể hoặc theo tỉnh thành';
 
     /**
-     * Danh sách 63 tỉnh thành Việt Nam với mã VPA và ký hiệu biển số (local symbol)
+     * Danh sách tỉnh thành của hệ thống (được load động từ database)
      */
-    protected array $provincesList = [
-        ['name' => 'Hà Nội', 'code' => '01', 'symbol' => '29'],
-        ['name' => 'Hà Giang', 'code' => '02', 'symbol' => '23'],
-        ['name' => 'Cao Bằng', 'code' => '04', 'symbol' => '11'],
-        ['name' => 'Bắc Kạn', 'code' => '06', 'symbol' => '97'],
-        ['name' => 'Tuyên Quang', 'code' => '08', 'symbol' => '22'],
-        ['name' => 'Lào Cai', 'code' => '10', 'symbol' => '24'],
-        ['name' => 'Điện Biên', 'code' => '11', 'symbol' => '27'],
-        ['name' => 'Lai Châu', 'code' => '12', 'symbol' => '25'],
-        ['name' => 'Sơn La', 'code' => '14', 'symbol' => '26'],
-        ['name' => 'Yên Bái', 'code' => '15', 'symbol' => '21'],
-        ['name' => 'Hòa Bình', 'code' => '17', 'symbol' => '28'],
-        ['name' => 'Thái Nguyên', 'code' => '19', 'symbol' => '20'],
-        ['name' => 'Lạng Sơn', 'code' => '20', 'symbol' => '12'],
-        ['name' => 'Quảng Ninh', 'code' => '22', 'symbol' => '14'],
-        ['name' => 'Bắc Giang', 'code' => '24', 'symbol' => '98'],
-        ['name' => 'Phú Thọ', 'code' => '25', 'symbol' => '19'],
-        ['name' => 'Vĩnh Phúc', 'code' => '26', 'symbol' => '88'],
-        ['name' => 'Bắc Ninh', 'code' => '27', 'symbol' => '99'],
-        ['name' => 'Hải Dương', 'code' => '30', 'symbol' => '34'],
-        ['name' => 'Hải Phòng', 'code' => '31', 'symbol' => '15'],
-        ['name' => 'Hưng Yên', 'code' => '33', 'symbol' => '89'],
-        ['name' => 'Thái Bình', 'code' => '34', 'symbol' => '17'],
-        ['name' => 'Hà Nam', 'code' => '35', 'symbol' => '90'],
-        ['name' => 'Nam Định', 'code' => '36', 'symbol' => '18'],
-        ['name' => 'Ninh Bình', 'code' => '37', 'symbol' => '35'],
-        ['name' => 'Thanh Hóa', 'code' => '38', 'symbol' => '36'],
-        ['name' => 'Nghệ An', 'code' => '40', 'symbol' => '37'],
-        ['name' => 'Hà Tĩnh', 'code' => '42', 'symbol' => '38'],
-        ['name' => 'Quảng Bình', 'code' => '44', 'symbol' => '73'],
-        ['name' => 'Quảng Trị', 'code' => '45', 'symbol' => '74'],
-        ['name' => 'Thừa Thiên Huế', 'code' => '46', 'symbol' => '75'],
-        ['name' => 'Đà Nẵng', 'code' => '48', 'symbol' => '43'],
-        ['name' => 'Quảng Nam', 'code' => '49', 'symbol' => '92'],
-        ['name' => 'Quảng Ngãi', 'code' => '51', 'symbol' => '76'],
-        ['name' => 'Bình Định', 'code' => '52', 'symbol' => '77'],
-        ['name' => 'Phú Yên', 'code' => '54', 'symbol' => '78'],
-        ['name' => 'Khánh Hòa', 'code' => '56', 'symbol' => '79'],
-        ['name' => 'Ninh Thuận', 'code' => '58', 'symbol' => '85'],
-        ['name' => 'Bình Thuận', 'code' => '60', 'symbol' => '86'],
-        ['name' => 'Kon Tum', 'code' => '62', 'symbol' => '82'],
-        ['name' => 'Gia Lai', 'code' => '64', 'symbol' => '81'],
-        ['name' => 'Đắk Lắk', 'code' => '66', 'symbol' => '47'],
-        ['name' => 'Đắk Nông', 'code' => '67', 'symbol' => '48'],
-        ['name' => 'Lâm Đồng', 'code' => '68', 'symbol' => '49'],
-        ['name' => 'Bình Phước', 'code' => '70', 'symbol' => '93'],
-        ['name' => 'Tây Ninh', 'code' => '72', 'symbol' => '70'],
-        ['name' => 'Bình Dương', 'code' => '74', 'symbol' => '61'],
-        ['name' => 'Đồng Nai', 'code' => '75', 'symbol' => '39'],
-        ['name' => 'Bà Rịa - Vũng Tàu', 'code' => '77', 'symbol' => '72'],
-        ['name' => 'Hồ Chí Minh', 'code' => '79', 'symbol' => '51'],
-        ['name' => 'Long An', 'code' => '80', 'symbol' => '62'],
-        ['name' => 'Tiền Giang', 'code' => '82', 'symbol' => '63'],
-        ['name' => 'Bến Tre', 'code' => '83', 'symbol' => '71'],
-        ['name' => 'Trà Vinh', 'code' => '84', 'symbol' => '84'],
-        ['name' => 'Vĩnh Long', 'code' => '86', 'symbol' => '64'],
-        ['name' => 'Đồng Tháp', 'code' => '87', 'symbol' => '66'],
-        ['name' => 'An Giang', 'code' => '89', 'symbol' => '67'],
-        ['name' => 'Kiên Giang', 'code' => '91', 'symbol' => '68'],
-        ['name' => 'Cần Thơ', 'code' => '92', 'symbol' => '65'],
-        ['name' => 'Hậu Giang', 'code' => '93', 'symbol' => '95'],
-        ['name' => 'Sóc Trăng', 'code' => '94', 'symbol' => '83'],
-        ['name' => 'Bạc Liêu', 'code' => '95', 'symbol' => '94'],
-        ['name' => 'Cà Mau', 'code' => '96', 'symbol' => '69'],
-    ];
+    protected array $provincesList = [];
 
     /**
      * Execute the console command.
      */
     public function handle(GeminiApiService $geminiService, PostImageService $postImageService): int
     {
+        // Load danh sách tỉnh thành động từ database trước khi xử lý
+        $this->loadProvincesList();
+
         $keywordOpt = $this->option('keyword');
         $provinceOpt = $this->option('province');
         $allProvincesOpt = $this->option('all-provinces');
@@ -149,7 +88,7 @@ class GenerateKeywordArticleCommand extends Command
             }
         }
 
-        // 4. Áp dụng phân tích tỉnh/đầu số cho các từ khóa chưa có thông tin tỉnh thành (ví dụ từ khóa đơn lẻ)
+        // 4. Áp dụng phân tích tỉnh/đầu số và tự động nhận diện danh mục nếu chưa có
         foreach ($keywordsToGenerate as &$item) {
             if (empty($item['province_name'])) {
                 $resolved = $this->resolveProvinceFromKeyword($item['text']);
@@ -158,6 +97,9 @@ class GenerateKeywordArticleCommand extends Command
                     $item['province_code'] = $resolved['code'];
                     $item['local_symbol'] = $resolved['symbol'];
                 }
+            }
+            if (empty($item['category'])) {
+                $item['category'] = $this->resolveCategoryFromKeyword($item['text']);
             }
         }
         unset($item);
@@ -230,7 +172,8 @@ class GenerateKeywordArticleCommand extends Command
                     $item['text'],
                     $item['province_name'],
                     $item['local_symbol'],
-                    $existingTitles
+                    $existingTitles,
+                    $item['category']
                 );
 
                 if (empty($data['title']) || empty($data['content'])) {
@@ -314,6 +257,75 @@ class GenerateKeywordArticleCommand extends Command
     }
 
     /**
+     * Tự động tải danh sách tỉnh thành và ký hiệu đầu số từ database
+     */
+    protected function loadProvincesList(): void
+    {
+        $fallbackSymbols = [
+            '01' => '29',
+            '02' => '23',
+            '04' => '11',
+            '08' => '22',
+            '11' => '27',
+            '12' => '25',
+            '14' => '26',
+            '15' => '24',
+            '19' => '20',
+            '20' => '12',
+            '22' => '14',
+            '24' => '99',
+            '25' => '19',
+            '31' => '15',
+            '33' => '89',
+            '34' => '17',
+            '37' => '35',
+            '38' => '36',
+            '40' => '37',
+            '42' => '38',
+            '44' => '74',
+            '46' => '75',
+            '48' => '43',
+            '51' => '76',
+            '52' => '81',
+            '56' => '79',
+            '66' => '47',
+            '68' => '49',
+            '75' => '60',
+            '79' => '50',
+            '80' => '70',
+            '82' => '66',
+            '86' => '64',
+            '91' => '67',
+            '92' => '65',
+            '96' => '69',
+        ];
+
+        $provinces = Province::all();
+        foreach ($provinces as $p) {
+            // Tìm ký hiệu đầu số phổ biến nhất của tỉnh này từ bảng license_plates
+            $symbol = \Illuminate\Support\Facades\DB::table('license_plates')
+                ->where('province_code', $p->code)
+                ->whereNotNull('local_symbol')
+                ->groupBy('local_symbol')
+                ->orderByRaw('COUNT(*) DESC')
+                ->value('local_symbol');
+
+            if (!$symbol && isset($fallbackSymbols[$p->code])) {
+                $symbol = $fallbackSymbols[$p->code];
+            }
+
+            // Làm sạch tên tỉnh (bỏ chữ "Tỉnh", "Thành phố")
+            $cleanName = trim(str_replace(['Tỉnh ', 'Thành phố '], '', $p->name));
+
+            $this->provincesList[] = [
+                'name' => $cleanName,
+                'code' => $p->code,
+                'symbol' => $symbol,
+            ];
+        }
+    }
+
+    /**
      * Tìm các tỉnh thành khớp với từ khóa tỉnh
      */
     protected function findProvinces(string $search): array
@@ -341,6 +353,23 @@ class GenerateKeywordArticleCommand extends Command
         // 2. Thử tìm theo mã đầu số xuất hiện trong từ khóa (ví dụ "17b2", "biển 37")
         if (preg_match('/(\d{2})/', $keyword, $matches)) {
             $symbol = $matches[1];
+
+            // Truy vấn động từ bảng license_plates xem đầu số này thuộc tỉnh nào
+            $provinceCode = \Illuminate\Support\Facades\DB::table('license_plates')
+                ->where('local_symbol', $symbol)
+                ->value('province_code');
+
+            if ($provinceCode) {
+                foreach ($this->provincesList as $prov) {
+                    if ($prov['code'] === $provinceCode) {
+                        $matchedProv = $prov;
+                        $matchedProv['symbol'] = $symbol; // Gán đúng đầu số đang tìm kiếm
+                        return $matchedProv;
+                    }
+                }
+            }
+
+            // Fallback so sánh trực tiếp
             foreach ($this->provincesList as $prov) {
                 if ($prov['symbol'] === $symbol) {
                     return $prov;
@@ -354,21 +383,65 @@ class GenerateKeywordArticleCommand extends Command
     /**
      * Tạo danh sách 6 mẫu từ khóa cho một tỉnh cụ thể
      */
+    /**
+     * Tự động nhận diện danh mục dựa trên từ khóa
+     */
+    protected function resolveCategoryFromKeyword(string $keyword): string
+    {
+        $keywordLower = mb_strtolower($keyword, 'UTF-8');
+
+        if (str_contains($keywordLower, 'ở đâu') || str_contains($keywordLower, 'là huyện nào') || str_contains($keywordLower, 'là quận nào') || str_contains($keywordLower, 'ký hiệu')) {
+            return 'bien-so-cac-tinh';
+        }
+
+        if (str_contains($keywordLower, 'đấu giá') || str_contains($keywordLower, 'danh sách')) {
+            return 'dau-gia-bien-so';
+        }
+
+        if (str_contains($keywordLower, 'biển số đẹp') || str_contains($keywordLower, 'đẹp') || str_contains($keywordLower, 'ý nghĩa')) {
+            return 'bien-so-dep';
+        }
+
+        return 'tin-tuc'; // Chuyên mục mặc định nếu không khớp mẫu nào
+    }
+
+    /**
+     * Tạo danh sách 6 mẫu từ khóa cho một tỉnh cụ thể
+     */
     protected function buildTemplatesForProvince(array $prov): array
     {
         $templates = [
-            "danh sách biển số xe đấu giá {$prov['name']}",
-            "đấu giá biển số xe máy {$prov['name']}",
-            "đấu giá biển số ô tô {$prov['name']}",
-            "biển số đẹp {$prov['name']}",
-            "biển số oto đẹp {$prov['name']}",
-            "biển số xe máy đẹp {$prov['name']}",
+            [
+                'text' => "danh sách biển số xe đấu giá {$prov['name']}",
+                'category' => 'dau-gia-bien-so'
+            ],
+            [
+                'text' => "đấu giá biển số xe máy {$prov['name']}",
+                'category' => 'dau-gia-bien-so'
+            ],
+            [
+                'text' => "đấu giá biển số ô tô {$prov['name']}",
+                'category' => 'dau-gia-bien-so'
+            ],
+            [
+                'text' => "biển số đẹp {$prov['name']}",
+                'category' => 'bien-so-dep'
+            ],
+            [
+                'text' => "biển số oto đẹp {$prov['name']}",
+                'category' => 'bien-so-dep'
+            ],
+            [
+                'text' => "biển số xe máy đẹp {$prov['name']}",
+                'category' => 'bien-so-dep'
+            ],
         ];
 
         $list = [];
         foreach ($templates as $tmpl) {
             $list[] = [
-                'text' => $tmpl,
+                'text' => $tmpl['text'],
+                'category' => $tmpl['category'],
                 'province_name' => $prov['name'],
                 'province_code' => $prov['code'],
                 'local_symbol' => $prov['symbol'],
