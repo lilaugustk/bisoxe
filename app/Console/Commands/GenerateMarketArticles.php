@@ -173,8 +173,8 @@ class GenerateMarketArticles extends Command
                     $this->info("Tạo mới bài viết thành công: {$data['title']}");
                 }
 
-                // Nghỉ 3 giây để tránh hit rate limit của Gemini API
-                sleep(3);
+                // Nghỉ 8 giây để tránh hit rate limit của Gemini API
+                sleep(8);
 
             } catch (\Exception $e) {
                 $this->error("Lỗi khi sinh bài viết '{$cfg['topic']}': " . $e->getMessage());

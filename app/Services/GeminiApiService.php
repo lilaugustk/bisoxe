@@ -582,7 +582,7 @@ Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên
                 $generationConfig = [
                     'responseMimeType' => 'application/json',
                     'responseSchema' => $schema,
-                    'maxOutputTokens' => 8192,
+                    'maxOutputTokens' => 4096,
                 ];
 
                 if (str_contains($model, '2.5-flash')) {
