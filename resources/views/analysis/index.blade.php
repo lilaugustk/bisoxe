@@ -4,11 +4,11 @@
 @section('description', 'Khám phá các bảng xếp hạng biển số xe trúng đấu giá có giá trị cao nhất Việt Nam, Hà Nội, TP.HCM, ngũ quý, tứ quý, thần tài, lộc phát, sảnh tiến được cập nhật tự động liên tục.')
 
 @section('meta')
-    <link rel="canonical" href="https://bisoxe.com/top" />
+    <link rel="canonical" href="https://bisoxe.com/phan-tich" />
     <meta property="og:title" content="Bảng Xếp Hạng & Phân Tích Biển Số Xe Đắt Nhất Việt Nam (Cập Nhật 2026)" />
     <meta property="og:description" content="Khám phá các bảng xếp hạng biển số xe trúng đấu giá có giá trị cao nhất Việt Nam, Hà Nội, TP.HCM, ngũ quý, tứ quý, thần tài, lộc phát, sảnh tiến được cập nhật tự động liên tục." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://bisoxe.com/top" />
+    <meta property="og:url" content="https://bisoxe.com/phan-tich" />
 @endsection
 
 @section('content')
@@ -32,36 +32,29 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- CỘT TRÁI: Danh sách bài viết bảng xếp hạng (Chiếm 2/3 chiều rộng) -->
-            <section class="lg:col-span-2 space-y-6">
+            <section class="lg:col-span-2">
                 <h2 class="sr-only">Danh sách bài viết bảng xếp hạng</h2>
-                
-                @foreach($rankings as $ranking)
-                    <article class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs hover:shadow-xs transition duration-200">
-                        <h3 class="text-lg font-extrabold text-[#111827] hover:text-[#8C1E1E] transition duration-150">
-                            <a href="{{ url('/' . $ranking['slug']) }}">{{ $ranking['name'] }}</a>
-                        </h3>
-                        <p class="mt-2 text-sm leading-relaxed text-gray-500">
-                            {{ $ranking['description'] }}
-                        </p>
-                        <div class="mt-4 pt-3 border-t border-gray-50">
-                            <a href="{{ url('/' . $ranking['slug']) }}" class="text-xs font-bold text-[#8C1E1E] hover:underline flex items-center gap-1">
-                                Đọc chi tiết bài viết
-                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </a>
-                        </div>
-                    </article>
-                @endforeach
-                
+                <div class="divide-y divide-gray-200/60">
+                    @foreach($rankings as $ranking)
+                        <article class="py-6 first:pt-0 last:pb-0 transition duration-150">
+                            <h3 class="text-lg font-extrabold text-[#111827] hover:text-[#8C1E1E] transition duration-150">
+                                <a href="{{ url('/' . $ranking['slug']) }}">{{ $ranking['name'] }}</a>
+                            </h3>
+                            <p class="mt-2 text-sm leading-relaxed text-gray-500">
+                                {{ $ranking['description'] }}
+                            </p>
+
+                        </article>
+                    @endforeach
+                </div>
             </section>
 
             <!-- CỘT PHẢI: Sidebar các chuyên mục và stats (Chiếm 1/3 chiều rộng) -->
-            <aside class="space-y-6">
+            <aside class="space-y-8">
                 
-                <!-- Card 1: Số liệu thống kê nhanh -->
-                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
+                <!-- Widget 1: Số liệu thống kê nhanh -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Số liệu thống kê
                     </h3>
                     <div class="grid grid-cols-2 gap-4 text-center">
@@ -76,7 +69,7 @@
                             <span class="text-[10px] text-gray-500">đồng</span>
                         </div>
                     </div>
-                    <div class="border-t border-gray-100 pt-3 text-xs font-semibold text-gray-500 flex justify-between">
+                    <div class="pt-1 text-xs font-semibold text-gray-500 flex justify-between">
                         <span>Tỉnh thành phủ sóng:</span>
                         <span class="font-extrabold text-gray-900">{{ $trustStats['total_provinces'] }}</span>
                     </div>
@@ -86,28 +79,28 @@
                     </div>
                 </div>
 
-                <!-- Card 2: Bảng xếp hạng theo Tỉnh thành -->
-                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
+                <!-- Widget 2: Bảng xếp hạng theo Tỉnh thành -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Theo Tỉnh thành
                     </h3>
                     <div class="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: thin;">
                         @foreach($provincesList as $prov)
-                            <a href="{{ url('/' . $prov['slug']) }}" class="px-2.5 py-1 bg-gray-50 border border-gray-150 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition">
+                            <a href="{{ url('/' . $prov['slug']) }}" class="px-2.5 py-1 bg-white border border-gray-200 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">
                                 {{ $prov['name'] }}
                             </a>
                         @endforeach
                     </div>
                 </div>
 
-                <!-- Card 3: Bảng xếp hạng theo Đầu số xe -->
-                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
+                <!-- Widget 3: Bảng xếp hạng theo Đầu số xe -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Theo Đầu số xe
                     </h3>
                     <div class="flex flex-wrap gap-1.5 max-h-60 overflow-y-auto pr-1" style="scrollbar-width: thin;">
                         @foreach($seriesList as $series)
-                            <a href="{{ url('/top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat') }}" class="px-2.5 py-1 bg-gray-50 border border-gray-150 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition">
+                            <a href="{{ url('/top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat') }}" class="px-2.5 py-1 bg-white border border-gray-200 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">
                                 {{ $series }}
                             </a>
                         @endforeach

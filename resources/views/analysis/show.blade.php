@@ -37,7 +37,7 @@
             }
         }
     }
-    $lastUpdatedText = $latestAuctionDate ? $latestAuctionDate->format('d/m/Y') : date('d/m/Y');
+    $lastUpdatedText = 'Hôm nay';
 
     // Phân bố giá
     $priceDist = [
@@ -150,26 +150,25 @@
     
     <!-- Breadcrumb -->
     <nav class="bg-white border-b border-gray-200 py-3">
-        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2">
-            <a href="/" class="hover:text-gray-900">Trang chủ</a>
-            <span>/</span>
-            <a href="/top" class="hover:text-gray-900">Bảng xếp hạng</a>
-            <span>/</span>
-            <span class="text-gray-900 truncate">{{ $config['h1'] }}</span>
+        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+            <a href="/" class="hover:text-gray-900 shrink-0">Trang chủ</a>
+            <span class="shrink-0">/</span>
+            <a href="/phan-tich" class="hover:text-gray-900 shrink-0">Bảng xếp hạng</a>
+            <span class="shrink-0">/</span>
+            <span class="text-gray-900 truncate shrink-0 max-w-[180px] sm:max-w-none">{{ $config['h1'] }}</span>
         </div>
     </nav>
 
     <!-- Main Content Layout (2 Cột rộng để lắp đầy không gian) -->
-    <main class="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-[1440px] px-1 py-8 sm:px-6 lg:px-8">
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- CỘT TRÁI: Nội dung bài viết và Bảng Excel (Chiếm 2/3) -->
             <div class="lg:col-span-2 space-y-6">
                 
-                <article class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
-                    
-                    <header class="space-y-3 border-b border-gray-100 pb-4">
+                <article class="space-y-6">
+                    <header class="space-y-3 border-b border-gray-200 pb-4">
                         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827] leading-tight">
                             {{ $slug === 'top-100-bien-so-dat-nhat-viet-nam' ? 'Top 100 Biển Số Đắt Nhất Việt Nam 2026 – Bảng Xếp Hạng Cập Nhật Theo Dữ Liệu Đấu Giá' : $config['h1'] }}
                         </h1>
@@ -261,15 +260,14 @@
                         @if(count($plates) > 0)
                             <!-- Excel Flat Table Wrapper (Hỗ trợ cuộn ngang trên mobile) -->
                             <div class="overflow-x-auto border border-gray-200 rounded-lg shadow-xs">
-                                <table class="min-w-full border-collapse text-sm text-gray-800">
+                                <table class="min-w-full border-collapse text-xs sm:text-sm text-gray-800">
                                     <!-- Excel Header Style -->
-                                    <thead class="bg-gray-50 text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <thead class="bg-gray-50 text-[10px] sm:text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                         <tr>
-                                            <th scope="col" class="border border-gray-200 px-4 py-3 text-center w-24 bg-gray-50 font-bold">Xếp hạng</th>
-                                            <th scope="col" class="border border-gray-200 px-4 py-3 text-center w-40 bg-gray-50 font-bold">Biển số</th>
-                                            <th scope="col" class="border border-gray-200 px-4 py-3 text-right w-44 bg-gray-50 font-bold">Giá đấu</th>
-                                            <th scope="col" class="border border-gray-200 px-4 py-3 text-right w-48 bg-gray-50 font-bold">Giá AI hiện tại</th>
-                                            <th scope="col" class="border border-gray-200 px-4 py-3 text-left bg-gray-50 font-bold">Địa phương</th>
+                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center w-12 sm:w-24 bg-gray-50 font-bold">STT</th>
+                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center w-28 sm:w-40 bg-gray-50 font-bold">Biển số</th>
+                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-right w-32 sm:w-44 bg-gray-50 font-bold">Giá đấu</th>
+                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-left bg-gray-50 font-bold">Địa phương</th>
                                         </tr>
                                     </thead>
                                     <!-- Excel Body Style -->
@@ -277,39 +275,24 @@
                                         @foreach($plates as $index => $plate)
                                             @php
                                                 $detailSlug = $plate->seoArticle ? $plate->seoArticle->slug : $plate->full_number;
-                                                
-                                                // Tính giá AI hiện tại
-                                                $isNguQuy = false;
-                                                foreach ($plate->kinds as $k) {
-                                                    if ($k->id === 1) {
-                                                        $isNguQuy = true;
-                                                        break;
-                                                    }
-                                                }
-                                                $multiplier = $isNguQuy ? 1.12 : 1.086;
-                                                $aiPriceVal = $plate->winning_price * $multiplier;
                                             @endphp
                                             <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50/30 transition-colors duration-75">
                                                 <!-- Xếp hạng -->
-                                                <td class="border border-gray-200 px-4 py-3 text-center text-gray-500 font-medium">
+                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center text-gray-500 font-medium text-[10px] sm:text-sm">
                                                     {{ $index + 1 }}
                                                 </td>
                                                 <!-- Biển số (Có link đổi màu sang màu đỏ thương hiệu hệ thống khi hover) -->
-                                                <td class="border border-gray-200 px-4 py-3 text-center whitespace-nowrap">
+                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap text-[11px] sm:text-sm">
                                                     <a href="/bien-so-{{ $detailSlug }}" class="text-gray-900 hover:text-[#8C1E1E] hover:underline font-bold transition-colors">
                                                         {{ $plate->display_number }}
                                                     </a>
                                                 </td>
                                                 <!-- Giá đấu -->
-                                                <td class="border border-gray-200 px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
+                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-right font-semibold text-gray-900 whitespace-nowrap text-[11px] sm:text-sm">
                                                     {{ $formatMoney($plate->winning_price) }}
                                                 </td>
-                                                <!-- Giá AI hiện tại (Đồng bộ kiểu chữ và màu sắc, loại bỏ màu xanh lá không khớp hệ thống) -->
-                                                <td class="border border-gray-200 px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                                                    {{ $formatMoney($aiPriceVal) }}
-                                                </td>
                                                 <!-- Địa phương -->
-                                                <td class="border border-gray-200 px-4 py-3 text-left text-gray-700 whitespace-nowrap">
+                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-left text-gray-700 whitespace-nowrap text-[10px] sm:text-sm">
                                                     {{ $plate->province ? $plate->province->name : 'Chưa xác định' }}
                                                 </td>
                                             </tr>
@@ -437,7 +420,7 @@
                                 @foreach($plates->take(2) as $idx => $topPlate)
                                     <div class="space-y-1">
                                         <h3 class="text-base font-bold text-gray-900">
-                                            Top {{ $idx + 1 }}: <span class="font-mono text-[#8C1E1E]">{{ $topPlate->display_number }}</span>
+                                            Top {{ $idx + 1 }}: <span class="font-extrabold text-[#8C1E1E]">{{ $topPlate->display_number }}</span>
                                         </h3>
                                         <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                             Biển số sở hữu cấu trúc đẹp trúng đấu giá với mức giá kỷ lục <strong class="text-gray-900 font-bold">{{ number_format($topPlate->winning_price / 1000000000, 2, ',', '.') }} tỷ đồng</strong> tại khu vực <strong class="text-gray-900 font-bold">{{ $topPlate->province ? $topPlate->province->name : 'Chưa xác định' }}</strong>. Mô hình định giá dự báo giá trị hiện tại của biển số này có xu hướng tăng trưởng ổn định nhờ độ khan hiếm cực cao và nhu cầu lớn trên thị trường xe sang.
@@ -463,28 +446,28 @@
                     </div>
 
                     <!-- Câu hỏi thường gặp -->
-                    <div class="space-y-4 border-t border-gray-100 pt-6">
+                    <div class="space-y-4 border-t border-gray-200 pt-6">
                         <h2 class="text-lg font-bold text-gray-900">Câu hỏi thường gặp</h2>
-                        <div class="space-y-3">
-                            <div class="bg-gray-50/60 p-4 rounded-lg border border-gray-200/50">
+                        <div class="space-y-4 divide-y divide-gray-100">
+                            <div class="pt-3 first:pt-0">
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Biển số nào hiện có giá đấu cao nhất Việt Nam?</h4>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Bảng xếp hạng được cập nhật tự động ngay sau mỗi phiên đấu giá chính thức kết thúc, giúp người dùng luôn theo dõi được kỷ lục giá đấu cao nhất tại mọi thời điểm.
                                 </p>
                             </div>
-                            <div class="bg-gray-50/60 p-4 rounded-lg border border-gray-200/50">
+                            <div class="pt-3">
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Bảng xếp hạng được cập nhật bao lâu một lần?</h4>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Dữ liệu được đồng bộ hóa tự động ngay sau khi có kết quả đấu giá chính thức từ các phiên đấu giá công khai trên toàn quốc và hoàn tất quy trình đối soát dữ liệu của hệ thống.
                                 </p>
                             </div>
-                            <div class="bg-gray-50/60 p-4 rounded-lg border border-gray-200/50">
+                            <div class="pt-3">
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Giá định giá AI có phải giá giao dịch thực tế?</h4>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Không. Mức giá AI là ước tính dựa trên dữ liệu thống kê, lịch sử đấu giá các biển số tương đồng và thuật toán phân tích xu hướng. Giá trị giao dịch thực tế có thể biến động tùy thuộc vào thỏa thuận trực tiếp và cung cầu thị trường.
                                 </p>
                             </div>
-                            <div class="bg-gray-50/60 p-4 rounded-lg border border-gray-200/50">
+                            <div class="pt-3">
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Làm sao để biết biển số của tôi có nằm trong Top?</h4>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Bạn chỉ cần nhập biển số vào công cụ định giá để xem thứ hạng, giá trị ước tính và các biển số tương tự trong hệ thống của chúng tôi.
@@ -494,7 +477,7 @@
                     </div>
 
                     <!-- Định giá biển số của bạn (CTA) -->
-                    <div class="bg-[#8C1E1E]/5 border border-[#8C1E1E]/20 rounded-2xl p-6 text-center space-y-4 mt-8">
+                    <div class="text-center space-y-4 py-8 mt-8 border-t border-gray-200">
                         <h3 class="text-lg font-bold text-[#8C1E1E]">Định giá biển số của bạn</h3>
                         <p class="text-sm text-gray-700 max-w-xl mx-auto leading-relaxed text-justify">
                             Bạn muốn biết biển số xe của mình hoặc biển số quan tâm có giá trị bao nhiêu trên thị trường hiện tại? Nhập ngay biển số để nhận ước tính giá trị từ mô hình AI, đánh giá điểm độ hiếm và lịch sử đấu giá liên quan.
@@ -508,7 +491,7 @@
 
                     <!-- Footer / Navigation -->
                     <footer class="pt-6 mt-8 border-t border-gray-100 flex items-center justify-between text-xs">
-                        <a href="/top" class="inline-flex items-center gap-1.5 font-bold text-[#8C1E1E] hover:underline">
+                        <a href="/phan-tich" class="inline-flex items-center gap-1.5 font-bold text-[#8C1E1E] hover:underline">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                             </svg>
@@ -522,11 +505,11 @@
             </div>
 
             <!-- CỘT PHẢI: Sidebar điều hướng và các danh mục liên kết (Chiếm 1/3) -->
-            <aside class="space-y-6">
+            <aside class="space-y-8">
                 
                 <!-- Card 1: Các bảng xếp hạng tiêu biểu khác -->
-                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Bảng xếp hạng tiêu biểu
                     </h3>
                     <div class="space-y-3">
@@ -546,14 +529,14 @@
                 </div>
 
                 <!-- Card 2: Bảng xếp hạng theo Tỉnh thành -->
-                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Theo Tỉnh thành
                     </h3>
                     <div class="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: thin;">
                         @foreach($provincesList as $prov)
                             @if($prov['slug'] !== $slug)
-                                <a href="{{ url('/' . $prov['slug']) }}" class="px-2.5 py-1 bg-gray-50 border border-gray-150 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition">
+                                <a href="{{ url('/' . $prov['slug']) }}" class="px-2.5 py-1 bg-white border border-gray-200 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">
                                     {{ $prov['name'] }}
                                 </a>
                             @endif
@@ -562,14 +545,14 @@
                 </div>
 
                 <!-- Card 3: Bảng xếp hạng theo Đầu số xe -->
-                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Theo Đầu số xe
                     </h3>
                     <div class="flex flex-wrap gap-1.5 max-h-60 overflow-y-auto pr-1" style="scrollbar-width: thin;">
                         @foreach($seriesList as $series)
                             @if('top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat' !== $slug)
-                                <a href="{{ url('/top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat') }}" class="px-2.5 py-1 bg-gray-50 border border-gray-150 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition">
+                                <a href="{{ url('/top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat') }}" class="px-2.5 py-1 bg-white border border-gray-200 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">
                                     {{ $series }}
                                 </a>
                             @endif

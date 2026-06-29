@@ -30,7 +30,11 @@ Route::get('/api/bien-so/{id}/generate-article', [LicensePlateController::class,
 
 
 // Programmatic SEO Landing Pages (Phân tích & Bảng xếp hạng)
-Route::get('/top', [AnalysisController::class, 'index'])->name('analysis.index');
+Route::get('/phan-tich', [AnalysisController::class, 'index'])->name('analysis.index');
+
+Route::get('/top', function () {
+    return redirect()->to('/phan-tich', 301);
+});
 
 // Redirects từ các slug cũ sang URL trực tiếp mới theo tiêu đề
 Route::get('/top/{slug}', function (string $slug) {
@@ -44,7 +48,7 @@ Route::get('/top/{slug}', function (string $slug) {
 Route::get('/{slug}', [AnalysisController::class, 'show'])->name('analysis.show')->where('slug', '^top-[a-z0-9-]+$');
 
 Route::get('/c/phan-tich', function () {
-    return redirect()->to('/top', 301);
+    return redirect()->to('/phan-tich', 301);
 });
 
 Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
@@ -76,7 +80,7 @@ Route::get('/sitemap.xml', function () {
     $xml .= '<url><loc>https://bisoxe.com/c/tin-tuc</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
 
     // Trang phân tích & Bảng xếp hạng (pSEO)
-    $xml .= '<url><loc>https://bisoxe.com/top</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/phan-tich</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     
     // Các bảng xếp hạng tiêu biểu/đặc biệt
     $baseSlugs = [

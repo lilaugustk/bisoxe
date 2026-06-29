@@ -161,7 +161,7 @@
             <div class="space-y-6 lg:col-span-7">
                 
                 <!-- Box Preview biển số xe ảo -->
-                <div class="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm min-h-[220px]">
+                <div class="relative flex flex-col items-center justify-center overflow-hidden rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-6 shadow-none sm:shadow-sm min-h-[220px]">
                     <!-- Hiệu ứng nền -->
                     <div class="absolute -top-12 -left-12 h-32 w-32 rounded-full bg-red-50/20 blur-2xl"></div>
                     <div class="absolute -right-12 -bottom-12 h-32 w-32 rounded-full bg-red-50/50 blur-2xl"></div>
@@ -239,7 +239,7 @@
                 </div>
 
                 <!-- Card Form nhập liệu -->
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <div class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-8 shadow-none sm:shadow-sm">
                     <form action="{{ url('/dinh-gia') }}" method="POST" class="space-y-6">
                         @csrf
                         
@@ -431,7 +431,7 @@
             <div class="space-y-6 lg:col-span-5">
                 
                 <!-- Box Hướng dẫn / Lợi ích -->
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-6 shadow-none sm:shadow-sm">
                     <h3 class="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
                         Quy trình định giá hoạt động
                     </h3>
@@ -458,7 +458,7 @@
                 </div>
 
                 <!-- Danh sách định giá gần đây -->
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-6 shadow-none sm:shadow-sm">
                     <h3 class="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center justify-between">
                         <span>Định giá gần đây</span>
                         <span class="rounded bg-gray-100 px-2 py-0.5 text-[9px] font-black text-gray-500 uppercase">CỘNG ĐỒNG</span>

@@ -454,7 +454,7 @@
         <!-- Top Section: Plate View & Summary Info -->
         <div class="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
             <!-- Left: License Plate simulation card -->
-            <div class="group relative flex min-h-[300px] flex-col items-center justify-between overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:col-span-7">
+            <div class="group relative flex min-h-[300px] flex-col items-center justify-between overflow-hidden rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-3 sm:p-6 shadow-none sm:shadow-sm lg:col-span-7">
                 <!-- Decor background lights -->
                 <div class="absolute -top-20 -left-20 h-48 w-48 rounded-full bg-red-50 blur-3xl transition-all duration-700 group-hover:bg-red-100/70"></div>
                 <div class="absolute -right-20 -bottom-20 h-48 w-48 rounded-full bg-amber-50 blur-3xl transition-all duration-700 group-hover:bg-amber-100/70"></div>
@@ -556,7 +556,7 @@
             </div>
 
             <!-- Right: Summary Dashboard Info -->
-            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-5 flex flex-col justify-between">
+            <div class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-6 shadow-none sm:shadow-sm lg:col-span-5 flex flex-col justify-between">
                 <div class="space-y-4 divide-y divide-gray-100 flex-1">
                     <!-- Row 1: Giá khởi điểm / Giá trúng -->
                     <div class="flex items-center justify-between pb-3.5">
@@ -628,7 +628,7 @@
 
         <!-- Middle Section: Price Trend Chart -->
         <div class="mb-8" x-show="Object.keys(priceTrend).length > 0" x-cloak>
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
+            <div class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-3 sm:p-6 lg:p-8 shadow-none sm:shadow-sm">
                 <header class="mb-6 flex flex-col items-center justify-between gap-4 border-b border-gray-100 pb-5 sm:flex-row">
                     <div class="text-center sm:text-left">
                         <h3 class="text-base sm:text-lg font-extrabold tracking-tight text-gray-900 leading-snug">
@@ -644,7 +644,7 @@
                     <div class="md:col-span-3">
                         <!-- Mobile view: Sleek historical price list -->
                         <div class="block lg:hidden mb-6">
-                            <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                            <div class="rounded-xl border border-gray-200/60 bg-[#F9FAFB]/60 p-3.5 shadow-xs">
                                 <div class="mb-3 flex items-center justify-between border-b border-gray-100 pb-2 select-none">
                                     <span class="text-xs font-bold text-gray-700">Giá trúng gần đây</span>
                                     <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0">Mới nhất</span>

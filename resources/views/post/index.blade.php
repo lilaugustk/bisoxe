@@ -148,7 +148,7 @@
         <!-- Articles Grid -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             @foreach($posts as $post)
-                <article class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-250 hover:shadow-md">
+                <article class="group flex flex-col overflow-hidden rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white shadow-none sm:shadow-sm transition duration-250 hover:shadow-md">
                     <!-- Thumbnail with animation -->
                     <a href="{{ url('/b/' . $post->slug) }}" class="block aspect-[16/9] overflow-hidden">
                         @if($post->image_path)
@@ -229,7 +229,7 @@
 
         <!-- Pagination -->
         @if ($posts->total() > $posts->perPage())
-            <div class="mt-8 flex justify-between sm:justify-center rounded-2xl border border-gray-200 bg-white p-4 select-none">
+            <div class="mt-8 flex justify-between sm:justify-center rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 select-none shadow-none sm:shadow-sm">
                 <!-- Desktop Pagination -->
                 <nav class="hidden sm:flex w-full flex-wrap items-center justify-center gap-1.5">
                     @foreach ($posts->linkCollection() as $link)

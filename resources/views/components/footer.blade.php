@@ -161,16 +161,16 @@
                 </div>
                 <ul class="space-y-2.5 text-xs font-medium">
                     <li>
-                        <a href="/top" class="transition-colors duration-200 hover:text-[#F5B800]">Trang chính Phân tích</a>
+                        <a href="/phan-tich" class="transition-colors duration-200 hover:text-[#F5B800]">Trang chính Phân tích</a>
                     </li>
                     <li>
-                        <a href="/top/top-100-bien-so-dat-nhat-viet-nam" class="transition-colors duration-200 hover:text-[#F5B800]">Top 100 biển số đắt nhất</a>
+                        <a href="/top-100-bien-so-dat-nhat-viet-nam" class="transition-colors duration-200 hover:text-[#F5B800]">Top 100 biển số đắt nhất</a>
                     </li>
                     <li>
-                        <a href="/top/ngu-quy" class="transition-colors duration-200 hover:text-[#F5B800]">Xếp hạng biển Ngũ quý</a>
+                        <a href="/top-bien-so-ngu-quy-dat-nhat-viet-nam" class="transition-colors duration-200 hover:text-[#F5B800]">Xếp hạng biển Ngũ quý</a>
                     </li>
                     <li>
-                        <a href="/top/tu-quy" class="transition-colors duration-200 hover:text-[#F5B800]">Xếp hạng biển Tứ quý</a>
+                        <a href="/top-bien-so-tu-quy-dat-nhat-viet-nam" class="transition-colors duration-200 hover:text-[#F5B800]">Xếp hạng biển Tứ quý</a>
                     </li>
                 </ul>
             </div>
@@ -203,7 +203,7 @@
                 <div class="flex gap-4 text-xs text-gray-400">
                     <a href="/" class="transition-colors hover:text-gray-200">Tra cứu</a>
                     <span>•</span>
-                    <a href="/top" class="transition-colors hover:text-gray-200">Phân tích</a>
+                    <a href="/phan-tich" class="transition-colors hover:text-gray-200">Phân tích</a>
                     <span>•</span>
                     <a href="/danh-sach-bien-so-xe-o-to" class="transition-colors hover:text-gray-200">Biển số ô tô</a>
                     <span>•</span>

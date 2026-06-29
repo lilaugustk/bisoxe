@@ -348,34 +348,30 @@
 
                 <!-- Trust Signals -->
                 @if(isset($trustStats))
-                <div class="mx-auto max-w-4xl mt-12 px-2">
-                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 bg-[#F9FAFB]/80 rounded-2xl border border-gray-100 p-4 backdrop-blur-sm shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                <div class="mx-auto max-w-4xl mt-12 px-4 sm:px-0">
+                    <div class="grid grid-cols-2 gap-y-6 gap-x-2 sm:grid-cols-4 bg-transparent border-0 p-0 shadow-none">
                         <!-- Biển số đã phân tích -->
-                        <div class="text-center p-3 rounded-xl bg-white border border-gray-100/50 shadow-sm transition hover:shadow-md hover:scale-[1.02] duration-200">
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã phân tích</span>
                             <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_articles'] }}</span>
                             <span class="block text-[11px] font-medium text-gray-400 mt-0.5">biển số</span>
                         </div>
                         <!-- Kết quả đấu giá -->
-                        <div class="text-center p-3 rounded-xl bg-white border border-gray-100/50 shadow-sm transition hover:shadow-md hover:scale-[1.02] duration-200">
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết quả đấu giá</span>
                             <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_completed'] }}</span>
                             <span class="block text-[11px] font-medium text-gray-400 mt-0.5">biển số</span>
                         </div>
                         <!-- Tỉnh thành -->
-                        <div class="text-center p-3 rounded-xl bg-white border border-gray-100/50 shadow-sm transition hover:shadow-md hover:scale-[1.02] duration-200">
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
                             <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_provinces'] }}</span>
                             <span class="block text-[11px] font-medium text-gray-400 mt-0.5">đã cập nhật</span>
                         </div>
                         <!-- Định giá tự động AI -->
-                        <div class="text-center p-3 rounded-xl bg-white border border-gray-100/50 shadow-sm transition hover:shadow-md hover:scale-[1.02] duration-200 flex flex-col justify-between">
-                            <div>
-                                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Định giá tự động</span>
-                                <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8c1e1e] flex items-center justify-center gap-1">
-                                    AI
-                                </span>
-                            </div>
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none">
+                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Định giá tự động</span>
+                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">AI</span>
                             <span class="block text-[11px] font-medium text-gray-400 mt-0.5">Siêu tốc</span>
                         </div>
                     </div>
@@ -393,25 +389,25 @@
                 <p class="mt-1 text-sm text-gray-500">{{ $tableDescription }}</p>
             </header>
 
-            <!-- Bộ lọc ngang mới theo phong cách hiện đại (đã thu gọn kích thước) -->
-            <div class="mb-6 rounded-xl bg-white p-4 border border-gray-150 shadow-[0_4px_20px_rgba(0,0,0,0.02)] w-full space-y-4">
+            <!-- Bộ lọc ngang mới theo phong cách hiện đại -->
+            <div class="mb-8 w-full space-y-4">
                 <!-- Thanh tìm kiếm & nút Toggle bộ lọc -->
                 <div class="flex flex-col sm:flex-row gap-3">
                     <!-- Ô tìm kiếm dạng viên thuốc -->
-                    <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
+                    <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1.5 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
                         <input
                             type="text"
                             name="search"
                             x-model="search"
                             @keyup.enter="submitForm(true)"
                             placeholder="Nhập biển số cần tìm..."
-                            class="w-full border-0 bg-transparent py-2 px-5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
+                            class="w-full border-0 bg-transparent py-2.5 px-6 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
                         />
                         <button
                             type="submit"
-                            class="mr-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#8C1E1E] text-white shadow-md transition duration-200 hover:bg-[#731919] shrink-0"
+                            class="mr-1 flex h-10 w-10 items-center justify-center rounded-full bg-[#8C1E1E] text-white shadow-md transition duration-200 hover:bg-[#731919] shrink-0"
                         >
-                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </button>
@@ -421,9 +417,9 @@
                     <button
                         type="button"
                         @click="isFiltersExpanded = !isFiltersExpanded"
-                        class="flex items-center justify-center gap-1.5 rounded-full border border-gray-200 bg-white px-5 py-2 text-sm font-bold text-gray-700 shadow-3xs transition duration-200 hover:bg-gray-50 hover:text-gray-900 shrink-0"
+                        class="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-bold text-gray-700 shadow-3xs transition duration-200 hover:bg-gray-50 hover:text-gray-900 shrink-0"
                     >
-                        <svg class="h-3.5 w-3.5 text-gray-500 transition-transform duration-200" :class="isFiltersExpanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="h-4 w-4 text-gray-500 transition-transform duration-200" :class="isFiltersExpanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
                         <span x-text="isFiltersExpanded ? 'Thu gọn bộ lọc' : 'Bộ lọc nâng cao'"></span>
@@ -431,7 +427,7 @@
                 </div>
 
                 <!-- Danh sách bộ lọc chi tiết -->
-                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 pt-4 border-t border-gray-100 mt-4">
+                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 p-5 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
                     <!-- Row 1: Tỉnh thành & Chữ cái -->
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                         <!-- Tỉnh thành -->
@@ -729,7 +725,7 @@
             <!-- Table Content (Full Width) -->
             <div class="space-y-4 w-full min-w-0">
                     <!-- Data Table -->
-                    <div class="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <div class="mb-8 overflow-hidden rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white shadow-none sm:shadow-sm">
                         <div class="hidden md:block w-full overflow-x-auto">
                             <table class="w-full min-w-[600px] border-collapse text-left text-sm">
                                 <thead class="border-b border-gray-200 bg-gray-100/80 text-xs font-bold tracking-wider text-gray-700 uppercase">
@@ -786,7 +782,7 @@
                         <!-- Mobile/Tablet Card List -->
                         <div class="block md:hidden divide-y divide-gray-100 bg-white">
                             @foreach($filteredPlates as $index => $plate)
-                                <div class="p-4 space-y-3.5 transition duration-150 hover:bg-gray-50/50">
+                                <div class="p-3.5 space-y-3 transition duration-150 hover:bg-gray-50/50">
                                     <!-- Card Header: STT, Province, Kind -->
                                     <div class="flex items-center justify-between text-xs">
                                         <div class="flex items-center gap-2">

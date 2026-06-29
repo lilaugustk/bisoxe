@@ -104,7 +104,7 @@
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
     
     <!-- Breadcrumbs & Nav -->
-    <main class="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <main class="mx-auto max-w-[1440px] px-1 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div class="mb-6 flex items-center justify-between">
             <a href="{{ url('/bai-viet') }}" class="group flex items-center gap-1.5 text-sm font-bold text-gray-500 transition hover:text-[#8C1E1E]">
                 <svg class="h-4 w-4 transform transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -117,7 +117,7 @@
         <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
             <!-- Left: Post Content -->
             <div class="space-y-6 lg:col-span-8">
-                <article class="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:p-10">
+                <article class="space-y-6">
                     <!-- Post Meta Header -->
                     <div class="mb-4 flex items-center gap-3 text-xs font-bold text-[#8C1E1E] uppercase">
                         <span class="rounded-lg border border-red-100 bg-red-50 px-2.5 py-1">
@@ -264,8 +264,8 @@
             <!-- Right: Sidebar -->
             <aside class="space-y-6 lg:col-span-4">
                 <!-- Search Plate Widget -->
-                <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <div class="border-b border-gray-100 pb-2">
+                <div class="space-y-4">
+                    <div class="border-b border-gray-200 pb-2">
                         <h3 class="text-sm font-black tracking-wider text-gray-900 uppercase">
                             Tra cứu ý nghĩa biển số
                         </h3>
@@ -292,8 +292,8 @@
 
                 <!-- Dynamic Plates Widget (Alpine.js) -->
                 @if((isset($upcomingPlates) && count($upcomingPlates) > 0) || (isset($completedPlates) && count($completedPlates) > 0))
-                    <div x-data="{ activePlatesTab: '{{ count($upcomingPlates) > 0 ? 'upcoming' : 'completed' }}' }" class="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                        <div class="border-b border-gray-100 pb-2.5">
+                    <div x-data="{ activePlatesTab: '{{ count($upcomingPlates) > 0 ? 'upcoming' : 'completed' }}' }" class="space-y-4">
+                        <div class="border-b border-gray-200 pb-2.5">
                             <h3 class="text-sm font-black tracking-wider text-gray-900 uppercase">
                                 Biển số đấu giá liên quan
                             </h3>
