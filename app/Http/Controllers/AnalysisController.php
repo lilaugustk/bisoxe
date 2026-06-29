@@ -260,7 +260,7 @@ class AnalysisController extends Controller
             ],
             [
                 'slug' => 'top-bien-so-dat-nhat-nam-2026',
-                'name' => 'Top Biển Số Đắt Nhất Năm 2026',
+                'name' => 'Biển Số Đắt Nhất Năm 2026',
                 'description' => 'Danh sách cập nhật các kỷ lục trúng đấu giá mới nhất diễn ra trong năm 2026.',
                 'icon' => 'calendar'
             ],
@@ -278,19 +278,19 @@ class AnalysisController extends Controller
             ],
             [
                 'slug' => 'top-bien-so-than-tai-dat-nhat-viet-nam',
-                'name' => 'Top Biển Số Thần Tài Đắt Nhất',
+                'name' => 'Biển Thần Tài Đắt Nhất (39, 79)',
                 'description' => 'Danh sách biển số xe Thần Tài (39, 79) mang lại may mắn tài lộc đắt giá nhất.',
                 'icon' => 'dollar'
             ],
             [
                 'slug' => 'top-bien-so-loc-phat-dat-nhat-viet-nam',
-                'name' => 'Top Biển Số Lộc Phát Đắt Nhất',
+                'name' => 'Biển Lộc Phát Đắt Nhất (68, 86)',
                 'description' => 'Bảng xếp hạng biển số Lộc Phát (68, 86) mang ý nghĩa phong thủy hanh thông.',
                 'icon' => 'gift'
             ],
             [
                 'slug' => 'top-bien-so-dep-gia-duoi-1-ty-dong',
-                'name' => 'Top Biển Đẹp Giá Dưới 1 Tỷ',
+                'name' => 'Biển Số Đẹp Dưới 1 Tỷ Đồng',
                 'description' => 'Danh sách biển đẹp trúng giá dưới 1 tỷ đồng dễ tiếp cận cho người sưu tầm.',
                 'icon' => 'wallet'
             ],

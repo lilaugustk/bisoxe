@@ -35,15 +35,46 @@
             <section class="lg:col-span-2">
                 <h2 class="sr-only">Danh sách bài viết bảng xếp hạng</h2>
                 <div class="divide-y divide-gray-200/60">
+                    @php
+                        $getThumbnailUrl = function ($slug) {
+                            switch ($slug) {
+                                case 'top-100-bien-so-dat-nhat-viet-nam':
+                                    return '/images/posts/top-100-bien-so-dat-nhat-viet-nam-featured.webp';
+                                case 'top-bien-so-dat-nhat-nam-2026':
+                                    return '/images/posts/top-bien-so-dep-dat-nhat-nam-2026-featured.webp';
+                                case 'top-bien-so-ngu-quy-dat-nhat-viet-nam':
+                                    return '/images/posts/top-bien-ngu-quy-featured.webp';
+                                case 'top-bien-so-tu-quy-dat-nhat-viet-nam':
+                                    return '/images/posts/top-bien-tu-quy-featured.webp';
+                                case 'top-bien-so-than-tai-dat-nhat-viet-nam':
+                                    return '/images/posts/top-bien-than-tai-featured.webp';
+                                case 'top-bien-so-loc-phat-dat-nhat-viet-nam':
+                                    return '/images/posts/top-tang-gia-manh-nhat-featured.webp';
+                                case 'top-bien-so-dep-gia-duoi-1-ty-dong':
+                                    return '/images/posts/top-bien-tam-hoa-featured.webp';
+                                case 'top-sieu-bien-so-gia-trung-tren-10-ty-dong':
+                                    return '/images/posts/top-bien-tien-featured.webp';
+                                default:
+                                    return '/images/posts/top-dau-so-dep-featured.webp';
+                            }
+                        };
+                    @endphp
                     @foreach($rankings as $ranking)
-                        <article class="py-6 first:pt-0 last:pb-0 transition duration-150">
-                            <h3 class="text-lg font-extrabold text-[#111827] hover:text-[#8C1E1E] transition duration-150">
-                                <a href="{{ url('/' . $ranking['slug']) }}">{{ $ranking['name'] }}</a>
-                            </h3>
-                            <p class="mt-2 text-sm leading-relaxed text-gray-500">
-                                {{ $ranking['description'] }}
-                            </p>
+                        <article class="py-8 first:pt-0 last:pb-0 transition duration-150 flex flex-col gap-4">
+                            <!-- Thumbnail (News Article Style - Local Designed WebP) -->
+                            <a href="{{ url('/' . $ranking['slug']) }}" class="block w-full aspect-[16/9] rounded-xl overflow-hidden shrink-0 select-none border border-gray-100 bg-gray-50 hover:opacity-95 transition duration-150">
+                                <img src="{{ $getThumbnailUrl($ranking['slug']) }}" alt="{{ $ranking['name'] }}" class="h-full w-full object-cover transition hover:scale-102 duration-200" loading="lazy">
+                            </a>
 
+                            <!-- Text Content below image -->
+                            <div class="space-y-1.5">
+                                <h3 class="text-lg font-extrabold text-[#111827] hover:text-[#8C1E1E] transition duration-150">
+                                    <a href="{{ url('/' . $ranking['slug']) }}">{{ $ranking['name'] }}</a>
+                                </h3>
+                                <p class="text-sm leading-relaxed text-gray-500">
+                                    {{ $ranking['description'] }}
+                                </p>
+                            </div>
                         </article>
                     @endforeach
                 </div>
