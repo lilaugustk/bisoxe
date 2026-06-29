@@ -11,11 +11,14 @@
     $numButtons = $filters['num_buttons'] ?? '';
     $lastDigits = $filters['last_digits'] ?? '';
 
-    $pageTitle = "Đấu Giá Biển Số Ô Tô " . $cleanProvinceName . " | Danh Sách Biển Số Xe Đấu Giá Mới Nhất";
-    $pageDescription = "Cập nhật danh sách biển số xe ô tô đấu giá tại " . $cleanProvinceName . " mới nhất. Tra cứu biển số đang đấu giá, sắp đấu giá và kết quả đấu giá tại " . $cleanProvinceName . " nhanh chóng, chính xác.";
+    $vehicleLabel = $activeVehicle === 'motorcycle' ? 'Xe Máy' : 'Ô Tô';
+    $vehicleLabelLower = $activeVehicle === 'motorcycle' ? 'xe máy' : 'ô tô';
+
+    $pageTitle = "Đấu Giá Biển Số " . $vehicleLabel . " " . $cleanProvinceName . " | Danh Sách Biển Số Xe Đấu Giá Mới Nhất";
+    $pageDescription = "Cập nhật danh sách biển số " . $vehicleLabelLower . " đấu giá tại " . $cleanProvinceName . " mới nhất. Tra cứu biển số đang đấu giá, sắp đấu giá và kết quả đấu giá tại " . $cleanProvinceName . " nhanh chóng, chính xác.";
     
-    $heroH1 = "Đấu Giá Biển Số Ô Tô " . $cleanProvinceName;
-    $heroSubtitle = "Tra cứu danh sách biển số xe đấu giá tại " . $cleanProvinceName . ", bao gồm biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất.";
+    $heroH1 = "Đấu Giá Biển Số " . $vehicleLabel . " " . $cleanProvinceName;
+    $heroSubtitle = "Tra cứu danh sách biển số " . $vehicleLabelLower . " đấu giá tại " . $cleanProvinceName . ", bao gồm biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất.";
 
     $formatMoney = function($value) {
         return number_format($value, 0, ',', '.') . ' ₫';
@@ -24,6 +27,7 @@
     $formatDate = function($dateStr) {
         if (!$dateStr) return 'Chưa công bố';
         $date = new \DateTime($dateStr);
+        $date->setTimezone(new \DateTimeZone('Asia/Ho_Chi_Minh'));
         return $date->format('d/m/Y H:i');
     };
 
@@ -75,12 +79,8 @@
                 let provinces = {{ json_encode($provinces) }};
                 let prov = provinces.find(p => String(p.code) === String(this.province));
                 if (prov) {
-                    let cleanName = prov.name.replace(/^(Thành phố|Tỉnh)\s+/i, '');
-                    let slug = this.toSlug(cleanName);
-                    if (slug === 'ho-chi-minh') {
-                        slug = 'tp-ho-chi-minh';
-                    }
-                    base = '/dau-gia/' + slug;
+                    let prefix = this.vehicle === 'motorcycle' ? '/dau-gia-bien-so-xe-may-' : '/dau-gia-bien-so-o-to-';
+                    base = prefix + prov.full_slug;
                 } else {
                     base = '/dau-gia';
                 }
@@ -100,7 +100,7 @@
             if (this.numButtons !== '' && this.numButtons !== null && this.numButtons !== undefined) params.num_buttons = this.numButtons;
             if (this.lastDigits) params.last_digits = this.lastDigits;
             if (this.kind) params.kind = this.kind;
-            if (this.vehicle !== 'car') params.vehicle = this.vehicle;
+            // vehicle giờ được mã hóa trong path, không dùng query param nữa
             
             let queryStr = new URLSearchParams(params).toString();
             return base + (queryStr ? '?' + queryStr : '');
@@ -275,6 +275,26 @@
                         <button type="button" @click="submitForm(true)" class="rounded-xl bg-[#8C1E1E] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#731919] transition">Áp dụng</button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Vehicle Type Selector -->
+            <div class="mb-6 flex gap-3 overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
+                <button
+                    type="button"
+                    @click="changeVehicle('car')"
+                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
+                    :class="vehicle === 'car' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+                >
+                    Biển số xe ô tô
+                </button>
+                <button
+                    type="button"
+                    @click="changeVehicle('motorcycle')"
+                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
+                    :class="vehicle === 'motorcycle' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+                >
+                    Biển số xe máy, mô tô
+                </button>
             </div>
 
             <!-- Tab Switcher -->

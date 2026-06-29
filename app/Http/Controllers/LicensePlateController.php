@@ -183,10 +183,10 @@ class LicensePlateController extends Controller
         $status = $statusMap[$tab] ?? 'announced';
         $query->where('status', $status);
 
-        // Với tab "Biển số chính thức", chỉ hiển thị biển chưa tới giờ đấu giá
+        // Với tab "Biển số chính thức", hiển thị biển từ ngày hôm nay trở đi
         // (VPA API vẫn trả status waiting_auction cho biển đã qua giờ nhưng chưa có kết quả)
         if ($status === 'waiting_auction') {
-            $query->where('auction_start_time', '>=', now());
+            $query->where('auction_start_time', '>=', today());
         }
 
         // 3. Lọc theo tìm kiếm
@@ -470,7 +470,7 @@ class LicensePlateController extends Controller
                     'video_script' => $article->video_script,
                     'slug' => $article->slug,
                     'generation_model' => $article->generation_model,
-                    'generated_at' => $article->generated_at ? $article->generated_at->toISOString() : null,
+                    'generated_at' => $article->generated_at ? $article->generated_at->toIso8601String() : null,
                     'image_url' => $article->image_path ? asset($article->image_path) : null,
                 ],
                 'plate' => $this->transformPlate($plate),
@@ -691,8 +691,8 @@ class LicensePlateController extends Controller
                 'id' => $k->id,
                 'name' => $k->name,
             ])->toArray(),
-            'auction_start_time' => $plate->auction_start_time ? $plate->auction_start_time->toISOString() : null,
-            'auction_end_time' => $plate->auction_end_time ? $plate->auction_end_time->toISOString() : null,
+            'auction_start_time' => $plate->auction_start_time ? $plate->auction_start_time->toIso8601String() : null,
+            'auction_end_time' => $plate->auction_end_time ? $plate->auction_end_time->toIso8601String() : null,
         ];
     }
 }

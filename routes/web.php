@@ -31,7 +31,26 @@ Route::get('/api/bien-so/{id}/generate-article', [LicensePlateController::class,
 
 // Trang Đấu giá biển số
 Route::get('/dau-gia', [App\Http\Controllers\AuctionController::class, 'index'])->name('auction.index');
-Route::get('/dau-gia/{province_slug}/{tab?}', [App\Http\Controllers\AuctionController::class, 'province'])->name('auction.province')->where(['province_slug' => '[a-z0-9-]+?', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
+Route::get('/dau-gia-bien-so-o-to-{province_slug}/{tab?}', [App\Http\Controllers\AuctionController::class, 'provinceCar'])->name('auction.province.car')->where(['province_slug' => '[a-z0-9-]+?', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
+Route::get('/dau-gia-bien-so-xe-may-{province_slug}/{tab?}', [App\Http\Controllers\AuctionController::class, 'provinceMotorcycle'])->name('auction.province.motorcycle')->where(['province_slug' => '[a-z0-9-]+?', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
+// Redirect 301 từ URL cũ /dau-gia/{slug} sang URL mới
+Route::get('/dau-gia/{province_slug}/{tab?}', function (\Illuminate\Http\Request $request, string $provinceSlug, ?string $tab = null) {
+    $province = \App\Models\Province::all()->first(function ($p) use ($provinceSlug) {
+        $cleanName = preg_replace('/^(Th\u00e0nh ph\u1ed1|T\u1ec9nh)\s+/iu', '', $p->name);
+        $slug = \Illuminate\Support\Str::slug($cleanName);
+        if ($provinceSlug === 'tp-ho-chi-minh' && $slug === 'ho-chi-minh') return true;
+        return $slug === $provinceSlug;
+    });
+    if ($province) {
+        $fullSlug = \Illuminate\Support\Str::slug($province->name);
+        $newUrl = '/dau-gia-bien-so-o-to-' . $fullSlug;
+        if ($tab && $tab !== 'cong-bo') $newUrl .= '/' . $tab;
+        $query = $request->query();
+        if ($query) $newUrl .= '?' . http_build_query($query);
+        return redirect()->to($newUrl, 301);
+    }
+    abort(404);
+})->where(['province_slug' => '[a-z0-9-]+?', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
 
 // Programmatic SEO Landing Pages (Phân tích & Bảng xếp hạng)
 Route::get('/top', [AnalysisController::class, 'index'])->name('analysis.index');
@@ -103,17 +122,18 @@ Route::get('/sitemap.xml', function () {
     }
 
     // Các tỉnh thành (Sinh động từ DB)
-    $sitemapProvinces = \Illuminate\Support\Facades\Cache::remember('sitemap_provinces_v2', 3600, function() {
+    $sitemapProvinces = \Illuminate\Support\Facades\Cache::remember('sitemap_provinces_v3', 3600, function() {
         return \App\Models\Province::all()->map(function($p) {
-            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
-            return \Illuminate\Support\Str::slug($cleanName);
+            $cleanName = preg_replace('/^(Th\u00e0nh ph\u1ed1|T\u1ec9nh)\s+/iu', '', $p->name);
+            return [
+                'clean_slug' => \Illuminate\Support\Str::slug($cleanName),
+                'full_slug'  => \Illuminate\Support\Str::slug($p->name),
+            ];
         })->toArray();
     });
-    foreach ($sitemapProvinces as $provSlug) {
-        $xml .= '<url><loc>https://bisoxe.com/top-100-bien-so-dep-dat-nhat-' . $provSlug . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
-        
-        $provUrlSlug = $provSlug === 'ho-chi-minh' ? 'tp-ho-chi-minh' : $provSlug;
-        $xml .= '<url><loc>https://bisoxe.com/dau-gia/' . $provUrlSlug . '</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
+    foreach ($sitemapProvinces as $prov) {
+        $xml .= '<url><loc>https://bisoxe.com/top-100-bien-so-dep-dat-nhat-' . $prov['clean_slug'] . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+        $xml .= '<url><loc>https://bisoxe.com/dau-gia-bien-so-o-to-' . $prov['full_slug'] . '</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     }
 
     // Các đầu số xe phổ biến (Sinh động từ DB)

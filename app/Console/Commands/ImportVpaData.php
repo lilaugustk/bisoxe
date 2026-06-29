@@ -213,13 +213,13 @@ class ImportVpaData extends Command
                         $displayNumber = $localSymbol.$serialLetter.'-'.$formattedNumber;
                     }
 
-                    // Chuyển đổi thời gian về định dạng chuẩn database (UTC)
+                    // Chuyển đổi thời gian về định dạng chuẩn database (Asia/Ho_Chi_Minh)
                     $parseDate = function ($dateStr) {
                         if (empty($dateStr)) {
                             return null;
                         }
                         try {
-                            return Carbon::parse($dateStr)->setTimezone('UTC')->toDateTimeString();
+                            return Carbon::parse($dateStr)->setTimezone('Asia/Ho_Chi_Minh')->toDateTimeString();
                         } catch (\Exception $e) {
                             return null;
                         }

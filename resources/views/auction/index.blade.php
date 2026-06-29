@@ -82,7 +82,7 @@
         <!-- Province Cards Grid -->
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">            <template x-for="p in filteredProvinces" :key="p.code">
                 <a
-                    :href="'/dau-gia/' + p.slug"
+                    :href="'/dau-gia-bien-so-o-to-' + p.full_slug"
                     class="group flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
                 >
                     <div class="min-w-0">

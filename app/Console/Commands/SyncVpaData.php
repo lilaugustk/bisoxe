@@ -184,7 +184,7 @@ class SyncVpaData extends Command
 
                     $page++;
                     // Giãn cách thời gian tránh bị block IP
-                    usleep(rand(300000, 800000)); // Delay từ 0.3s đến 0.8s
+                    usleep(rand(300000, 500000)); // Delay từ 0.3s đến 0.5s
                 } catch (\Exception $e) {
                     $this->error("\nGặp lỗi ngoại lệ ở trang {$page}: ".$e->getMessage());
                     break;

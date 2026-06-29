@@ -113,20 +113,23 @@ class AnalysisController extends Controller
 
         if (isset($kindsMap[$slug])) {
             $info = $kindsMap[$slug];
+            // $info[1] là tên loại, dùng để tra priority từ plate_kinds
+            $kindId = $info[0];
+            // Lấy priority của kind này để lọc chính xác qua min_kind_priority
+            $kindPriority = \App\Models\PlateKind::find($kindId)?->priority;
+
             return [
                 'title' => $info[2],
                 'meta_description' => $info[3],
                 'h1' => $info[4],
                 'description' => $info[5],
-                'query' => function() use ($info, $slug) {
-                    $query = LicensePlate::where('status', 'completed')
-                        ->whereHas('kinds', fn($q) => $q->where('plate_kinds.id', $info[0]));
-
-                    if ($slug === 'top-bien-so-loc-phat-dat-nhat-viet-nam') {
-                        $query->whereDoesntHave('kinds', fn($q) => $q->where('plate_kinds.id', 1));
-                    }
-
-                    return $query->orderBy('winning_price', 'desc')
+                'query' => function() use ($kindPriority) {
+                    // Chỉ lấy biển có min_kind_priority đúng bằng priority của loại này
+                    // => loại chính (đẹp nhất) của biển phải chính xác là loại cần tìm
+                    // => không bị lẫn ngũ quý/tứ quý vào tam hoa, lộc phát, v.v.
+                    return LicensePlate::where('status', 'completed')
+                        ->where('min_kind_priority', $kindPriority)
+                        ->orderBy('winning_price', 'desc')
                         ->limit(100);
                 }
             ];

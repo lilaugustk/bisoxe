@@ -73,6 +73,7 @@ class AuctionController extends Controller
                 'name' => $p->name,
                 'clean_name' => $cleanName,
                 'slug' => $slug,
+                'full_slug' => \Illuminate\Support\Str::slug($p->name),
                 'count' => number_format($provinceData['total'], 0, ',', '.'),
                 'active_count' => number_format($provinceData['active'], 0, ',', '.'),
                 'image' => $image,
@@ -85,18 +86,31 @@ class AuctionController extends Controller
     }
 
     /**
+     * Đấu giá biển số ô tô theo tỉnh.
+     */
+    public function provinceCar(Request $request, string $provinceSlug, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
+    {
+        $request->merge(['vehicle' => 'car']);
+        return $this->province($request, $provinceSlug, $tab);
+    }
+
+    /**
+     * Đấu giá biển số xe máy theo tỉnh.
+     */
+    public function provinceMotorcycle(Request $request, string $provinceSlug, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
+    {
+        $request->merge(['vehicle' => 'motorcycle']);
+        return $this->province($request, $provinceSlug, $tab);
+    }
+
+    /**
      * Hiển thị trang đấu giá biển số xe của một tỉnh thành cụ thể.
      */
     public function province(Request $request, string $provinceSlug, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         // 1. Tìm tỉnh thành có slug khớp
         $province = Province::all()->first(function ($p) use ($provinceSlug) {
-            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
-            $slug = \Illuminate\Support\Str::slug($cleanName);
-            if ($provinceSlug === 'tp-ho-chi-minh' && $slug === 'ho-chi-minh') {
-                return true;
-            }
-            return $slug === $provinceSlug;
+            return \Illuminate\Support\Str::slug($p->name) === $provinceSlug;
         });
 
         if (!$province) {
@@ -104,18 +118,19 @@ class AuctionController extends Controller
         }
 
         $cleanProvinceName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $province->name);
-        $canonicalSlug = \Illuminate\Support\Str::slug($cleanProvinceName);
-        if ($canonicalSlug === 'ho-chi-minh') {
-            $canonicalSlug = 'tp-ho-chi-minh';
-        }
+        $canonicalFullSlug = \Illuminate\Support\Str::slug($province->name);
 
-        // 2. Chuyển đổi tab segment sang trạng thái tương ứng của app
+        // 2. Xác định loại xe (được merge vào request từ provinceCar/provinceMotorcycle)
+        $vehicle = $request->input('vehicle', 'car');
+        $vehiclePrefix = $vehicle === 'motorcycle' ? '/dau-gia-bien-so-xe-may-' : '/dau-gia-bien-so-o-to-';
+
+        // 3. Chuyển đổi tab segment sang trạng thái tương ứng của app
         $tabSegment = $tab ?? $request->route('tab');
         
         // Tránh trùng lặp nội dung khi truy cập trực tiếp bằng /cong-bo
         if ($tabSegment === 'cong-bo') {
             $query = $request->query();
-            $newUrl = '/dau-gia/' . $canonicalSlug;
+            $newUrl = $vehiclePrefix . $canonicalFullSlug;
             if (count($query) > 0) {
                 $newUrl .= '?' . http_build_query($query);
             }
@@ -133,7 +148,6 @@ class AuctionController extends Controller
         $search = $request->input('search');
         $color = $request->input('color');
         $kind = $request->input('kind');
-        $vehicle = $request->input('vehicle', 'car');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $birthYears = $request->input('birth_years');
@@ -159,9 +173,9 @@ class AuctionController extends Controller
         $status = $statusMap[$tab] ?? 'announced';
         $query->where('status', $status);
 
-        // Với tab "Biển số chính thức", chỉ hiển thị biển chưa tới giờ đấu giá
+        // Với tab "Biển số chính thức", hiển thị biển từ ngày hôm nay trở đi
         if ($status === 'waiting_auction') {
-            $query->where('auction_start_time', '>=', now());
+            $query->where('auction_start_time', '>=', today());
         }
 
         // 4. Lọc theo tìm kiếm
@@ -299,23 +313,32 @@ class AuctionController extends Controller
                 ->toArray();
         });
 
+        $vehicleLabel = $vehicle === 'motorcycle' ? 'Xe Máy' : 'Ô Tô';
+        $vehicleLabelLower = $vehicle === 'motorcycle' ? 'xe máy' : 'ô tô';
+
         // Tiêu đề bảng & SEO
-        $tableTitle = 'Biển số đang đấu giá ' . $cleanProvinceName;
+        $tableTitle = 'Biển số ' . $vehicleLabelLower . ' đang đấu giá ' . $cleanProvinceName;
         if ($tab === 'official') {
-            $tableTitle = 'Biển số sắp đấu giá ' . $cleanProvinceName;
+            $tableTitle = 'Biển số ' . $vehicleLabelLower . ' sắp đấu giá ' . $cleanProvinceName;
         } elseif ($tab === 'result') {
-            $tableTitle = 'Kết quả đấu giá ' . $cleanProvinceName;
+            $tableTitle = 'Kết quả đấu giá biển số ' . $vehicleLabelLower . ' ' . $cleanProvinceName;
         }
 
-        $tableDescription = 'Danh sách biển số xe ô tô được cập nhật trực tiếp từ Cục CSGT.';
+        $tableDescription = 'Danh sách biển số ' . $vehicleLabelLower . ' được cập nhật trực tiếp từ Cục CSGT.';
 
         return view('auction.province', [
             'province' => $province,
             'cleanProvinceName' => $cleanProvinceName,
-            'provinceSlug' => $canonicalSlug,
+            'provinceSlug' => $canonicalFullSlug,
             'paginator' => $paginated,
             'plates' => $plates,
-            'provinces' => Province::select('code', 'name')->get()->toArray(),
+            'provinces' => Province::select('code', 'name')->get()->map(function ($p) {
+                return [
+                    'code' => $p->code,
+                    'name' => $p->name,
+                    'full_slug' => \Illuminate\Support\Str::slug($p->name),
+                ];
+            })->toArray(),
             'kinds' => PlateKind::select('id', 'name')->get()->toArray(),
             'uniqueLetters' => $uniqueLetters,
             'trustStats' => $trustStats,
@@ -361,8 +384,8 @@ class AuctionController extends Controller
                 'id' => $k->id,
                 'name' => $k->name,
             ])->toArray(),
-            'auction_start_time' => $plate->auction_start_time ? $plate->auction_start_time->toISOString() : null,
-            'auction_end_time' => $plate->auction_end_time ? $plate->auction_end_time->toISOString() : null,
+            'auction_start_time' => $plate->auction_start_time ? $plate->auction_start_time->toIso8601String() : null,
+            'auction_end_time' => $plate->auction_end_time ? $plate->auction_end_time->toIso8601String() : null,
         ];
     }
 }
