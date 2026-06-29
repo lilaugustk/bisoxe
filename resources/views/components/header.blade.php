@@ -25,6 +25,7 @@
     $isMarketActive = request()->is('top*');
     $isAnalysisActive = request()->is('top*') || request()->is('c/y-nghia-bien-so*');
     $isNewsActive = request()->is('bai-viet*') || request()->is('b/*') || (request()->is('c/*') && !$isMarketActive && !$isAnalysisActive);
+    $isAuctionActive = request()->is('dau-gia*');
 @endphp
 
 <header x-data="{ isMobileMenuOpen: false }" class="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
@@ -107,6 +108,12 @@
                     class="{{ $isSearchActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
                     Tra cứu biển số
+                </a>
+                <a
+                    href="/dau-gia"
+                    class="{{ $isAuctionActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
+                >
+                    Đấu giá
                 </a>
                 {{-- <a
                     href="/dinh-gia"
@@ -203,6 +210,13 @@
                 @click="isMobileMenuOpen = false"
             >
                 Tra cứu biển số
+            </a>
+            <a
+                href="/dau-gia"
+                class="py-3 transition hover:text-[#8C1E1E] {{ $isAuctionActive ? 'text-[#8C1E1E]' : '' }}"
+                @click="isMobileMenuOpen = false"
+            >
+                Đấu giá
             </a>
             {{-- <a
                 href="/dinh-gia"

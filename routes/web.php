@@ -29,6 +29,10 @@ Route::get('/api/bien-so/{full_number}/dinh-gia', [LicensePlateController::class
 Route::get('/api/bien-so/{id}/generate-article', [LicensePlateController::class, 'generateArticleApi'])->name('plate.generate_article_api')->where('id', '[0-9]+');
 
 
+// Trang Đấu giá biển số
+Route::get('/dau-gia', [App\Http\Controllers\AuctionController::class, 'index'])->name('auction.index');
+Route::get('/dau-gia/{province_slug}/{tab?}', [App\Http\Controllers\AuctionController::class, 'province'])->name('auction.province')->where(['province_slug' => '[a-z0-9-]+?', 'tab' => 'cong-bo|chinh-thuc|ket-qua']);
+
 // Programmatic SEO Landing Pages (Phân tích & Bảng xếp hạng)
 Route::get('/top', [AnalysisController::class, 'index'])->name('analysis.index');
 
