@@ -30,10 +30,14 @@ Route::get('/api/bien-so/{id}/generate-article', [LicensePlateController::class,
 
 
 // Programmatic SEO Landing Pages (Phân tích & Bảng xếp hạng)
-Route::get('/phan-tich', [AnalysisController::class, 'index'])->name('analysis.index');
+Route::get('/top', [AnalysisController::class, 'index'])->name('analysis.index');
 
-Route::get('/top', function () {
-    return redirect()->to('/phan-tich', 301);
+Route::get('/phan-tich', function () {
+    return redirect()->to('/top', 301);
+});
+
+Route::get('/c/phan-tich', function () {
+    return redirect()->to('/top', 301);
 });
 
 // Redirects từ các slug cũ sang URL trực tiếp mới theo tiêu đề
@@ -46,10 +50,6 @@ Route::get('/top/{slug}', function (string $slug) {
 })->where('slug', '[a-z0-9-]+');
 
 Route::get('/{slug}', [AnalysisController::class, 'show'])->name('analysis.show')->where('slug', '^top-[a-z0-9-]+$');
-
-Route::get('/c/phan-tich', function () {
-    return redirect()->to('/phan-tich', 301);
-});
 
 Route::get('/bai-viet', [PostController::class, 'index'])->name('posts.index');
 Route::get('/c/{category}', [PostController::class, 'index'])->name('posts.category');

@@ -21,12 +21,25 @@
         return $date->format('d/m/Y');
     };
 
+    $formatPriceText = function($value) {
+        if ($value >= 1000000000) {
+            $billion = $value / 1000000000;
+            $formatted = number_format($billion, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' tỷ';
+        } else {
+            $million = $value / 1000000;
+            $formatted = number_format($million, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' triệu';
+        }
+    };
+
     // Tính toán số liệu thống kê động cho bài viết phân tích
     $totalCount = count($plates);
     $totalValue = $plates->sum('winning_price');
     $avgValue = $totalCount > 0 ? $totalValue / $totalCount : 0;
     $maxValue = $plates->max('winning_price');
     $minValue = $plates->min('winning_price');
+    $maxPlate = $plates->firstWhere('winning_price', $maxValue);
 
     // Lấy ngày cập nhật mới nhất từ danh sách biển số
     $latestAuctionDate = null;
@@ -37,7 +50,7 @@
             }
         }
     }
-    $lastUpdatedText = 'Hôm nay';
+    $lastUpdatedText = now()->format('d/m/Y');
 
     // Phân bố giá
     $priceDist = [
@@ -69,6 +82,15 @@
         if ($totalCount === 0) return '0%';
         return round(($count / $totalCount) * 100) . '%';
     };
+
+    $priceRanges = [
+        ['label' => 'Trên 10 tỷ', 'count' => $priceDist['above_10']],
+        ['label' => '5 - 10 tỷ', 'count' => $priceDist['5_to_10']],
+        ['label' => '3 - 5 tỷ', 'count' => $priceDist['3_to_5']],
+        ['label' => '2 - 3 tỷ', 'count' => $priceDist['2_to_3']],
+        ['label' => '1 - 2 tỷ', 'count' => $priceDist['1_to_2']],
+        ['label' => 'Dưới 1 tỷ', 'count' => $priceDist['below_1']],
+    ];
 
     // Phân bố theo địa phương (tỉnh thành)
     $provinceStats = [];
@@ -153,22 +175,22 @@
         <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
             <a href="/" class="hover:text-gray-900 shrink-0">Trang chủ</a>
             <span class="shrink-0">/</span>
-            <a href="/phan-tich" class="hover:text-gray-900 shrink-0">Bảng xếp hạng</a>
+            <a href="/top" class="hover:text-gray-900 shrink-0">Bảng xếp hạng</a>
             <span class="shrink-0">/</span>
             <span class="text-gray-900 truncate shrink-0 max-w-[180px] sm:max-w-none">{{ $config['h1'] }}</span>
         </div>
     </nav>
 
     <!-- Main Content Layout (2 Cột rộng để lắp đầy không gian) -->
-    <main class="mx-auto max-w-[1440px] px-[14px] py-8 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-[1440px] p-[14px] sm:p-6 lg:p-8">
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- CỘT TRÁI: Nội dung bài viết và Bảng Excel (Chiếm 2/3) -->
             <div class="lg:col-span-2 space-y-6">
                 
-                <article class="space-y-6">
-                    <header class="space-y-3 border-b border-gray-200 pb-6">
+                <article class="space-y-[15px]">
+                    <header class="space-y-3">
                         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827] leading-tight">
                             {{ $slug === 'top-100-bien-so-dat-nhat-viet-nam' ? 'Top 100 Biển Số Đắt Nhất Việt Nam 2026 – Bảng Xếp Hạng Cập Nhật Theo Dữ Liệu Đấu Giá' : $config['h1'] }}
                         </h1>
@@ -188,33 +210,33 @@
                     </div>
 
                     <!-- Toàn cảnh thị trường -->
-                    <div class="space-y-6 border-t border-gray-200 pt-6">
+                    <div class="space-y-[15px]">
                         <h2 class="text-lg font-bold text-gray-900">Toàn cảnh thị trường {{ $slug === 'top-100-bien-so-dat-nhat-viet-nam' ? 'Top 100' : 'Bảng xếp hạng' }}</h2>
                         
                         <!-- Thống kê nhanh -->
                         <div class="space-y-3">
                             <h3 class="text-base font-bold text-gray-900">Thống kê nhanh</h3>
                             <ul class="space-y-2 text-sm text-gray-600">
-                                <li class="flex justify-between border-b border-gray-100 pb-1">
+                                <li class="flex justify-between pb-1">
                                     <span>Tổng số biển trong bảng xếp hạng:</span>
                                     <strong class="text-gray-900 font-semibold">{{ $totalCount }}</strong>
                                 </li>
-                                <li class="flex justify-between border-b border-gray-100 pb-1">
+                                <li class="flex justify-between pb-1">
                                     <span>Tổng giá trị đấu giá:</span>
-                                    <strong class="text-gray-900 font-semibold">{{ number_format($totalValue / 1000000000, 1, ',', '.') }} tỷ đồng</strong>
+                                    <strong class="text-gray-900 font-semibold">{{ $formatPriceText($totalValue) }}</strong>
                                 </li>
-                                <li class="flex justify-between border-b border-gray-100 pb-1">
+                                <li class="flex justify-between pb-1">
                                     <span>Giá trung bình:</span>
-                                    <strong class="text-gray-900 font-semibold">{{ number_format($avgValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
+                                    <strong class="text-gray-900 font-semibold">{{ $formatPriceText($avgValue) }}</strong>
                                 </li>
                                 @if($totalCount > 0)
-                                    <li class="flex justify-between border-b border-gray-100 pb-1">
+                                    <li class="flex justify-between pb-1">
                                         <span>Giá cao nhất:</span>
-                                        <strong class="text-gray-900 font-semibold">{{ number_format($maxValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
+                                        <strong class="text-gray-900 font-semibold">{{ $formatPriceText($maxValue) }}</strong>
                                     </li>
-                                    <li class="flex justify-between border-b border-gray-100 pb-1">
+                                    <li class="flex justify-between pb-1">
                                         <span>Giá thấp nhất trong Top:</span>
-                                        <strong class="text-gray-900 font-semibold">{{ number_format($minValue / 1000000000, 2, ',', '.') }} tỷ đồng</strong>
+                                        <strong class="text-gray-900 font-semibold">{{ $formatPriceText($minValue) }}</strong>
                                     </li>
                                 @endif
                             </ul>
@@ -234,6 +256,7 @@
                                     @if($nguQuyCount > 0)
                                         <li>Nhóm biển ngũ quý chiếm khoảng <strong class="text-gray-900 font-bold">{{ $nguQuyPercent }}%</strong> tổng giá trị của bảng xếp hạng (đạt <strong class="text-gray-900 font-bold">{{ $nguQuyCount }}</strong> biển).</li>
                                     @endif
+                                    @if(count($topProvinceNames) > 1)
                                     <li>
                                         @if(count($topProvinceNames) >= 2)
                                             <strong class="text-gray-900 font-bold">{{ $topProvinceNames[0] }}</strong> và <strong class="text-gray-900 font-bold">{{ $topProvinceNames[1] }}</strong> là hai địa phương dẫn đầu về số lượng biển số giá trị cao.
@@ -243,6 +266,7 @@
                                             Các tỉnh thành có sự phân bổ đồng đều về số lượng biển số đẹp.
                                         @endif
                                     </li>
+                                    @endif
                                     @if($tuQuyCount > 0 || $locPhatCount > 0)
                                         <li>Ghi nhận có <strong class="text-gray-900 font-bold">{{ $tuQuyCount }}</strong> biển tứ quý và <strong class="text-gray-900 font-bold">{{ $locPhatCount }}</strong> biển lộc phát đang nắm giữ vị trí quan trọng.</li>
                                     @endif
@@ -252,9 +276,15 @@
                     </div>
 
                     <!-- Table Section (Excel Flat Style) -->
-                    <div class="space-y-4 border-t border-gray-200 pt-6">
+                    <div class="space-y-[15px]">
                         <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            Top {{ $totalCount }} Biển Số Đắt Nhất
+                            @if(str_contains($config['h1'], 'Top 100'))
+                                {{ str_replace('Top 100', 'Top ' . $totalCount, $config['h1']) }}
+                            @elseif(str_contains($config['h1'], 'Top Biển Số'))
+                                {{ str_replace('Top Biển Số', 'Top ' . $totalCount . ' Biển Số', $config['h1']) }}
+                            @else
+                                Top {{ $totalCount }} {{ $config['h1'] }}
+                            @endif
                         </h2>
 
                         @if(count($plates) > 0)
@@ -262,12 +292,12 @@
                             <div class="overflow-x-auto border border-gray-200 rounded-lg shadow-xs">
                                 <table class="min-w-full border-collapse text-xs sm:text-sm text-gray-800">
                                     <!-- Excel Header Style -->
-                                    <thead class="bg-gray-50 text-[10px] sm:text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <thead class="bg-gray-50 text-sm font-bold text-gray-700 uppercase tracking-wider">
                                         <tr>
                                             <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center w-12 sm:w-24 bg-gray-50 font-bold">STT</th>
                                             <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center w-28 sm:w-40 bg-gray-50 font-bold">Biển số</th>
                                             <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-right w-32 sm:w-44 bg-gray-50 font-bold">Giá đấu</th>
-                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-left bg-gray-50 font-bold">Địa phương</th>
+                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-left bg-gray-50 font-bold whitespace-nowrap">Địa phương</th>
                                         </tr>
                                     </thead>
                                     <!-- Excel Body Style -->
@@ -275,24 +305,25 @@
                                         @foreach($plates as $index => $plate)
                                             @php
                                                 $detailSlug = $plate->seoArticle ? $plate->seoArticle->slug : $plate->full_number;
+                                                $isHidden = $index >= 10;
                                             @endphp
-                                            <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50/30 transition-colors duration-75">
+                                            <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50/30 transition-colors duration-75 @if($isHidden) hidden js-more-row @endif">
                                                 <!-- Xếp hạng -->
-                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center text-gray-500 font-medium text-[10px] sm:text-sm">
+                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center text-gray-500 font-medium text-sm">
                                                     {{ $index + 1 }}
                                                 </td>
                                                 <!-- Biển số (Có link đổi màu sang màu đỏ thương hiệu hệ thống khi hover) -->
-                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap text-[11px] sm:text-sm">
+                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap text-sm">
                                                     <a href="/bien-so-{{ $detailSlug }}" class="text-gray-900 hover:text-[#8C1E1E] hover:underline font-bold transition-colors">
                                                         {{ $plate->display_number }}
                                                     </a>
                                                 </td>
                                                 <!-- Giá đấu -->
-                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-right font-semibold text-gray-900 whitespace-nowrap text-[11px] sm:text-sm">
+                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-right font-semibold text-gray-900 whitespace-nowrap text-sm">
                                                     {{ $formatMoney($plate->winning_price) }}
                                                 </td>
                                                 <!-- Địa phương -->
-                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-left text-gray-700 whitespace-nowrap text-[10px] sm:text-sm">
+                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-left text-gray-700 whitespace-nowrap text-sm">
                                                     {{ $plate->province ? $plate->province->name : 'Chưa xác định' }}
                                                 </td>
                                             </tr>
@@ -300,6 +331,25 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            @if(count($plates) > 10)
+                                <div class="text-center mt-4" id="xem-them-container">
+                                    <button id="btn-show-more" class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-[#8C1E1E] bg-[#8C1E1E]/5 hover:bg-[#8C1E1E]/10 rounded-lg transition-all duration-200 border border-[#8C1E1E]/20 hover:border-[#8C1E1E]/30 focus:outline-none cursor-pointer">
+                                        <span>Xem thêm</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <script>
+                                    document.getElementById('btn-show-more').addEventListener('click', function() {
+                                        document.querySelectorAll('.js-more-row').forEach(function(row) {
+                                            row.classList.remove('hidden');
+                                        });
+                                        document.getElementById('xem-them-container').classList.add('hidden');
+                                    });
+                                </script>
+                            @endif
                         @else
                             <!-- Empty State -->
                             <div class="border border-gray-200 bg-gray-50 p-8 text-center text-gray-500 rounded-sm">
@@ -310,34 +360,59 @@
                     </div>
 
                     <!-- Phân tích xu hướng -->
-                    <div class="space-y-6 border-t border-gray-200 pt-6">
+                    <div class="space-y-[15px]">
                         <h2 class="text-lg font-bold text-gray-900">Phân tích xu hướng</h2>
                         
-                        <div class="space-y-4 text-sm text-gray-600 leading-relaxed text-justify">
+                        <div class="space-y-[15px] text-sm text-gray-600 leading-relaxed text-justify">
+                            @if($nguQuyCount > 0)
                             <div>
                                 <h3 class="font-bold text-gray-900 text-base mb-1">Vì sao nhóm biển ngũ quý luôn dẫn đầu?</h3>
                                 <p>
                                     Qua dữ liệu đấu giá, nhóm biển ngũ quý vẫn là nhóm có giá trị cao nhất trên thị trường. Không chỉ có yếu tố phong thủy cát tường, nhóm biển này còn sở hữu mức độ khan hiếm rất lớn. Với mỗi đầu số địa phương, xác suất xuất hiện một biển ngũ quý cực kỳ nhỏ, khiến nhu cầu luôn vượt xa nguồn cung. Trong bảng xếp hạng hiện tại, nhóm biển ngũ quý chiếm khoảng <strong class="text-gray-900 font-bold">{{ $nguQuyPercent }}%</strong> tổng giá trị toàn bảng với <strong class="text-gray-900 font-bold">{{ $nguQuyCount }}</strong> biển góp mặt.
                                 </p>
                             </div>
+                            @endif
 
+                            @if(count($topProvinces) > 1)
                             <div>
                                 <h3 class="font-bold text-gray-900 text-base mb-1">Địa phương dẫn đầu áp đảo</h3>
                                 <p>
                                     Thống kê cho thấy phần lớn biển số giá trị cao trong bảng xếp hạng thuộc về khu vực của các thành phố lớn. Cụ thể, hơn <strong class="text-gray-900 font-bold">{{ $leadProvincesPercent }}%</strong> biển số trong bảng xếp hạng thuộc về khu vực <strong class="text-gray-900 font-bold">{{ $top1ProvinceName }}</strong> (đạt <strong class="text-gray-900 font-bold">{{ $top1ProvinceCount }}</strong> biển) và <strong class="text-gray-900 font-bold">{{ $top2ProvinceName }}</strong> (đạt <strong class="text-gray-900 font-bold">{{ $top2ProvinceCount }}</strong> biển). Nguyên nhân chủ yếu đến từ nhu cầu sở hữu xe sang lớn, lượng doanh nhân tập trung đông và giá trị nhận diện thương hiệu của các đầu số này.
                                 </p>
                             </div>
+                            @endif
 
+                            @if($slug === 'top-100-bien-so-dat-nhat-viet-nam')
                             <div>
                                 <h3 class="font-bold text-gray-900 text-base mb-1">Những nhóm biển tăng giá nhanh nhất</h3>
                                 <p>
-                                    Dựa trên dữ liệu lịch sử và mô hình định giá, những nhóm biển đang có tốc độ tăng giá tốt nhất trong bảng xếp hạng gồm: Ngũ quý (đang có <strong class="text-gray-900 font-bold">{{ $nguQuyCount }}</strong> biển), Tứ quý (đang có <strong class="text-gray-900 font-bold">{{ $tuQuyCount }}</strong> biển), Lộc phát (đang có <strong class="text-gray-900 font-bold">{{ $locPhatCount }}</strong> biển) và các dòng số tiến đẹp. Các biển số có cấu trúc ngẫu nhiên thường có mức tăng thấp hơn và phụ thuộc nhiều vào yếu tố vùng miền.
+                                    Dựa trên dữ liệu lịch sử và mô hình định giá, những nhóm biển đang có tốc độ tăng giá tốt nhất trong bảng xếp hạng gồm:
+                                    @php
+                                        $trendGroups = [];
+                                        if ($nguQuyCount > 0) {
+                                            $trendGroups[] = "Ngũ quý (đang có <strong class='text-gray-900 font-bold'>{$nguQuyCount}</strong> biển)";
+                                        }
+                                        if ($tuQuyCount > 0) {
+                                            $trendGroups[] = "Tứ quý (đang có <strong class='text-gray-900 font-bold'>{$tuQuyCount}</strong> biển)";
+                                        }
+                                        if ($locPhatCount > 0) {
+                                            $trendGroups[] = "Lộc phát (đang có <strong class='text-gray-900 font-bold'>{$locPhatCount}</strong> biển)";
+                                        }
+                                    @endphp
+                                    {!! implode(', ', $trendGroups) !!}
+                                    @if(count($trendGroups) > 0)
+                                        và các dòng số tiến đẹp.
+                                    @else
+                                        các dòng số tiến đẹp và số gánh gánh lặp.
+                                    @endif
+                                    Các biển số có cấu trúc ngẫu nhiên thường có mức tăng thấp hơn và phụ thuộc nhiều vào yếu tố vùng miền.
                                 </p>
                             </div>
+                            @endif
                         </div>
 
                         <!-- Hai bảng thống kê phụ: Phân bố giá & Địa phương -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                        <div class="space-y-[15px]">
                             <!-- Phân bố giá -->
                             <div class="space-y-3">
                                 <h4 class="font-bold text-gray-900 text-sm">Phân bố giá trong Top</h4>
@@ -350,30 +425,16 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="border border-gray-200 px-3 py-2">Trên 10 tỷ</td>
-                                                <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($priceDist['above_10']) }}</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-50 bg-gray-50/20">
-                                                <td class="border border-gray-200 px-3 py-2">5 - 10 tỷ</td>
-                                                <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($priceDist['5_to_10']) }}</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="border border-gray-200 px-3 py-2">3 - 5 tỷ</td>
-                                                <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($priceDist['3_to_5']) }}</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-50 bg-gray-50/20">
-                                                <td class="border border-gray-200 px-3 py-2">2 - 3 tỷ</td>
-                                                <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($priceDist['2_to_3']) }}</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="border border-gray-200 px-3 py-2">1 - 2 tỷ</td>
-                                                <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($priceDist['1_to_2']) }}</td>
-                                            </tr>
-                                            <tr class="hover:bg-gray-50 bg-gray-50/20">
-                                                <td class="border border-gray-200 px-3 py-2">Dưới 1 tỷ</td>
-                                                <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($priceDist['below_1']) }}</td>
-                                            </tr>
+                                            @php $isEven = false; @endphp
+                                            @foreach($priceRanges as $range)
+                                                @if($range['count'] > 0)
+                                                    <tr class="hover:bg-gray-50 {{ $isEven ? 'bg-gray-50/20' : '' }}">
+                                                        <td class="border border-gray-200 px-3 py-2">{{ $range['label'] }}</td>
+                                                        <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($range['count']) }}</td>
+                                                    </tr>
+                                                    @php $isEven = !$isEven; @endphp
+                                                @endif
+                                            @endforeach
                                         </tbody>
                                     </table>
                                 </div>
@@ -381,7 +442,8 @@
                             </div>
 
                             <!-- Địa phương có nhiều biển giá trị nhất -->
-                            <div class="space-y-3">
+                            @if(count($topProvinces) > 1)
+                            <div class="space-y-[15px]">
                                 <h4 class="font-bold text-gray-900 text-sm">Địa phương có nhiều biển số giá trị cao</h4>
                                 <div class="overflow-hidden border border-gray-200 rounded-lg">
                                     <table class="min-w-full border-collapse text-xs text-gray-800">
@@ -409,21 +471,22 @@
                                 </div>
                                 <p class="text-xs text-gray-400 italic">Thống kê 5 tỉnh thành dẫn đầu trong danh sách bảng xếp hạng.</p>
                             </div>
+                            @endif
                         </div>
                     </div>
 
                     <!-- Những biển số đáng chú ý -->
                     @if(count($plates) > 0)
-                        <div class="space-y-4 border-t border-gray-100 pt-6">
+                        <div class="space-y-[15px]">
                             <h2 class="text-lg font-bold text-gray-900">Những biển số đáng chú ý</h2>
-                            <div class="space-y-4">
+                            <div class="space-y-[15px]">
                                 @foreach($plates->take(2) as $idx => $topPlate)
                                     <div class="space-y-1">
                                         <h3 class="text-base font-bold text-gray-900">
                                             Top {{ $idx + 1 }}: <span class="font-extrabold text-[#8C1E1E]">{{ $topPlate->display_number }}</span>
                                         </h3>
                                         <p class="text-sm text-gray-600 leading-relaxed text-justify">
-                                            Biển số sở hữu cấu trúc đẹp trúng đấu giá với mức giá kỷ lục <strong class="text-gray-900 font-bold">{{ number_format($topPlate->winning_price / 1000000000, 2, ',', '.') }} tỷ đồng</strong> tại khu vực <strong class="text-gray-900 font-bold">{{ $topPlate->province ? $topPlate->province->name : 'Chưa xác định' }}</strong>. Mô hình định giá dự báo giá trị hiện tại của biển số này có xu hướng tăng trưởng ổn định nhờ độ khan hiếm cực cao và nhu cầu lớn trên thị trường xe sang.
+                                            Biển số sở hữu cấu trúc đẹp trúng đấu giá với mức giá kỷ lục <strong class="text-gray-900 font-bold">{{ $formatPriceText($topPlate->winning_price) }}</strong> tại khu vực <strong class="text-gray-900 font-bold">{{ $topPlate->province ? $topPlate->province->name : 'Chưa xác định' }}</strong>. Mô hình định giá dự báo giá trị hiện tại của biển số này có xu hướng tăng trưởng ổn định nhờ độ khan hiếm cực cao và nhu cầu lớn trên thị trường xe sang.
                                         </p>
                                     </div>
                                 @endforeach
@@ -432,7 +495,7 @@
                     @endif
 
                     <!-- Xuuyên suốt thị trường 6 tháng tới -->
-                    <div class="space-y-3 border-t border-gray-200 pt-6">
+                    <div class="space-y-[15px]">
                         <h2 class="text-lg font-bold text-gray-900">Xu hướng thị trường 6 tháng tới</h2>
                         <div class="text-sm text-gray-600 leading-relaxed space-y-2 text-justify">
                             <p>Dựa trên dữ liệu lịch sử và mô hình thống kê AI dự báo:</p>
@@ -446,28 +509,28 @@
                     </div>
 
                     <!-- Câu hỏi thường gặp -->
-                    <div class="space-y-4 border-t border-gray-200 pt-6">
+                    <div class="space-y-[15px]">
                         <h2 class="text-lg font-bold text-gray-900">Câu hỏi thường gặp</h2>
-                        <div class="space-y-4 divide-y divide-gray-100">
-                            <div class="pt-3 first:pt-0">
+                        <div class="space-y-[15px]">
+                            <div>
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Biển số nào hiện có giá đấu cao nhất Việt Nam?</h4>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
-                                    Bảng xếp hạng được cập nhật tự động ngay sau mỗi phiên đấu giá chính thức kết thúc, giúp người dùng luôn theo dõi được kỷ lục giá đấu cao nhất tại mọi thời điểm.
+                                    Hiện tại, biển số có giá trúng đấu giá cao nhất Việt Nam trong hệ thống là <strong class="text-[#8C1E1E]">{{ $highestPlateOverall ? $highestPlateOverall->display_number : '' }}</strong> với mức giá kỷ lục là <strong class="text-gray-900">{{ $highestPlateOverall ? $formatMoney($highestPlateOverall->winning_price) : 'Đang cập nhật' }}</strong>.
                                 </p>
                             </div>
-                            <div class="pt-3">
+                            <div>
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Bảng xếp hạng được cập nhật bao lâu một lần?</h4>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Dữ liệu được đồng bộ hóa tự động ngay sau khi có kết quả đấu giá chính thức từ các phiên đấu giá công khai trên toàn quốc và hoàn tất quy trình đối soát dữ liệu của hệ thống.
                                 </p>
                             </div>
-                            <div class="pt-3">
+                            <div>
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Giá định giá AI có phải giá giao dịch thực tế?</h4>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Không. Mức giá AI là ước tính dựa trên dữ liệu thống kê, lịch sử đấu giá các biển số tương đồng và thuật toán phân tích xu hướng. Giá trị giao dịch thực tế có thể biến động tùy thuộc vào thỏa thuận trực tiếp và cung cầu thị trường.
                                 </p>
                             </div>
-                            <div class="pt-3">
+                            <div>
                                 <h4 class="font-bold text-gray-900 text-sm mb-1">Làm sao để biết biển số của tôi có nằm trong Top?</h4>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Bạn chỉ cần nhập biển số vào công cụ định giá để xem thứ hạng, giá trị ước tính và các biển số tương tự trong hệ thống của chúng tôi.
@@ -477,7 +540,7 @@
                     </div>
 
                     <!-- Định giá biển số của bạn (CTA) -->
-                    <div class="text-center space-y-4 py-6 border-t border-gray-200">
+                    <div class="text-center space-y-[15px]">
                         <h3 class="text-lg font-bold text-[#8C1E1E]">Định giá biển số của bạn</h3>
                         <p class="text-sm text-gray-700 max-w-xl mx-auto leading-relaxed text-justify">
                             Bạn muốn biết biển số xe của mình hoặc biển số quan tâm có giá trị bao nhiêu trên thị trường hiện tại? Nhập ngay biển số để nhận ước tính giá trị từ mô hình AI, đánh giá điểm độ hiếm và lịch sử đấu giá liên quan.
@@ -490,14 +553,13 @@
                     </div>
 
                     <!-- Footer / Navigation -->
-                    <footer class="pt-6 border-t border-gray-200 flex items-center justify-between text-xs">
-                        <a href="/phan-tich" class="inline-flex items-center gap-1.5 font-bold text-[#8C1E1E] hover:underline">
+                    <footer class="flex items-center justify-between text-xs">
+                        <a href="/top" class="inline-flex items-center gap-1.5 font-bold text-[#8C1E1E] hover:underline">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                             </svg>
                             Quay lại danh sách Top
                         </a>
-                        <span class="text-gray-400">© 2026 Bisoxe.com</span>
                     </footer>
 
                 </article>
@@ -505,10 +567,10 @@
             </div>
 
             <!-- CỘT PHẢI: Sidebar điều hướng và các danh mục liên kết (Chiếm 1/3) -->
-            <aside class="space-y-8">
+            <aside class="space-y-[15px]">
                 
                 <!-- Card 1: Các bảng xếp hạng tiêu biểu khác -->
-                <div class="space-y-4">
+                <div class="space-y-[15px]">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Bảng xếp hạng tiêu biểu
                     </h3>
@@ -516,7 +578,7 @@
                         @foreach($rankings as $ranking)
                             @if($ranking['slug'] !== $slug)
                                 <div class="text-xs font-semibold text-gray-500 hover:text-[#8C1E1E]">
-                                    <a href="{{ url('/' . $ranking['slug']) }}" class="flex items-center gap-2">
+                                    <a href="{{ url('/' . $ranking['slug']) }}" class="flex items-center gap-1">
                                         <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                                         </svg>
@@ -529,11 +591,11 @@
                 </div>
 
                 <!-- Card 2: Bảng xếp hạng theo Tỉnh thành -->
-                <div class="space-y-4">
+                <div class="space-y-[15px]">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Theo Tỉnh thành
                     </h3>
-                    <div class="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: thin;">
+                    <div class="flex flex-wrap gap-1.5">
                         @foreach($provincesList as $prov)
                             @if($prov['slug'] !== $slug)
                                 <a href="{{ url('/' . $prov['slug']) }}" class="px-2.5 py-1 bg-white border border-gray-200 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">
@@ -545,11 +607,11 @@
                 </div>
 
                 <!-- Card 3: Bảng xếp hạng theo Đầu số xe -->
-                <div class="space-y-4">
+                <div class="space-y-[15px]">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-200 pb-2">
                         Theo Đầu số xe
                     </h3>
-                    <div class="flex flex-wrap gap-1.5 max-h-60 overflow-y-auto pr-1" style="scrollbar-width: thin;">
+                    <div class="flex flex-wrap gap-1.5">
                         @foreach($seriesList as $series)
                             @if('top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat' !== $slug)
                                 <a href="{{ url('/top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat') }}" class="px-2.5 py-1 bg-white border border-gray-200 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">

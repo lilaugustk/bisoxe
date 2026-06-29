@@ -4,11 +4,11 @@
 @section('description', 'Khám phá các bảng xếp hạng biển số xe trúng đấu giá có giá trị cao nhất Việt Nam, Hà Nội, TP.HCM, ngũ quý, tứ quý, thần tài, lộc phát, sảnh tiến được cập nhật tự động liên tục.')
 
 @section('meta')
-    <link rel="canonical" href="https://bisoxe.com/phan-tich" />
+    <link rel="canonical" href="https://bisoxe.com/top" />
     <meta property="og:title" content="Bảng Xếp Hạng & Phân Tích Biển Số Xe Đắt Nhất Việt Nam (Cập Nhật 2026)" />
     <meta property="og:description" content="Khám phá các bảng xếp hạng biển số xe trúng đấu giá có giá trị cao nhất Việt Nam, Hà Nội, TP.HCM, ngũ quý, tứ quý, thần tài, lộc phát, sảnh tiến được cập nhật tự động liên tục." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://bisoxe.com/phan-tich" />
+    <meta property="og:url" content="https://bisoxe.com/top" />
 @endsection
 
 @php
@@ -363,7 +363,7 @@
                         </button>
                     </div>
                     <p class="mt-2.5 text-xs text-gray-400">
-                        ví dụ: <span class="font-semibold text-gray-300">30K-888.88</span>
+                        ví dụ: <span class="font-semibold text-gray-300">88A-888.88</span>
                     </p>
                 </form>
             </div>

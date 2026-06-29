@@ -133,10 +133,10 @@
                     Chỉ số thị trường
                 </a> --}}
                 <a
-                    href="/phan-tich"
+                    href="/top"
                     class="{{ $isAnalysisActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    Phân tích
+                    Bảng xếp hạng
                 </a>
                 {{-- <a
                     href="/bai-viet"
@@ -233,11 +233,11 @@
                 Chỉ số thị trường
             </a> --}}
             <a
-                href="/phan-tich"
+                href="/top"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isAnalysisActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
-                Phân tích
+                Bảng xếp hạng
             </a>
             {{-- <a
                 href="/bai-viet"

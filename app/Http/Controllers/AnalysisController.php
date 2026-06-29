@@ -118,10 +118,15 @@ class AnalysisController extends Controller
                 'meta_description' => $info[3],
                 'h1' => $info[4],
                 'description' => $info[5],
-                'query' => function() use ($info) {
-                    return LicensePlate::where('status', 'completed')
-                        ->whereHas('kinds', fn($q) => $q->where('plate_kinds.id', $info[0]))
-                        ->orderBy('winning_price', 'desc')
+                'query' => function() use ($info, $slug) {
+                    $query = LicensePlate::where('status', 'completed')
+                        ->whereHas('kinds', fn($q) => $q->where('plate_kinds.id', $info[0]));
+
+                    if ($slug === 'top-bien-so-loc-phat-dat-nhat-viet-nam') {
+                        $query->whereDoesntHave('kinds', fn($q) => $q->where('plate_kinds.id', 1));
+                    }
+
+                    return $query->orderBy('winning_price', 'desc')
                         ->limit(100);
                 }
             ];
@@ -420,6 +425,17 @@ class AnalysisController extends Controller
         }
 
         $trustStats = $this->getTrustStats();
+
+        $highestPlateOverallData = Cache::remember('highest_plate_overall_data_v2', 3600, function() {
+            $p = LicensePlate::where('status', 'completed')
+                ->orderBy('winning_price', 'desc')
+                ->first();
+            return $p ? [
+                'display_number' => $p->display_number,
+                'winning_price' => $p->winning_price,
+            ] : null;
+        });
+        $highestPlateOverall = $highestPlateOverallData ? (object) $highestPlateOverallData : null;
         
         // Eager loading
         $plates = $config['query']()->with(['province', 'kinds', 'seoArticle'])->get();
@@ -526,6 +542,6 @@ class AnalysisController extends Controller
             })->sortBy('name')->values()->toArray();
         });
 
-        return view('analysis.show', compact('trustStats', 'config', 'plates', 'slug', 'priceGroups', 'kindGroups', 'rankings', 'seriesList', 'provincesList'));
+        return view('analysis.show', compact('trustStats', 'config', 'plates', 'slug', 'priceGroups', 'kindGroups', 'rankings', 'seriesList', 'provincesList', 'highestPlateOverall'));
     }
 }

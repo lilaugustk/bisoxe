@@ -1,4 +1,4 @@
-<footer class="mt-16 border-t border-gray-800 bg-[#111827] text-sm text-gray-400">
+<footer class="border-t border-gray-800 bg-[#111827] text-sm text-gray-400">
     <!-- Main Footer Grid -->
     <div class="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-12 lg:gap-12">
@@ -95,45 +95,7 @@
                     công cụ phân tích ý nghĩa biển số tự động dựa
                     trên quan niệm dân gian, phân loại biển đẹp xấu và định giá biển số.
                 </p>
-                <!-- Social Icons -->
-                <div class="flex gap-4 pt-1">
-                    <a
-                        href="#"
-                        class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-white transition-all duration-200 hover:bg-[#8C1E1E]"
-                        aria-label="Facebook"
-                    >
-                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M9 8H7v3h2v9h4v-9h3.6l.4-3H13V6c0-.5.5-1 1-1h3V1h-4c-2.8 0-5 2.2-5 5v2z" />
-                        </svg>
-                    </a>
-                    <a
-                        href="#"
-                        class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-white transition-all duration-200 hover:bg-[#8C1E1E]"
-                        aria-label="Youtube"
-                    >
-                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M23.5 6.2c-.2-1.5-1.5-2.8-3-3C17.7 3 12 3 12 3s-5.7 0-8.5.2c-1.5.2-2.8 1.5-3 3C.3 9 0 12 0 12s0 3 .3 5.8c.2 1.5 1.5 2.8 3 3 2.8.2 8.5.2 8.5.2s5.7 0 8.5-.2c1.5-.2 2.8-1.5 3-3 .3-2.8.3-5.8.3-5.8s0-3-.3-5.8zM9.5 15.5V8.5l6.5 3.5-6.5 3.5z" />
-                        </svg>
-                    </a>
-                    <a
-                        href="#"
-                        class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-white transition-all duration-200 hover:bg-[#8C1E1E]"
-                        aria-label="Telegram"
-                    >
-                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.6 7.6l-1.6 7.6c-.1.5-.4.6-.9.3l-2.4-1.8-1.2 1.1c-.1.1-.3.2-.4.2l.2-2.5 4.6-4.1c.2-.2-.04-.3-.3-.1L6.3 12.8 3.9 12c-.5-.2-.5-.5.1-.7l9.4-3.6c.4-.2.8.1.6.9z" />
-                        </svg>
-                    </a>
-                    <a
-                        href="#"
-                        class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-white transition-all duration-200 hover:bg-[#8C1E1E]"
-                        aria-label="TikTok"
-                    >
-                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12.5 2v6.2c-.7-.7-1.8-1.2-3-1.2-2.5 0-4.5 2-4.5 4.5S7 16 9.5 16c2.3 0 4.2-1.7 4.5-3.9V6c1 .7 2.2 1.1 3.5 1.1V5c-1.5 0-2.8-.8-3.5-2h-1.5z" />
-                        </svg>
-                    </a>
-                </div>
+
             </div>
 
             <!-- Links Column 1: Tra cứu -->
@@ -161,7 +123,7 @@
                 </div>
                 <ul class="space-y-2.5 text-xs font-medium">
                     <li>
-                        <a href="/phan-tich" class="transition-colors duration-200 hover:text-[#F5B800]">Trang chính Phân tích</a>
+                        <a href="/top" class="transition-colors duration-200 hover:text-[#F5B800]">Trang chính Bảng xếp hạng</a>
                     </li>
                     <li>
                         <a href="/top-100-bien-so-dat-nhat-viet-nam" class="transition-colors duration-200 hover:text-[#F5B800]">Top 100 biển số đắt nhất</a>
@@ -200,14 +162,14 @@
                 <p class="text-xs font-bold text-gray-300">
                     © 2026 BISOXE.COM. Bảo lưu mọi quyền.
                 </p>
-                <div class="flex gap-4 text-xs text-gray-400">
-                    <a href="/" class="transition-colors hover:text-gray-200">Tra cứu</a>
-                    <span>•</span>
-                    <a href="/phan-tich" class="transition-colors hover:text-gray-200">Phân tích</a>
-                    <span>•</span>
-                    <a href="/danh-sach-bien-so-xe-o-to" class="transition-colors hover:text-gray-200">Biển số ô tô</a>
-                    <span>•</span>
-                    <a href="/danh-sach-bien-so-xe-may" class="transition-colors hover:text-gray-200">Biển số xe máy</a>
+                <div class="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs text-gray-400 md:justify-end">
+                    <a href="/" class="transition-colors hover:text-gray-200 whitespace-nowrap">Tra cứu</a>
+                    <span class="text-gray-600">•</span>
+                    <a href="/top" class="transition-colors hover:text-gray-200 whitespace-nowrap">Bảng xếp hạng</a>
+                    <span class="text-gray-600">•</span>
+                    <a href="/danh-sach-bien-so-xe-o-to" class="transition-colors hover:text-gray-200 whitespace-nowrap">Biển số ô tô</a>
+                    <span class="text-gray-600">•</span>
+                    <a href="/danh-sach-bien-so-xe-may" class="transition-colors hover:text-gray-200 whitespace-nowrap">Biển số xe máy</a>
                 </div>
             </div>
             <p class="text-justify text-[11px] leading-relaxed font-light text-gray-400 md:text-left">
