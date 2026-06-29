@@ -72,6 +72,7 @@ Route::get('/sitemap.xml', function () {
     
     // Trang tĩnh
     $xml .= '<url><loc>https://bisoxe.com</loc><priority>1.0</priority><changefreq>daily</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/dau-gia</loc><priority>0.9</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/danh-sach-bien-so-xe-o-to</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/danh-sach-bien-so-xe-may</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/dinh-gia</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>';
@@ -110,6 +111,9 @@ Route::get('/sitemap.xml', function () {
     });
     foreach ($sitemapProvinces as $provSlug) {
         $xml .= '<url><loc>https://bisoxe.com/top-100-bien-so-dep-dat-nhat-' . $provSlug . '</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
+        
+        $provUrlSlug = $provSlug === 'ho-chi-minh' ? 'tp-ho-chi-minh' : $provSlug;
+        $xml .= '<url><loc>https://bisoxe.com/dau-gia/' . $provUrlSlug . '</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     }
 
     // Các đầu số xe phổ biến (Sinh động từ DB)
