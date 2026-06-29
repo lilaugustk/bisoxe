@@ -786,7 +786,7 @@
                                     <!-- Card Header: STT, Province, Kind -->
                                     <div class="flex items-center justify-between text-xs">
                                         <div class="flex items-center gap-2">
-                                            <span class="flex h-5 w-5 items-center justify-center rounded bg-gray-50 text-[10px] font-bold text-gray-400">
+                                            <span class="flex h-5 w-5 items-center justify-center rounded bg-gray-50 text-[10px] font-bold text-gray-600">
                                                 #{{ $index + 1 }}
                                             </span>
                                             <span class="font-bold text-gray-800">
@@ -817,7 +817,7 @@
                                     <!-- Card Body: Price and Time -->
                                     <div class="flex justify-between items-center text-xs border-t border-gray-50 pt-2.5">
                                         <div class="flex flex-col gap-0.5">
-                                            <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                            <span class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">
                                                 {{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}
                                             </span>
                                             <span class="text-sm font-black text-[#8C1E1E]">
@@ -827,7 +827,7 @@
 
                                         @if($activeTab !== 'announce' && $plate['auction_start_time'])
                                             <div class="flex flex-col items-end gap-0.5">
-                                                <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Ngày đấu</span>
+                                                <span class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Ngày đấu</span>
                                                 <span class="text-[11px] font-bold text-gray-600">
                                                     {{ explode(' ', $formatDate($plate['auction_start_time']))[0] }}
                                                 </span>

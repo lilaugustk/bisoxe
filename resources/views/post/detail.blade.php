@@ -343,10 +343,10 @@
                                                 </div>
                                             </a>
                                             <div class="flex flex-1 flex-col items-end pl-3">
-                                                <span class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Giá khởi điểm</span>
+                                                <span class="text-[9px] font-semibold text-gray-600 uppercase tracking-wider">Giá khởi điểm</span>
                                                 <span class="text-xs font-black text-[#8C1E1E]">{{ $formatMoney($plate->starting_price) }}</span>
                                                 @if($plate->auction_start_time)
-                                                    <span class="mt-0.5 text-[9px] text-gray-400">{{ explode(' ', $formatDate($plate->auction_start_time))[0] }}</span>
+                                                    <span class="mt-0.5 text-[9px] text-gray-600">{{ explode(' ', $formatDate($plate->auction_start_time))[0] }}</span>
                                                 @endif
                                             </div>
                                         </div>
@@ -371,10 +371,10 @@
                                                 </div>
                                             </a>
                                             <div class="flex flex-1 flex-col items-end pl-3">
-                                                <span class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Giá trúng</span>
+                                                <span class="text-[9px] font-semibold text-gray-600 uppercase tracking-wider">Giá trúng</span>
                                                 <span class="text-xs font-black text-[#8C1E1E]">{{ $formatMoney($plate->winning_price) }}</span>
                                                 @if($plate->auction_start_time)
-                                                    <span class="mt-0.5 text-[9px] text-gray-400">{{ explode(' ', $formatDate($plate->auction_start_time))[0] }}</span>
+                                                    <span class="mt-0.5 text-[9px] text-gray-600">{{ explode(' ', $formatDate($plate->auction_start_time))[0] }}</span>
                                                 @endif
                                             </div>
                                         </div>

@@ -728,15 +728,15 @@
                                     </div>
                                     <div class="space-y-1 px-3 py-2">
                                         <div class="flex items-center justify-between gap-3">
-                                            <span class="text-[10px] text-gray-400">Biển số</span>
+                                            <span class="text-[10px] text-gray-600">Biển số</span>
                                             <span class="text-[11px] font-bold text-gray-900" x-text="hoveredIndex !== null && getSelectedPlates()[hoveredIndex] ? getSelectedPlates()[hoveredIndex].plate_number : ''"></span>
                                         </div>
                                         <div class="flex items-center justify-between gap-3">
-                                            <span class="text-[10px] text-gray-400">Giá trúng</span>
+                                            <span class="text-[10px] text-gray-600">Giá trúng</span>
                                             <span class="text-[11px] font-extrabold text-[#8C1E1E]" x-text="hoveredIndex !== null && getSelectedPlates()[hoveredIndex] ? formatShortMoney(getSelectedPlates()[hoveredIndex].winning_price) : ''"></span>
                                         </div>
                                         <div class="flex items-center justify-between gap-3">
-                                            <span class="text-[10px] text-gray-400">Ngày đấu</span>
+                                            <span class="text-[10px] text-gray-600">Ngày đấu</span>
                                             <span class="text-[10px] font-medium text-gray-600" x-text="hoveredIndex !== null && getSelectedPlates()[hoveredIndex] ? getSelectedPlates()[hoveredIndex].auction_date : ''"></span>
                                         </div>
                                     </div>
