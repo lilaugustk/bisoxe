@@ -288,16 +288,15 @@
                         </h2>
 
                         @if(count($plates) > 0)
-                            <!-- Excel Flat Table Wrapper (Hỗ trợ cuộn ngang trên mobile) -->
-                            <div class="overflow-x-auto border border-gray-200 rounded-lg shadow-xs">
-                                <table class="min-w-full border-collapse text-xs sm:text-sm text-gray-800">
+                            <div class="overflow-x-auto rounded-lg shadow-xs">
+                                <table class="min-w-full border-collapse border border-gray-200/60 text-xs sm:text-sm text-gray-800">
                                     <!-- Excel Header Style -->
                                     <thead class="bg-gray-50 text-sm font-bold text-gray-700 uppercase tracking-wider">
                                         <tr>
-                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center w-12 sm:w-24 bg-gray-50 font-bold">STT</th>
-                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center w-28 sm:w-40 bg-gray-50 font-bold">Biển số</th>
-                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-right w-32 sm:w-44 bg-gray-50 font-bold">Giá đấu</th>
-                                            <th scope="col" class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-left bg-gray-50 font-bold whitespace-nowrap">Địa phương</th>
+                                            <th scope="col" class="border border-gray-200/60 px-2 py-2 sm:px-4 sm:py-3 text-center w-12 sm:w-24 bg-gray-50 font-bold">STT</th>
+                                            <th scope="col" class="border border-gray-200/60 px-2 py-2 sm:px-4 sm:py-3 text-center w-28 sm:w-40 bg-gray-50 font-bold">Biển số</th>
+                                            <th scope="col" class="border border-gray-200/60 px-2 py-2 sm:px-4 sm:py-3 text-right w-32 sm:w-44 bg-gray-50 font-bold">Giá đấu</th>
+                                            <th scope="col" class="border border-gray-200/60 px-2 py-2 sm:px-4 sm:py-3 text-left bg-gray-50 font-bold whitespace-nowrap">Địa phương</th>
                                         </tr>
                                     </thead>
                                     <!-- Excel Body Style -->
@@ -309,21 +308,21 @@
                                             @endphp
                                             <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50/30 transition-colors duration-75 @if($isHidden) hidden js-more-row @endif">
                                                 <!-- Xếp hạng -->
-                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center text-gray-500 font-medium text-sm">
+                                                <td class="border border-gray-200/60 px-2 py-2 sm:px-4 sm:py-3 text-center text-gray-500 font-medium text-sm">
                                                     {{ $index + 1 }}
                                                 </td>
                                                 <!-- Biển số (Có link đổi màu sang màu đỏ thương hiệu hệ thống khi hover) -->
-                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap text-sm">
+                                                <td class="border border-gray-200/60 px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap text-sm">
                                                     <a href="/bien-so-{{ $detailSlug }}" class="text-gray-900 hover:text-[#8C1E1E] hover:underline font-bold transition-colors">
                                                         {{ $plate->display_number }}
                                                     </a>
                                                 </td>
                                                 <!-- Giá đấu -->
-                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-right font-semibold text-gray-900 whitespace-nowrap text-sm">
+                                                <td class="border border-gray-200/60 px-2 py-2 sm:px-4 sm:py-3 text-right font-semibold text-gray-900 whitespace-nowrap text-sm">
                                                     {{ $formatMoney($plate->winning_price) }}
                                                 </td>
                                                 <!-- Địa phương -->
-                                                <td class="border border-gray-200 px-2 py-2 sm:px-4 sm:py-3 text-left text-gray-700 whitespace-nowrap text-sm">
+                                                <td class="border border-gray-200/60 px-2 py-2 sm:px-4 sm:py-3 text-left text-gray-700 whitespace-nowrap text-sm">
                                                     {{ $plate->province ? $plate->province->name : 'Chưa xác định' }}
                                                 </td>
                                             </tr>
@@ -416,12 +415,12 @@
                             <!-- Phân bố giá -->
                             <div class="space-y-3">
                                 <h4 class="font-bold text-gray-900 text-sm">Phân bố giá trong Top</h4>
-                                <div class="overflow-hidden border border-gray-200 rounded-lg">
-                                    <table class="min-w-full border-collapse text-xs text-gray-800">
+                                <div class="overflow-hidden rounded-lg">
+                                    <table class="min-w-full border-collapse border border-gray-200/60 text-xs text-gray-800">
                                         <thead class="bg-gray-50 font-bold text-gray-700">
                                             <tr>
-                                                <th class="border border-gray-200 px-3 py-2 text-left">Khoảng giá</th>
-                                                <th class="border border-gray-200 px-3 py-2 text-center w-24">Tỷ lệ</th>
+                                                <th class="border border-gray-200/60 px-3 py-2 text-left">Khoảng giá</th>
+                                                <th class="border border-gray-200/60 px-3 py-2 text-center w-24">Tỷ lệ</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -429,8 +428,8 @@
                                             @foreach($priceRanges as $range)
                                                 @if($range['count'] > 0)
                                                     <tr class="hover:bg-gray-50 {{ $isEven ? 'bg-gray-50/20' : '' }}">
-                                                        <td class="border border-gray-200 px-3 py-2">{{ $range['label'] }}</td>
-                                                        <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($range['count']) }}</td>
+                                                        <td class="border border-gray-200/60 px-3 py-2">{{ $range['label'] }}</td>
+                                                        <td class="border border-gray-200/60 px-3 py-2 text-center font-semibold text-gray-900">{{ $getPercent($range['count']) }}</td>
                                                     </tr>
                                                     @php $isEven = !$isEven; @endphp
                                                 @endif
@@ -445,25 +444,25 @@
                             @if(count($topProvinces) > 1)
                             <div class="space-y-[15px]">
                                 <h4 class="font-bold text-gray-900 text-sm">Địa phương có nhiều biển số giá trị cao</h4>
-                                <div class="overflow-hidden border border-gray-200 rounded-lg">
-                                    <table class="min-w-full border-collapse text-xs text-gray-800">
+                                <div class="overflow-hidden rounded-lg">
+                                    <table class="min-w-full border-collapse border border-gray-200/60 text-xs text-gray-800">
                                         <thead class="bg-gray-50 font-bold text-gray-700">
                                             <tr>
-                                                <th class="border border-gray-200 px-3 py-2 text-left">Địa phương</th>
-                                                <th class="border border-gray-200 px-3 py-2 text-center w-24">Số lượng</th>
+                                                <th class="border border-gray-200/60 px-3 py-2 text-left">Địa phương</th>
+                                                <th class="border border-gray-200/60 px-3 py-2 text-center w-24">Số lượng</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @php $isEven = false; @endphp
                                             @forelse($topProvinces as $provName => $count)
                                                 <tr class="hover:bg-gray-50 {{ $isEven ? 'bg-gray-50/20' : '' }}">
-                                                    <td class="border border-gray-200 px-3 py-2">{{ $provName }}</td>
-                                                    <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-gray-900">{{ $count }}</td>
+                                                    <td class="border border-gray-200/60 px-3 py-2">{{ $provName }}</td>
+                                                    <td class="border border-gray-200/60 px-3 py-2 text-center font-semibold text-gray-900">{{ $count }}</td>
                                                 </tr>
                                                 @php $isEven = !$isEven; @endphp
                                             @empty
                                                 <tr>
-                                                    <td colspan="2" class="border border-gray-200 px-3 py-2 text-center text-gray-400">Không có dữ liệu địa phương</td>
+                                                    <td colspan="2" class="border border-gray-200/60 px-3 py-2 text-center text-gray-400">Không có dữ liệu địa phương</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>

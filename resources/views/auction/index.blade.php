@@ -33,87 +33,80 @@
     }
 }">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden py-16 sm:py-24 border-b border-gray-100 bg-white">
+    <section class="relative overflow-hidden py-8 sm:py-12 border-b border-gray-100 bg-white">
         <!-- Background Decorative Elements -->
-        <div class="absolute inset-0 pointer-events-none opacity-40">
-            <div class="absolute -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-[#8C1E1E]/10 to-transparent blur-3xl"></div>
-            <div class="absolute -bottom-40 -left-40 h-[600px] w-[600px] rounded-full bg-gradient-to-tr from-[#F5B800]/5 to-transparent blur-3xl"></div>
+        <div class="absolute inset-0 pointer-events-none opacity-30">
+            <div class="absolute -top-40 -right-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-[#8C1E1E]/10 to-transparent blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-[#F5B800]/5 to-transparent blur-3xl"></div>
         </div>
 
         <div class="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            
-            <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+            <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
                 Đấu Giá Biển Số Ô Tô Toàn Quốc
             </h1>
             
-            <p class="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-gray-600 leading-relaxed">
-                Tra cứu danh sách biển số xe đấu giá tại 34 tỉnh thành, bao gồm biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất.
+            <p class="mx-auto mt-3 max-w-xl text-sm sm:text-base text-gray-500 leading-relaxed">
+                Tra cứu danh sách biển số xe đấu giá tại các tỉnh thành, bao gồm biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất.
             </p>
-
-            <!-- Search Province Input -->
-            <div class="mx-auto mt-10 max-w-md px-2 text-left">
-                <div class="relative flex items-center gap-2 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-md focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
-                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </span>
-                    <input
-                        type="text"
-                        x-model="searchQuery"
-                        placeholder="Nhập tên tỉnh thành cần tìm..."
-                        class="w-full border-0 bg-transparent py-2.5 pr-4 pl-10 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
-                    />
-                </div>
-            </div>
         </div>
     </section>
 
     <!-- Main Grid Section -->
-    <section class="mx-auto max-w-[1440px] px-4 py-16 sm:px-6 lg:px-8">
-        <div class="mb-10 text-center sm:text-left">
-            <h2 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
-                Danh sách biển số đấu giá theo tỉnh thành
-            </h2>
-            <div class="mt-2 h-1 w-16 bg-[#8C1E1E] mx-auto sm:mx-0 rounded-full"></div>
+    <section class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-gray-100 pb-5">
+            <div>
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900">
+                    Danh sách tỉnh/thành phố
+                </h2>
+                <p class="mt-1.5 text-xs text-gray-400 font-medium">
+                    Cập nhật dữ liệu mới nhất ngày: 29/06/2025
+                </p>
+            </div>
+
+            <!-- Search input -->
+            <div class="relative w-full sm:w-80">
+                <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 pointer-events-none">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </span>
+                <input
+                    type="text"
+                    x-model="searchQuery"
+                    placeholder="Tìm kiếm tỉnh/thành phố..."
+                    class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-4 pr-10 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#8C1E1E] focus:ring-1 focus:ring-[#8C1E1E] transition-all shadow-xs"
+                />
+            </div>
         </div>
 
         <!-- Province Cards Grid -->
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <template x-for="p in filteredProvinces" :key="p.code">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">            <template x-for="p in filteredProvinces" :key="p.code">
                 <a
                     :href="'/dau-gia/' + p.slug"
-                    class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#8C1E1E]/30 hover:shadow-md hover:shadow-[#8C1E1E]/5"
+                    class="group flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
                 >
-                    <!-- Background Glow on Hover -->
-                    <div class="absolute inset-0 -z-10 bg-gradient-to-br from-gray-50 to-white transition-opacity duration-300 group-hover:opacity-0"></div>
-                    <div class="absolute inset-0 -z-10 bg-gradient-to-br from-[#8C1E1E]/5 via-white to-white opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                Mã vùng: <span x-text="p.code" class="font-bold text-gray-600"></span>
-                            </span>
-                            <h3 class="mt-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-[#8C1E1E]" x-text="p.name"></h3>
-                        </div>
-                        
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 text-gray-400 transition-all duration-300 group-hover:bg-[#8C1E1E]/10 group-hover:text-[#8C1E1E]">
-                            <svg class="h-5 w-5 transform transition-transform duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
+                    <div class="min-w-0">
+                        <h3 class="text-base font-bold text-gray-900 truncate" x-text="p.name"></h3>
+                        <p class="text-xs text-gray-500 mt-0.5 font-medium" x-text="p.count + ' biển số'"></p>
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <span class="text-xs font-semibold text-[#16A34A]" x-text="'Đang đấu: ' + p.active_count"></span>
                         </div>
                     </div>
-
-                    <div class="mt-6 border-t border-gray-50 pt-4 flex items-center justify-between text-xs text-gray-500">
-                        <span class="font-medium">Xem biển số đấu giá</span>
-                        <span class="font-bold text-[#8C1E1E] group-hover:underline">Chi tiết →</span>
+                    
+                    <!-- Arrow Icon -->
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-50 text-[#3B82F6] shrink-0 ml-2">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
                     </div>
                 </a>
             </template>
+
+
         </div>
 
         <!-- No Results Empty State -->
-        <div x-show="filteredProvinces.length === 0" x-cloak class="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200 max-w-xl mx-auto">
+        <div x-show="filteredProvinces.length === 0" x-cloak class="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200 max-w-xl mx-auto mt-6">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25g-3 3 0 116 0z" />

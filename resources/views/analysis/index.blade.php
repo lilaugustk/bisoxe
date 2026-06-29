@@ -115,27 +115,27 @@
  
                     {{-- Trust Signals hàng ngang --}}
                     <div class="mt-4 flex flex-wrap gap-5">
-                        <div class="flex items-center gap-3 border-l-4 border-[#8C1E1E] pl-3">
+                        <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
                             <div>
-                                <span class="block text-base font-extrabold text-[#111827]">100+</span>
+                                <span class="block text-base font-extrabold text-blue-600">100+</span>
                                 <span class="block text-[11px] text-gray-500">Bảng xếp hạng</span>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 border-l-4 border-[#8C1E1E] pl-3">
+                        <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
                             <div>
-                                <span class="block text-base font-extrabold text-[#111827]">{{ $trustStats['total_plates'] }}+</span>
+                                <span class="block text-base font-extrabold text-blue-600">{{ $trustStats['total_plates'] }}+</span>
                                 <span class="block text-[11px] text-gray-500">Biển số trong dữ liệu</span>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 border-l-4 border-[#8C1E1E] pl-3">
+                        <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
                             <div>
-                                <span class="block text-base font-extrabold text-[#111827]">{{ $trustStats['total_value_billion'] }} Tỷ+</span>
+                                <span class="block text-base font-extrabold text-blue-600">{{ $trustStats['total_value_billion'] }} Tỷ+</span>
                                 <span class="block text-[11px] text-gray-500">Tổng giá trị đấu giá</span>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 border-l-4 border-[#8C1E1E] pl-3">
+                        <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
                             <div>
-                                <span class="block text-base font-extrabold text-[#8C1E1E]">Cập nhật liên tục</span>
+                                <span class="block text-base font-extrabold text-blue-600">Cập nhật liên tục</span>
                                 <span class="block text-[11px] text-gray-500">Mỗi ngày</span>
                             </div>
                         </div>
@@ -150,23 +150,16 @@
                         {{-- Hàng 1: 4 card chính --}}
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                             @foreach(array_slice($rankings, 0, 4) as $ranking)
-                                <a href="{{ url('/' . $ranking['slug']) }}" class="group block rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200">
+                                <a href="{{ url('/' . $ranking['slug']) }}" class="group block rounded-xl overflow-hidden border border-gray-200/60 bg-white">
                                     @php $cardStyle = $getCardStyle($ranking['slug']); @endphp
                                     <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br {{ $cardStyle['gradient'] }} flex flex-col items-center justify-center p-3 text-center">
                                         
                                         {{-- Soft Radial Glow in the center --}}
                                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                                         
-                                        {{-- Glassmorphic License Plate Container --}}
-                                        <div class="relative w-[85%] h-[65%] rounded-lg border border-white/20 bg-white/[0.04] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-xs flex flex-col items-center justify-center p-2 gap-1.5 transition-transform duration-300 group-hover:scale-105">
-                                            
-                                            {{-- Dashed Inner Border resembling real plate --}}
-                                            <div class="absolute inset-1 rounded border border-dashed border-white/10 pointer-events-none"></div>
-                                            
-                                            {{-- Text --}}
-                                            <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase leading-none">{{ $cardStyle['top'] }}</span>
-                                            <span class="text-xs sm:text-sm md:text-base font-black text-white tracking-wider uppercase filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-none text-center">{{ $cardStyle['main'] }}</span>
-                                        </div>
+                                        {{-- Text --}}
+                                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase leading-none mb-1.5">{{ $cardStyle['top'] }}</span>
+                                        <span class="text-xs sm:text-sm md:text-base font-black text-white tracking-wider uppercase filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-none text-center">{{ $cardStyle['main'] }}</span>
                                     </div>
                                     <div class="p-2.5 space-y-0.5">
                                         <span class="block text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2">{{ $ranking['name'] }}</span>
@@ -179,23 +172,16 @@
                         {{-- Hàng 2: 4 card phụ --}}
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             @foreach(array_slice($rankings, 4, 4) as $ranking)
-                                <a href="{{ url('/' . $ranking['slug']) }}" class="group block rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200">
+                                <a href="{{ url('/' . $ranking['slug']) }}" class="group block rounded-xl overflow-hidden border border-gray-200/60 bg-white">
                                     @php $cardStyle = $getCardStyle($ranking['slug']); @endphp
                                     <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br {{ $cardStyle['gradient'] }} flex flex-col items-center justify-center p-3 text-center">
                                         
                                         {{-- Soft Radial Glow in the center --}}
                                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                                         
-                                        {{-- Glassmorphic License Plate Container --}}
-                                        <div class="relative w-[85%] h-[65%] rounded-lg border border-white/20 bg-white/[0.04] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-xs flex flex-col items-center justify-center p-2 gap-1.5 transition-transform duration-300 group-hover:scale-105">
-                                            
-                                            {{-- Dashed Inner Border resembling real plate --}}
-                                            <div class="absolute inset-1 rounded border border-dashed border-white/10 pointer-events-none"></div>
-                                            
-                                            {{-- Text --}}
-                                            <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase leading-none">{{ $cardStyle['top'] }}</span>
-                                            <span class="text-xs sm:text-sm md:text-base font-black text-white tracking-wider uppercase filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-none text-center">{{ $cardStyle['main'] }}</span>
-                                        </div>
+                                        {{-- Text --}}
+                                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase leading-none mb-1.5">{{ $cardStyle['top'] }}</span>
+                                        <span class="text-xs sm:text-sm md:text-base font-black text-white tracking-wider uppercase filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-none text-center">{{ $cardStyle['main'] }}</span>
                                     </div>
                                     <div class="p-2.5 space-y-0.5">
                                         <span class="block text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2">{{ $ranking['name'] }}</span>
@@ -219,19 +205,19 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-center">
                             <span class="block text-[10px] font-bold text-gray-500 uppercase">Giá trung bình Top 100</span>
-                            <span class="block mt-1 text-lg font-extrabold text-[#8C1E1E]">{{ $latestStats['avg_top100_billion'] }} Tỷ</span>
+                            <span class="block mt-1 text-lg font-extrabold text-blue-600">{{ $latestStats['avg_top100_billion'] }} Tỷ</span>
                         </div>
                         <div class="rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-center">
                             <span class="block text-[10px] font-bold text-gray-500 uppercase">Biển số đắt nhất</span>
-                            <span class="block mt-1 text-lg font-extrabold text-[#8C1E1E]">{{ $latestStats['highest_plate_price_billion'] }} Tỷ</span>
+                            <span class="block mt-1 text-lg font-extrabold text-blue-600">{{ $latestStats['highest_plate_price_billion'] }} Tỷ</span>
                         </div>
                         <div class="rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-center">
                             <span class="block text-[10px] font-bold text-gray-500 uppercase">Tỉnh thành phủ sóng</span>
-                            <span class="block mt-1 text-lg font-extrabold text-[#8C1E1E]">{{ $trustStats['total_provinces'] }}</span>
+                            <span class="block mt-1 text-lg font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
                         </div>
                         <div class="rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-center">
                             <span class="block text-[10px] font-bold text-gray-500 uppercase">Tổng bảng xếp hạng</span>
-                            <span class="block mt-1 text-lg font-extrabold text-[#8C1E1E]">100+</span>
+                            <span class="block mt-1 text-lg font-extrabold text-blue-600">100+</span>
                         </div>
                     </div>
 
@@ -265,7 +251,7 @@
     {{-- ═══════════════════════════════════════════════════════════════
          SECTION 3: 3 CỘT PHÂN LOẠI (Theo ĐP / Nhóm số đẹp / Đầu số)
     ═══════════════════════════════════════════════════════════════ --}}
-    <section class="border-t border-gray-200 bg-white">
+    <section class="bg-white">
         <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-6 md:py-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
 

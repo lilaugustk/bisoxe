@@ -17,17 +17,65 @@ class AuctionController extends Controller
      */
     public function index(): View
     {
-        $provinces = Province::all()->map(function ($p) {
-            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
+        $counts = Cache::remember('auction_provinces_count_v3', 3600, function () {
+            return LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
+                ->groupBy('province_code')
+                ->get()
+                ->keyBy('province_code')
+                ->map(fn($item) => [
+                    'total' => $item->total,
+                    'active' => $item->active ?? 0,
+                ])
+                ->toArray();
+        });
+
+        $provinceImages = [
+            'ha-noi' => 'https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?w=150&h=150&fit=crop&q=80', // Tháp Rùa
+            'tp-ho-chi-minh' => 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=150&h=150&fit=crop&q=80', // Landmark 81
+            'hai-phong' => 'https://images.unsplash.com/photo-1568090044161-0021404c1dc8?w=150&h=150&fit=crop&q=80', // Cầu Bính / Cảng
+            'da-nang' => 'https://images.unsplash.com/photo-1559592443-7f87a2752157?w=150&h=150&fit=crop&q=80', // Cầu Rồng
+            'can-tho' => 'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=150&h=150&fit=crop&q=80', // Chợ nổi
+            'quang-ninh' => 'https://images.unsplash.com/photo-1528127269322-539801943592?w=150&h=150&fit=crop&q=80', // Vịnh Hạ Long
+            'hue' => 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=150&h=150&fit=crop&q=80', // Đại Nội Huế
+            'khanh-hoa' => 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=150&h=150&fit=crop&q=80', // Biển Nha Trang
+            'lam-dong' => 'https://images.unsplash.com/photo-1549693578-d683be217e58?w=150&h=150&fit=crop&q=80', // Đà Lạt / Rừng thông
+        ];
+
+        // 10 ảnh phong cảnh Việt Nam tuyển chọn siêu đẹp để luân phiên cho các tỉnh khác
+        $generalImages = [
+            'https://images.unsplash.com/photo-1508873699372-7aeab60b44ab?w=150&h=150&fit=crop&q=80', // Ruộng bậc thang
+            'https://images.unsplash.com/photo-1528127269322-539801943592?w=150&h=150&fit=crop&q=80', // Vịnh Hạ Long
+            'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=150&h=150&fit=crop&q=80', // Lồng đèn Hội An
+            'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=150&h=150&fit=crop&q=80', // Tràng An Ninh Bình
+            'https://images.unsplash.com/photo-1559592443-7f87a2752157?w=150&h=150&fit=crop&q=80', // Đà Nẵng
+            'https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?w=150&h=150&fit=crop&q=80', // Hà Nội
+            'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=150&h=150&fit=crop&q=80', // Bãi biển Phú Quốc
+            'https://images.unsplash.com/photo-1549693578-d683be217e58?w=150&h=150&fit=crop&q=80', // Đồi thông
+            'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=150&h=150&fit=crop&q=80', // Sông nước miền Tây
+            'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=150&h=150&fit=crop&q=80', // Kinh thành Huế
+        ];
+
+        $provinces = Province::all()->map(function ($p) use ($counts, $provinceImages, $generalImages) {
+            // Robust regex to clean prefixes like Tỉnh, Tinh, Thành phố, TP, TP. (case-insensitive)
+            $cleanName = preg_replace('/^(Thành phố|Tỉnh|Tinh|TP\.?)\s+/iu', '', $p->name);
             $slug = \Illuminate\Support\Str::slug($cleanName);
             if ($slug === 'ho-chi-minh') {
                 $slug = 'tp-ho-chi-minh';
             }
+            
+            $provinceData = $counts[$p->code] ?? ['total' => 0, 'active' => 0];
+            
+            // Lấy ảnh tuyển chọn riêng hoặc chọn ngẫu nhiên có định danh từ list phong cảnh Việt Nam
+            $image = $provinceImages[$slug] ?? $generalImages[abs(crc32($slug)) % count($generalImages)];
+            
             return [
                 'code' => $p->code,
                 'name' => $p->name,
                 'clean_name' => $cleanName,
                 'slug' => $slug,
+                'count' => number_format($provinceData['total'], 0, ',', '.'),
+                'active_count' => number_format($provinceData['active'], 0, ',', '.'),
+                'image' => $image,
             ];
         })->sortBy('clean_name', SORT_LOCALE_STRING)->values()->toArray();
 

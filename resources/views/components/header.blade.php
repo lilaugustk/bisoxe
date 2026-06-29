@@ -107,7 +107,7 @@
                     href="/"
                     class="{{ $isSearchActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
-                    Tra cứu biển số
+                    Trang chủ
                 </a>
                 <a
                     href="/dau-gia"
@@ -209,7 +209,7 @@
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isSearchActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
-                Tra cứu biển số
+                Trang chủ
             </a>
             <a
                 href="/dau-gia"

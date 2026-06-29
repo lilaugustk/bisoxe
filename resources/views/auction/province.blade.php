@@ -129,17 +129,19 @@
         }
     }">
         <!-- Hero Section -->
-        <section class="bg-white border-b border-gray-200 py-12 sm:py-16">
-            <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-center sm:text-left">
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#8C1E1E]/10 px-3 py-1 text-xs font-bold text-[#8C1E1E] uppercase tracking-wider mb-4">
-                    Khu vực: {{ $cleanProvinceName }}
-                </span>
-                
-                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+        <section class="relative overflow-hidden py-8 sm:py-12 border-b border-gray-100 bg-white">
+            <!-- Background Decorative Elements -->
+            <div class="absolute inset-0 pointer-events-none opacity-30">
+                <div class="absolute -top-40 -right-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-[#8C1E1E]/10 to-transparent blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-[#F5B800]/5 to-transparent blur-3xl"></div>
+            </div>
+
+            <div class="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
                     {{ $heroH1 }}
                 </h1>
                 
-                <p class="mt-4 max-w-3xl text-sm sm:text-base text-gray-600 leading-relaxed">
+                <p class="mx-auto mt-3 max-w-xl text-sm sm:text-base text-gray-500 leading-relaxed">
                     {{ $heroSubtitle }}
                 </p>
             </div>
@@ -433,9 +435,133 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-8 flex justify-center">
-                {{ $paginator->links() }}
-            </div>
+            @if ($paginator->total() > 0)
+                <div class="flex items-center justify-center bg-transparent px-4 py-4 select-none sm:px-6 mt-8">
+                    @if ($paginator->lastPage() > 1)
+                        <div class="flex items-center justify-center">
+                            <!-- Desktop Pagination (hidden sm:flex) -->
+                            <nav class="hidden sm:flex flex-wrap items-center justify-center gap-1.5" aria-label="Pagination">
+                                <!-- Previous Button -->
+                                @if ($paginator->onFirstPage())
+                                    <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300 select-none">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </span>
+                                @else
+                                    <a href="{{ $paginator->previousPageUrl() }}" aria-label="Trang trước" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </a>
+                                @endif
+
+                                <!-- Page Numbers with Ellipses -->
+                                @php
+                                    $currentPage = $paginator->currentPage();
+                                    $lastPage = $paginator->lastPage();
+                                    $startPage = max(1, $currentPage - 2);
+                                    $endPage = min($lastPage, $currentPage + 2);
+                                @endphp
+
+                                @if ($startPage <= 4)
+                                    @for ($p = 1; $p <= $endPage; $p++)
+                                        @if ($p == $currentPage)
+                                            <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
+                                                {{ $p }}
+                                            </span>
+                                        @else
+                                            <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                                {{ $p }}
+                                            </a>
+                                        @endif
+                                    @endfor
+                                @else
+                                    @for ($p = 1; $p <= 3; $p++)
+                                        @if ($p == $currentPage)
+                                            <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
+                                                {{ $p }}
+                                            </span>
+                                        @else
+                                            <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                                {{ $p }}
+                                            </a>
+                                        @endif
+                                    @endfor
+                                    <span class="flex h-8 w-8 items-center justify-center font-medium text-gray-400 select-none">...</span>
+                                    @for ($p = $startPage; $p <= $endPage; $p++)
+                                        @if ($p == $currentPage)
+                                            <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
+                                                {{ $p }}
+                                            </span>
+                                        @else
+                                            <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                                {{ $p }}
+                                            </a>
+                                        @endif
+                                    @endfor
+                                @endif
+
+                                @if ($endPage < $lastPage)
+                                    <span class="flex h-8 w-8 items-center justify-center font-medium text-gray-400 select-none">...</span>
+                                @endif
+
+                                <!-- Next Button -->
+                                @if ($paginator->hasMorePages())
+                                    <a href="{{ $paginator->nextPageUrl() }}" aria-label="Trang sau" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
+                                @else
+                                    <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300 select-none">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </span>
+                                @endif
+                            </nav>
+
+                            <!-- Mobile Pagination (flex sm:hidden) -->
+                            <div class="flex sm:hidden items-center gap-2 select-none">
+                                <!-- Prev Button -->
+                                @if ($paginator->onFirstPage())
+                                    <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </span>
+                                @else
+                                    <a href="{{ $paginator->previousPageUrl() }}" aria-label="Trang trước" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </a>
+                                @endif
+
+                                <span class="text-xs font-bold text-gray-600 px-1">
+                                    Trang {{ $currentPage }}
+                                </span>
+
+                                <!-- Next Button -->
+                                @if ($paginator->hasMorePages())
+                                    <a href="{{ $paginator->nextPageUrl() }}" aria-label="Trang sau" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
+                                @else
+                                    <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endif
         </section>
     </form>
 </div>

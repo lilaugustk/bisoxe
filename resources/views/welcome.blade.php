@@ -353,25 +353,25 @@
                         <!-- Biển số đã phân tích -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã phân tích</span>
-                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_articles'] }}</span>
+                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-blue-600">{{ $trustStats['total_articles'] }}</span>
                             <span class="block text-[11px] font-medium text-gray-600 mt-0.5">biển số</span>
                         </div>
                         <!-- Kết quả đấu giá -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết quả đấu giá</span>
-                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_completed'] }}</span>
+                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}</span>
                             <span class="block text-[11px] font-medium text-gray-600 mt-0.5">biển số</span>
                         </div>
                         <!-- Tỉnh thành -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
-                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_provinces'] }}</span>
+                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
                             <span class="block text-[11px] font-medium text-gray-600 mt-0.5">đã cập nhật</span>
                         </div>
                         <!-- Định giá tự động AI -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Định giá tự động</span>
-                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">AI</span>
+                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-blue-600">AI</span>
                             <span class="block text-[11px] font-medium text-gray-600 mt-0.5">Siêu tốc</span>
                         </div>
                     </div>
