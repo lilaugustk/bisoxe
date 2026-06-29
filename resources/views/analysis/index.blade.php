@@ -90,14 +90,14 @@
                     </h3>
                     <div class="grid grid-cols-2 gap-4 text-center">
                         <div class="border-r border-gray-100 py-1">
-                            <span class="block text-[10px] font-bold text-gray-400 uppercase">Thống kê</span>
+                            <span class="block text-[10px] font-bold text-gray-600 uppercase">Thống kê</span>
                             <span class="block mt-1 text-lg font-extrabold text-[#8C1E1E]">{{ $trustStats['total_plates'] }}</span>
-                            <span class="text-[10px] text-gray-500">biển số</span>
+                            <span class="text-[10px] text-gray-600">biển số</span>
                         </div>
                         <div class="py-1">
-                            <span class="block text-[10px] font-bold text-gray-400 uppercase">Tổng giá trị</span>
+                            <span class="block text-[10px] font-bold text-gray-600 uppercase">Tổng giá trị</span>
                             <span class="block mt-1 text-lg font-extrabold text-[#8C1E1E]">{{ $trustStats['total_value_billion'] }} tỷ</span>
-                            <span class="text-[10px] text-gray-500">đồng</span>
+                            <span class="text-[10px] text-gray-600">đồng</span>
                         </div>
                     </div>
                     <div class="pt-1 text-xs font-semibold text-gray-500 flex justify-between">

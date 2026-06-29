@@ -312,7 +312,7 @@
                 <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
                     {!! $heroH1Html !!}
                 </h1>
-                <p class="mx-auto mt-4 max-w-2xl text-xs leading-relaxed text-gray-500 sm:text-sm md:text-base">
+                <p class="mx-auto mt-4 max-w-2xl text-xs leading-relaxed text-gray-600 sm:text-sm md:text-base">
                     {{ $heroDescription }}
                 </p>
 
@@ -341,8 +341,8 @@
                         </button>
                     </div>
                     <!-- Gợi ý ví dụ -->
-                    <p class="mt-2 text-center text-xs text-gray-400">
-                        Ví dụ: <span class="font-semibold text-gray-500">30K-888.88</span>
+                    <p class="mt-2 text-center text-xs text-gray-600">
+                        Ví dụ: <span class="font-semibold text-gray-700">30K-888.88</span>
                     </p>
                 </div>
 
@@ -354,25 +354,25 @@
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã phân tích</span>
                             <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_articles'] }}</span>
-                            <span class="block text-[11px] font-medium text-gray-400 mt-0.5">biển số</span>
+                            <span class="block text-[11px] font-medium text-gray-600 mt-0.5">biển số</span>
                         </div>
                         <!-- Kết quả đấu giá -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết quả đấu giá</span>
                             <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_completed'] }}</span>
-                            <span class="block text-[11px] font-medium text-gray-400 mt-0.5">biển số</span>
+                            <span class="block text-[11px] font-medium text-gray-600 mt-0.5">biển số</span>
                         </div>
                         <!-- Tỉnh thành -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
                             <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">{{ $trustStats['total_provinces'] }}</span>
-                            <span class="block text-[11px] font-medium text-gray-400 mt-0.5">đã cập nhật</span>
+                            <span class="block text-[11px] font-medium text-gray-600 mt-0.5">đã cập nhật</span>
                         </div>
                         <!-- Định giá tự động AI -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none">
                             <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Định giá tự động</span>
                             <span class="block mt-1 text-lg sm:text-xl font-extrabold text-[#8C1E1E]">AI</span>
-                            <span class="block text-[11px] font-medium text-gray-400 mt-0.5">Siêu tốc</span>
+                            <span class="block text-[11px] font-medium text-gray-600 mt-0.5">Siêu tốc</span>
                         </div>
                     </div>
                 </div>
