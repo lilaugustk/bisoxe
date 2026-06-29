@@ -380,7 +380,7 @@
             </div>
         </section>
 
-        <!-- 4. Tab Options & Filter Bar Section -->
+        {{--
         <section id="table-section" class="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-12 sm:px-6 lg:px-8">
             <header class="mb-8">
                 <h2 class="text-2xl font-extrabold tracking-tight text-gray-900 lg:text-3xl">
@@ -630,9 +630,9 @@
                         <input type="hidden" name="last_digits" :value="lastDigits" />
                     </div>
 
-                    <!-- Row 4: Loại biển -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                        <span class="w-20 sm:shrink-0 text-sm font-bold text-gray-700">Loại biển</span>
+                    <!-- Row 4: Loại biển số -->
+                    <div class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                        <span class="w-20 sm:shrink-0 text-sm font-bold text-gray-700 sm:mt-1.5">Loại biển</span>
                         <div class="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full min-w-0">
                             <button 
                                 type="button"
@@ -642,161 +642,87 @@
                             >
                                 Tất cả
                             </button>
-                            @foreach($uniqueKinds as $kindItem)
-                                <button 
-                                    type="button"
-                                    @click="kind = '{{ $kindItem['id'] }}'; submitForm();"
-                                    class="px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition duration-200 shadow-3xs"
-                                    :class="kind === '{{ $kindItem['id'] }}' ? 'border-[#8C1E1E] text-[#8C1E1E] bg-white font-bold' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'"
-                                >
-                                    {{ $kindItem['name'] }}
-                                </button>
+                            @foreach($kinds as $k)
+                                @if(in_array($k['name'], $allowedKindNames))
+                                    <button 
+                                        type="button"
+                                        @click="kind = '{{ $k['id'] }}'; submitForm();"
+                                        class="px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition duration-200 shadow-3xs"
+                                        :class="String(kind) === '{{ $k['id'] }}' ? 'border-[#8C1E1E] text-[#8C1E1E] bg-white font-bold' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'"
+                                    >
+                                        {{ $k['name'] }}
+                                    </button>
+                                @endif
                             @endforeach
                         </div>
                         <input type="hidden" name="kind" :value="kind" />
                     </div>
-                </div>
 
-                <!-- Khung dưới cùng: Nút xóa bộ lọc -->
-                <div class="flex items-center justify-end border-t border-gray-100 pt-4" x-show="search || province || letter || numButtons || lastDigits || kind">
+                    <!-- Row 5: Nút xóa bộ lọc (Chỉ hiển thị khi có bộ lọc hoạt động) -->
+                    <div x-show="province || letter || numButtons !== '' || lastDigits || kind" class="pt-2 border-t border-gray-100 flex justify-end">
+                        <button 
+                            type="button"
+                            @click="clearAllFilters()"
+                            class="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-[#8C1E1E] transition duration-200"
+                        >
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Xóa tất cả bộ lọc
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab content container -->
+            <div class="relative bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
+                <!-- Tab Headers (3 Tabs) -->
+                <div class="flex border-b border-gray-100 bg-gray-50/50 p-1">
                     <button
                         type="button"
-                        @click="clearAllFilters()"
-                        class="text-xs font-bold text-[#8C1E1E] hover:underline flex items-center gap-1.5"
+                        @click="tab = 'announce'; submitForm(false);"
+                        class="flex-1 py-3 text-center text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 select-none"
+                        :class="tab === 'announce' ? 'bg-white text-[#8C1E1E] shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
                     >
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        Xóa bộ lọc
+                        Công bố đấu giá
+                    </button>
+                    <button
+                        type="button"
+                        @click="tab = 'official'; submitForm(false);"
+                        class="flex-1 py-3 text-center text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 select-none"
+                        :class="tab === 'official' ? 'bg-white text-[#8C1E1E] shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
+                    >
+                        Biển số chính thức
+                    </button>
+                    <button
+                        type="button"
+                        @click="tab = 'result'; submitForm(false);"
+                        class="flex-1 py-3 text-center text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 select-none"
+                        :class="tab === 'result' ? 'bg-white text-[#8C1E1E] shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
+                    >
+                        Kết quả đấu giá
                     </button>
                 </div>
-            </div>
+                <input type="hidden" name="tab" :value="tab" />
 
-
-            <!-- Vehicle Type Selector -->
-            <div class="mb-6 flex gap-3 overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
-                <button
-                    type="button"
-                    @click="changeVehicle('car')"
-                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
-                    :class="vehicle === 'car' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
-                >
-                    Biển số xe ô tô
-                </button>
-                <button
-                    type="button"
-                    @click="changeVehicle('motorcycle')"
-                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
-                    :class="vehicle === 'motorcycle' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
-                >
-                    Biển số xe máy, mô tô
-                </button>
-            </div>
-
-            <!-- Navigation Tabs -->
-            <div class="mb-4 flex gap-2 border-b border-gray-200 overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
-                <button
-                    type="button"
-                    @click="tab = 'announce'; submitForm(true);"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
-                    :class="tab === 'announce' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
-                >
-                    Biển số mới công bố
-                </button>
-                <button
-                    type="button"
-                    @click="tab = 'official'; submitForm(true);"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
-                    :class="tab === 'official' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
-                >
-                    Biển số chính thức
-                </button>
-                <button
-                    type="button"
-                    @click="tab = 'result'; submitForm(true);"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
-                    :class="tab === 'result' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
-                >
-                    Kết quả đã công bố
-                </button>
-            </div>
-
-
-
-            <!-- Table Content (Full Width) -->
-            <div class="space-y-4 w-full min-w-0">
-                    <!-- Data Table -->
-                    <div class="mb-8 overflow-hidden rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white shadow-none sm:shadow-sm">
-                        <div class="hidden md:block w-full overflow-x-auto">
-                            <table class="w-full min-w-[600px] border-collapse text-left text-sm">
-                                <thead class="border-b border-gray-200 bg-gray-100/80 text-xs font-bold tracking-wider text-gray-700 uppercase">
-                                    <tr>
-                                        <th class="w-16 px-6 py-4 text-center hidden sm:table-cell">STT</th>
-                                        <th class="px-6 py-4">Biển số</th>
-                                        <th class="px-6 py-4">
-                                            {{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}
-                                        </th>
-                                        <th class="px-6 py-4 whitespace-nowrap">Tỉnh, Thành phố</th>
-                                        <th class="px-6 py-4 hidden lg:table-cell">Loại biển</th>
-                                        <th x-show="tab !== 'announce'" class="px-6 py-4 hidden lg:table-cell">Thời gian đấu giá</th>
-                                        <th class="w-40 px-6 py-4 text-center">Lựa chọn</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    @foreach($filteredPlates as $index => $plate)
-                                        <tr class="transition duration-150 hover:bg-gray-50/50">
-                                            <td class="px-6 py-4 text-center text-sm text-gray-500 hidden sm:table-cell">
-                                                {{ $index + 1 }}
-                                            </td>
-                                            <td class="px-6 py-4 text-sm font-bold whitespace-nowrap {{ $plate['color'] === 1 ? 'text-amber-600' : 'text-gray-700' }}">
-                                                {{ $plate['display_number'] }}
-                                            </td>
-                                            <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap font-bold text-[#8C1E1E]">
-                                                {{ $plate['winning_price'] > 0 ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
-                                            </td>
-                                            <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
-                                                {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
-                                            </td>
-                                            <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">
-                                                {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
-                                            </td>
-                                            @if($activeTab !== 'announce')
-                                                <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">
-                                                    {{ $formatDate($plate['auction_start_time']) }}
-                                                </td>
-                                            @endif
-                                            <td class="px-6 py-4 text-center">
-                                                <a
-                                                    href="/bien-so-{{ $plate['slug'] }}"
-                                                    class="inline-block rounded-md border border-[#8C1E1E] px-3 py-2 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
-                                                >
-                                                    <span class="inline lg:hidden">Phân tích</span>
-                                                    <span class="hidden lg:inline">Phân tích biển số</span>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Mobile/Tablet Card List -->
-                        <div class="block md:hidden divide-y divide-gray-100 bg-white">
-                            @foreach($filteredPlates as $index => $plate)
-                                <div class="p-3.5 space-y-3 transition duration-150 hover:bg-gray-50/50">
-                                    <!-- Card Header: STT, Province, Kind -->
-                                    <div class="flex items-center justify-between text-xs">
-                                        <div class="flex items-center gap-2">
-                                            <span class="flex h-5 w-5 items-center justify-center rounded bg-gray-50 text-[10px] font-bold text-gray-600">
-                                                #{{ $index + 1 }}
-                                            </span>
-                                            <span class="font-bold text-gray-800">
-                                                {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
-                                            </span>
-                                        </div>
-                                        <span
-                                            class="rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide border {{ count($plate['kinds']) > 0 ? 'bg-red-50 text-[#8C1E1E] border-red-100' : 'bg-gray-50 text-gray-500 border-gray-100' }}"
-                                        >
+                <!-- Grid & List Plates -->
+                <div class="p-4 sm:p-6 min-h-[400px]">
+                    
+                    <div class="relative">
+                        <!-- Grid View -->
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 select-none">
+                            @foreach($filteredPlates as $plate)
+                                <div class="group relative flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4.5 shadow-3xs transition hover:-translate-y-0.5 hover:shadow-xs">
+                                    <!-- Card Header: Province & Badge -->
+                                    <div class="flex items-center justify-between mb-3 text-[11px] font-bold text-gray-500">
+                                        <span class="flex items-center gap-1.5">
+                                            <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            {{ $plate['province_name'] }}
+                                        </span>
+                                        <span class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">
                                             {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
                                         </span>
                                     </div>
@@ -986,6 +912,121 @@
                         </div>
                     @endif
                 </div>
+        </section>
+        --}}
+
+        <!-- Section bảng xếp hạng nổi bật thay thế tạm thời -->
+        <section id="ranking-preview-section" class="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8">
+            <header class="mb-8 text-center sm:text-left">
+                <h2 class="text-2xl font-extrabold tracking-tight text-gray-900 lg:text-3xl">
+                    Bảng Xếp Hạng Biển Số Đẹp Nổi Bật
+                </h2>
+                <p class="mt-2 text-sm text-gray-500">Khám phá các phân tích chuyên sâu và bảng xếp hạng biển số xe trúng đấu giá có giá trị cao nhất.</p>
+            </header>
+
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Card 1: Top 100 Biển Số Đắt Nhất Việt Nam -->
+                <a href="{{ url('/top-100-bien-so-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0B1528] via-[#122A54] to-[#08101E] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
+                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">TOP 100</span>
+                        <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Đắt Nhất Việt Nam</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <span class="block text-sm font-bold text-gray-900 leading-snug line-clamp-2">Bảng xếp hạng 100 siêu biển số có giá trị chuyển nhượng kỷ lục tại Việt Nam.</span>
+                    </div>
+                </a>
+
+                <!-- Card 2: Top Biển Số Ngũ Quý Đắt Nhất -->
+                <a href="{{ url('/top-bien-so-ngu-quy-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#031B18] via-[#083D36] to-[#031513] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
+                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">NGŨ QUÝ</span>
+                        <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Siêu Biển Ngũ Quý</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <span class="block text-sm font-bold text-gray-900 leading-snug line-clamp-2">Danh sách những biển số ngũ quý siêu VIP có mức giá trúng đấu giá đắt đỏ nhất.</span>
+                    </div>
+                </a>
+
+                <!-- Card 3: Top Biển Số Tứ Quý Đắt Nhất -->
+                <a href="{{ url('/top-bien-so-tu-quy-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0B1220] via-[#1A2E4C] to-[#0A0F1A] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
+                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">TỨ QUÝ</span>
+                        <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Đẳng Cấp Tứ Quý</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <span class="block text-sm font-bold text-gray-900 leading-snug line-clamp-2">Tổng hợp các dòng biển số tứ quý đại cát trúng đấu giá giá trị cao nhất.</span>
+                    </div>
+                </a>
+
+                <!-- Card 4: Biển Thần Tài Đắt Nhất -->
+                <a href="{{ url('/top-bien-so-than-tai-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1F0707] via-[#4A0E0E] to-[#120404] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
+                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">THẦN TÀI</span>
+                        <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Thần Tài Gõ Cửa</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <span class="block text-sm font-bold text-gray-900 leading-snug line-clamp-2">Các biển số đuôi 39, 79 mang lại may mắn, kinh doanh phát tài phát lộc.</span>
+                    </div>
+                </a>
+
+                <!-- Card 5: Biển Lộc Phát Đắt Nhất -->
+                <a href="{{ url('/top-bien-so-loc-phat-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1E1103] via-[#442807] to-[#140B02] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
+                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">LỘC PHÁT</span>
+                        <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Phát Tài Lộc Phát</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <span class="block text-sm font-bold text-gray-900 leading-snug line-clamp-2">Tổng hợp biển số đuôi 68, 86 mang ý nghĩa phát đạt cho chủ sở hữu.</span>
+                    </div>
+                </a>
+
+                <!-- Card 6: Biển Số Đẹp Dưới 1 Tỷ Đồng -->
+                <a href="{{ url('/top-bien-so-dep-gia-duoi-1-ty-dong') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1E293B] to-[#334155] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
+                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">DƯỚI 1 TỶ</span>
+                        <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Tầm Giá Hợp Lý</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <span class="block text-sm font-bold text-gray-900 leading-snug line-clamp-2">Gợi ý lựa chọn các biển số đẹp tầm trung có mức giá đấu lý tưởng dưới 1 tỷ.</span>
+                    </div>
+                </a>
+
+                <!-- Card 7: Top Siêu Biển Giá Trên 10 Tỷ -->
+                <a href="{{ url('/top-sieu-bien-so-gia-trung-tren-10-ty-dong') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#3d081e] via-[#611234] to-[#250311] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
+                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">TRÊN 10 TỶ</span>
+                        <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Siêu Biển Vô Giá</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <span class="block text-sm font-bold text-gray-900 leading-snug line-clamp-2">Những cực phẩm biển số có mức đấu giá kỷ lục vượt ngưỡng 10 tỷ đồng.</span>
+                    </div>
+                </a>
+
+                <!-- Card 8: Biển Số Đắt Nhất Năm 2026 -->
+                <a href="{{ url('/top-bien-so-dat-nhat-nam-2026') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0F0D1C] via-[#231F42] to-[#0A0912] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
+                        <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">NĂM 2026</span>
+                        <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Kỷ Lục 2026</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <span class="block text-sm font-bold text-gray-900 leading-snug line-clamp-2">Thống kê các biển số bùng nổ và có mức giá ấn tượng nhất trong năm nay.</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="mt-10 text-center">
+                <a href="{{ url('/top') }}" class="inline-flex items-center justify-center rounded-xl bg-[#8C1E1E] px-8 py-3.5 text-sm font-bold text-white shadow-md transition duration-200 hover:bg-[#731919]">
+                    Xem Tất Cả Phân Tích & Bảng Xếp Hạng →
+                </a>
+            </div>
         </section>
 
         <!-- 5. SEO Text Section -->
