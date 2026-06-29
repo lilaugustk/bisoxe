@@ -259,12 +259,6 @@ class AnalysisController extends Controller
                 'icon' => 'trophy'
             ],
             [
-                'slug' => 'top-bien-so-dat-nhat-nam-2026',
-                'name' => 'Biển Số Đắt Nhất Năm 2026',
-                'description' => 'Danh sách cập nhật các kỷ lục trúng đấu giá mới nhất diễn ra trong năm 2026.',
-                'icon' => 'calendar'
-            ],
-            [
                 'slug' => 'top-bien-so-ngu-quy-dat-nhat-viet-nam',
                 'name' => 'Top Biển Số Ngũ Quý Đắt Nhất',
                 'description' => 'Thống kê những biển số ngũ quý siêu phẩm trị giá hàng chục tỷ đồng.',
@@ -289,16 +283,22 @@ class AnalysisController extends Controller
                 'icon' => 'gift'
             ],
             [
-                'slug' => 'top-bien-so-dep-gia-duoi-1-ty-dong',
-                'name' => 'Biển Số Đẹp Dưới 1 Tỷ Đồng',
-                'description' => 'Danh sách biển đẹp trúng giá dưới 1 tỷ đồng dễ tiếp cận cho người sưu tầm.',
-                'icon' => 'wallet'
+                'slug' => 'top-bien-so-sanh-tien-dat-nhat-viet-nam',
+                'name' => 'Top Biển Số Số Tiến Đắt Nhất',
+                'description' => 'Bảng xếp hạng các biển số sảnh tiến có giá trị trúng đấu giá đắt nhất.',
+                'icon' => 'trending-up'
             ],
             [
-                'slug' => 'top-sieu-bien-so-gia-trung-tren-10-ty-dong',
-                'name' => 'Top Siêu Biển Giá Trên 10 Tỷ',
-                'description' => 'Tập hợp những siêu tài sản - các biển số trúng đấu giá trị giá trên 10 tỷ đồng.',
-                'icon' => 'shield'
+                'slug' => 'top-100-bien-so-dep-dat-nhat-ha-noi',
+                'name' => 'Top Biển Số Đắt Nhất Hà Nội',
+                'description' => 'Danh sách 100 biển số đẹp trúng đấu giá cao nhất khu vực Hà Nội.',
+                'icon' => 'map-pin'
+            ],
+            [
+                'slug' => 'top-100-bien-so-dep-dat-nhat-ho-chi-minh',
+                'name' => 'Top Biển Số Đắt Nhất TP.HCM',
+                'description' => 'Danh sách 100 biển số đẹp trúng đấu giá cao nhất khu vực TP. Hồ Chí Minh.',
+                'icon' => 'map-pin'
             ]
         ];
 
@@ -332,7 +332,80 @@ class AnalysisController extends Controller
             })->sortBy('name')->values()->toArray();
         });
 
-        return view('analysis.index', compact('trustStats', 'rankings', 'seriesList', 'provincesList'));
+        // Top tỉnh thành kèm số lượng biển
+        $topProvincesWithCount = Cache::remember('analysis_top_provinces_count_v2', 3600, function () {
+            return LicensePlate::where('status', 'completed')
+                ->whereNotNull('province_code')
+                ->selectRaw('province_code, count(*) as total')
+                ->groupBy('province_code')
+                ->orderBy('total', 'desc')
+                ->limit(8)
+                ->get()
+                ->map(function ($item) {
+                    $prov = Province::where('code', $item->province_code)->first();
+                    $cleanName = $prov ? preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $prov->name) : 'Khác';
+                    return [
+                        'name' => $cleanName,
+                        'slug' => 'top-100-bien-so-dep-dat-nhat-' . \Illuminate\Support\Str::slug($cleanName),
+                        'count' => number_format($item->total, 0, ',', '.'),
+                    ];
+                })->toArray();
+        });
+
+        // Bảng xếp hạng theo nhóm số đẹp
+        $kindsRankings = Cache::remember('analysis_kinds_count_v2', 3600, function () {
+            $rawKinds = [
+                ['slug' => 'top-bien-so-ngu-quy-dat-nhat-viet-nam', 'name' => 'Top biển số ngũ quý', 'kind_id' => 1],
+                ['slug' => 'top-bien-so-tu-quy-dat-nhat-viet-nam', 'name' => 'Top biển số tứ quý', 'kind_id' => 3],
+                ['slug' => 'top-bien-so-tam-hoa-dat-nhat-viet-nam', 'name' => 'Top biển số tam hoa', 'kind_id' => 4],
+                ['slug' => 'top-bien-so-than-tai-dat-nhat-viet-nam', 'name' => 'Top biển số thần tài', 'kind_id' => 5],
+                ['slug' => 'top-bien-so-loc-phat-dat-nhat-viet-nam', 'name' => 'Top biển số lộc phát', 'kind_id' => 6],
+                ['slug' => 'top-bien-so-sanh-tien-dat-nhat-viet-nam', 'name' => 'Top biển số sảnh tiến', 'kind_id' => 2],
+                ['slug' => 'top-bien-so-ganh-dat-nhat-viet-nam', 'name' => 'Top biển số gánh', 'kind_id' => 9],
+                ['slug' => 'top-bien-so-doi-xung-palindrome-dat-nhat-viet-nam', 'name' => 'Top biển số palindrome', 'kind_id' => 9],
+            ];
+
+            $counts = \DB::table('license_plate_kinds')
+                ->join('license_plates', 'license_plates.id', '=', 'license_plate_kinds.plate_id')
+                ->where('license_plates.status', 'completed')
+                ->selectRaw('license_plate_kinds.kind_id, count(*) as total')
+                ->groupBy('license_plate_kinds.kind_id')
+                ->pluck('total', 'kind_id')
+                ->toArray();
+
+            return array_map(function ($item) use ($counts) {
+                $kindId = $item['kind_id'];
+                $count = $counts[$kindId] ?? 0;
+                return [
+                    'slug' => $item['slug'],
+                    'name' => $item['name'],
+                    'count' => number_format($count, 0, ',', '.'),
+                ];
+            }, $rawKinds);
+        });
+
+        // Thống kê nâng cao
+        $latestStats = Cache::remember('analysis_latest_stats_v2', 3600, function () {
+            $top100 = LicensePlate::where('status', 'completed')
+                ->orderBy('winning_price', 'desc')
+                ->limit(100)
+                ->get();
+
+            $avgTop100 = $top100->count() > 0 ? $top100->avg('winning_price') : 0;
+            $highestPlate = $top100->first();
+
+            return [
+                'avg_top100_billion' => number_format(round($avgTop100 / 1000000000, 2), 2, ',', '.'),
+                'highest_plate_number' => $highestPlate ? $highestPlate->full_number : 'N/A',
+                'highest_plate_price_billion' => $highestPlate ? number_format(round($highestPlate->winning_price / 1000000000, 1), 1, ',', '.') : '0',
+                'total_rankings' => count([1,2,3,4,5,6,7,8,9]) + 63 + 48 + 3 + 4, // kinds + provinces + series + years + price ranges (approx)
+            ];
+        });
+
+        return view('analysis.index', compact(
+            'trustStats', 'rankings', 'seriesList', 'provincesList',
+            'topProvincesWithCount', 'kindsRankings', 'latestStats'
+        ));
     }
 
     /**

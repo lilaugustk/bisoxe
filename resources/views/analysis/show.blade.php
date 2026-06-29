@@ -160,7 +160,7 @@
     </nav>
 
     <!-- Main Content Layout (2 Cột rộng để lắp đầy không gian) -->
-    <main class="mx-auto max-w-[1440px] px-1 py-8 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-[1440px] px-[14px] py-8 sm:px-6 lg:px-8">
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
@@ -168,7 +168,7 @@
             <div class="lg:col-span-2 space-y-6">
                 
                 <article class="space-y-6">
-                    <header class="space-y-3 border-b border-gray-200 pb-4">
+                    <header class="space-y-3 border-b border-gray-200 pb-6">
                         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827] leading-tight">
                             {{ $slug === 'top-100-bien-so-dat-nhat-viet-nam' ? 'Top 100 Biển Số Đắt Nhất Việt Nam 2026 – Bảng Xếp Hạng Cập Nhật Theo Dữ Liệu Đấu Giá' : $config['h1'] }}
                         </h1>
@@ -188,7 +188,7 @@
                     </div>
 
                     <!-- Toàn cảnh thị trường -->
-                    <div class="space-y-6 border-t border-gray-100 pt-6">
+                    <div class="space-y-6 border-t border-gray-200 pt-6">
                         <h2 class="text-lg font-bold text-gray-900">Toàn cảnh thị trường {{ $slug === 'top-100-bien-so-dat-nhat-viet-nam' ? 'Top 100' : 'Bảng xếp hạng' }}</h2>
                         
                         <!-- Thống kê nhanh -->
@@ -252,7 +252,7 @@
                     </div>
 
                     <!-- Table Section (Excel Flat Style) -->
-                    <div class="space-y-4 border-t border-gray-100 pt-6">
+                    <div class="space-y-4 border-t border-gray-200 pt-6">
                         <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
                             Top {{ $totalCount }} Biển Số Đắt Nhất
                         </h2>
@@ -310,7 +310,7 @@
                     </div>
 
                     <!-- Phân tích xu hướng -->
-                    <div class="space-y-6 border-t border-gray-100 pt-6">
+                    <div class="space-y-6 border-t border-gray-200 pt-6">
                         <h2 class="text-lg font-bold text-gray-900">Phân tích xu hướng</h2>
                         
                         <div class="space-y-4 text-sm text-gray-600 leading-relaxed text-justify">
@@ -432,7 +432,7 @@
                     @endif
 
                     <!-- Xuuyên suốt thị trường 6 tháng tới -->
-                    <div class="space-y-3 border-t border-gray-100 pt-6">
+                    <div class="space-y-3 border-t border-gray-200 pt-6">
                         <h2 class="text-lg font-bold text-gray-900">Xu hướng thị trường 6 tháng tới</h2>
                         <div class="text-sm text-gray-600 leading-relaxed space-y-2 text-justify">
                             <p>Dựa trên dữ liệu lịch sử và mô hình thống kê AI dự báo:</p>
@@ -477,7 +477,7 @@
                     </div>
 
                     <!-- Định giá biển số của bạn (CTA) -->
-                    <div class="text-center space-y-4 py-8 mt-8 border-t border-gray-200">
+                    <div class="text-center space-y-4 py-6 border-t border-gray-200">
                         <h3 class="text-lg font-bold text-[#8C1E1E]">Định giá biển số của bạn</h3>
                         <p class="text-sm text-gray-700 max-w-xl mx-auto leading-relaxed text-justify">
                             Bạn muốn biết biển số xe của mình hoặc biển số quan tâm có giá trị bao nhiêu trên thị trường hiện tại? Nhập ngay biển số để nhận ước tính giá trị từ mô hình AI, đánh giá điểm độ hiếm và lịch sử đấu giá liên quan.
@@ -490,7 +490,7 @@
                     </div>
 
                     <!-- Footer / Navigation -->
-                    <footer class="pt-6 mt-8 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <footer class="pt-6 border-t border-gray-200 flex items-center justify-between text-xs">
                         <a href="/phan-tich" class="inline-flex items-center gap-1.5 font-bold text-[#8C1E1E] hover:underline">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
