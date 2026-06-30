@@ -82,6 +82,10 @@ Route::get('/bai-viet/{slug}', function (string $slug) {
     return redirect()->to('/b/' . $slug, 301);
 });
 
+Route::view('/gioi-thieu', 'pages.about')->name('about');
+Route::view('/lien-he', 'pages.contact')->name('contact');
+Route::view('/chinh-sach', 'pages.policy')->name('policy');
+
 Route::get('/sitemap.xml', function () {
     $plates = \App\Models\LicensePlate::has('seoArticle')->with('seoArticle')->get();
     $posts = \App\Models\Post::published()->get();
@@ -96,6 +100,9 @@ Route::get('/sitemap.xml', function () {
     $xml .= '<url><loc>https://bisoxe.com/danh-sach-bien-so-xe-may</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/dinh-gia</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/bai-viet</loc><priority>0.8</priority><changefreq>daily</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/gioi-thieu</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/lien-he</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>';
+    $xml .= '<url><loc>https://bisoxe.com/chinh-sach</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/y-nghia-bien-so</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/bien-so-dep</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';
     $xml .= '<url><loc>https://bisoxe.com/c/dau-gia-bien-so</loc><priority>0.7</priority><changefreq>daily</changefreq></url>';

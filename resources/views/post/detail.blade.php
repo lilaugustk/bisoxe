@@ -274,7 +274,7 @@
                         </p>
                     </div>
 
-                    <form action="{{ url('/') }}" method="GET" class="space-y-2">
+                    <form onsubmit="event.preventDefault(); let val = this.querySelector('input[name=search]').value.trim().toUpperCase().replace(/[^0-9A-Z]/g, ''); window.location.href = val ? '/danh-sach-bien-so-xe-o-to-duoi-' + val : '/danh-sach-bien-so-xe-o-to';" class="space-y-2">
                         <input
                             type="text"
                             name="search"

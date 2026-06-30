@@ -142,11 +142,20 @@
                 <div class="border-l-2 border-[#8C1E1E] pl-2.5 text-xs font-black tracking-wider text-white uppercase">
                     Hỗ trợ & Liên hệ
                 </div>
-                <ul class="space-y-2.5 text-xs font-light">
-                    <li class="flex items-start gap-2">
+                <ul class="space-y-2.5 text-xs font-medium text-gray-400">
+                    <li>
+                        <a href="/gioi-thieu" class="transition-colors duration-200 hover:text-[#F5B800]">Giới thiệu</a>
+                    </li>
+                    <li>
+                        <a href="/lien-he" class="transition-colors duration-200 hover:text-[#F5B800]">Liên hệ</a>
+                    </li>
+                    <li>
+                        <a href="/chinh-sach" class="transition-colors duration-200 hover:text-[#F5B800]">Chính sách bảo mật</a>
+                    </li>
+                    <li class="pt-2 text-xs font-light text-gray-500">
                         <span>Hà Nội, Việt Nam</span>
                     </li>
-                    <li class="flex items-center gap-2">
+                    <li class="flex items-center gap-2 text-xs font-light text-gray-500">
                         <a href="mailto:support@bisoxe.com" class="transition hover:text-[#F5B800]">support@bisoxe.com</a>
                     </li>
                 </ul>
@@ -167,9 +176,11 @@
                     <span class="text-gray-600">•</span>
                     <a href="/top" class="transition-colors hover:text-gray-200 whitespace-nowrap">Bảng xếp hạng</a>
                     <span class="text-gray-600">•</span>
-                    <a href="/danh-sach-bien-so-xe-o-to" class="transition-colors hover:text-gray-200 whitespace-nowrap">Biển số ô tô</a>
+                    <a href="/gioi-thieu" class="transition-colors hover:text-gray-200 whitespace-nowrap">Giới thiệu</a>
                     <span class="text-gray-600">•</span>
-                    <a href="/danh-sach-bien-so-xe-may" class="transition-colors hover:text-gray-200 whitespace-nowrap">Biển số xe máy</a>
+                    <a href="/lien-he" class="transition-colors hover:text-gray-200 whitespace-nowrap">Liên hệ</a>
+                    <span class="text-gray-600">•</span>
+                    <a href="/chinh-sach" class="transition-colors hover:text-gray-200 whitespace-nowrap">Chính sách</a>
                 </div>
             </div>
             <p class="text-justify text-[11px] leading-relaxed font-light text-gray-400 md:text-left">
