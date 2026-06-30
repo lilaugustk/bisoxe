@@ -163,7 +163,7 @@
                                     </div>
                                     <div class="p-2.5 space-y-0.5">
                                         <span class="block text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2">{{ $ranking['name'] }}</span>
-                                        <span class="block text-[11px] text-gray-400">Cập nhật: {{ $today }}</span>
+                                        <span class="block text-[11px] text-gray-500">Cập nhật: {{ $today }}</span>
                                     </div>
                                 </a>
                             @endforeach
@@ -185,7 +185,7 @@
                                     </div>
                                     <div class="p-2.5 space-y-0.5">
                                         <span class="block text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2">{{ $ranking['name'] }}</span>
-                                        <span class="block text-[11px] text-gray-400">Cập nhật: {{ $today }}</span>
+                                        <span class="block text-[11px] text-gray-500">Cập nhật: {{ $today }}</span>
                                     </div>
                                 </a>
                             @endforeach
@@ -237,7 +237,7 @@
                                         @endif
                                         <span class="text-sm font-bold text-gray-800 group-hover:text-[#8C1E1E] transition truncate">{{ $ranking['name'] }}</span>
                                     </div>
-                                    <span class="text-[10px] text-gray-400 shrink-0 ml-2">Cập nhật: {{ $today }}</span>
+                                    <span class="text-[10px] text-gray-500 shrink-0 ml-2">Cập nhật: {{ $today }}</span>
                                 </a>
                             @endforeach
                         </div>
@@ -264,7 +264,7 @@
                         @foreach($topProvincesWithCount as $prov)
                             <a href="{{ url('/' . $prov['slug']) }}" class="flex items-center justify-between py-2.5 group hover:bg-gray-50/50 -mx-1 px-1 rounded-lg transition">
                                 <span class="text-sm font-semibold text-gray-700 group-hover:text-[#8C1E1E] transition">Top biển số {{ $prov['name'] }}</span>
-                                <span class="text-xs text-gray-400 shrink-0">{{ $prov['count'] }} biển số</span>
+                                <span class="text-xs text-gray-500 shrink-0">{{ $prov['count'] }} biển số</span>
                             </a>
                         @endforeach
                     </div>
@@ -279,7 +279,7 @@
                         @foreach($kindsRankings as $kind)
                             <a href="{{ url('/' . $kind['slug']) }}" class="flex items-center justify-between py-2.5 group hover:bg-gray-50/50 -mx-1 px-1 rounded-lg transition">
                                 <span class="text-sm font-semibold text-gray-700 group-hover:text-[#8C1E1E] transition">{{ $kind['name'] }}</span>
-                                <span class="text-xs text-gray-400 shrink-0">{{ $kind['count'] }} biển số</span>
+                                <span class="text-xs text-gray-500 shrink-0">{{ $kind['count'] }} biển số</span>
                             </a>
                         @endforeach
                     </div>
