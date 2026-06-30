@@ -36,7 +36,7 @@ Route::get('/dau-gia-bien-so-xe-may-{province_slug}/{tab?}', [App\Http\Controlle
 // Redirect 301 từ URL cũ /dau-gia/{slug} sang URL mới
 Route::get('/dau-gia/{province_slug}/{tab?}', function (\Illuminate\Http\Request $request, string $provinceSlug, ?string $tab = null) {
     $province = \App\Models\Province::all()->first(function ($p) use ($provinceSlug) {
-        $cleanName = preg_replace('/^(Th\u00e0nh ph\u1ed1|T\u1ec9nh)\s+/iu', '', $p->name);
+        $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
         $slug = \Illuminate\Support\Str::slug($cleanName);
         if ($provinceSlug === 'tp-ho-chi-minh' && $slug === 'ho-chi-minh') return true;
         return $slug === $provinceSlug;
@@ -124,7 +124,7 @@ Route::get('/sitemap.xml', function () {
     // Các tỉnh thành (Sinh động từ DB)
     $sitemapProvinces = \Illuminate\Support\Facades\Cache::remember('sitemap_provinces_v3', 3600, function() {
         return \App\Models\Province::all()->map(function($p) {
-            $cleanName = preg_replace('/^(Th\u00e0nh ph\u1ed1|T\u1ec9nh)\s+/iu', '', $p->name);
+            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
             return [
                 'clean_slug' => \Illuminate\Support\Str::slug($cleanName),
                 'full_slug'  => \Illuminate\Support\Str::slug($p->name),
