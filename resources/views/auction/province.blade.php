@@ -73,9 +73,9 @@
     <nav class="bg-white border-b border-gray-200 py-3">
         <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
             <a href="/" class="hover:text-gray-900 shrink-0">Trang chủ</a>
-            <span class="shrink-0 text-gray-400">&gt;</span>
+            <span class="shrink-0 text-gray-400">&raquo;</span>
             <a href="/dau-gia" class="hover:text-gray-900 shrink-0">Đấu giá</a>
-            <span class="shrink-0 text-gray-400">&gt;</span>
+            <span class="shrink-0 text-gray-400">&raquo;</span>
             <span class="text-gray-900 truncate shrink-0 max-w-[180px] sm:max-w-none">{{ $cleanProvinceName }}</span>
         </div>
     </nav>
@@ -225,11 +225,11 @@
         </section>
 
         <!-- Main Body -->
-        <section id="table-section" class="mx-auto max-w-[1440px] px-[10px] py-6 sm:py-10 sm:px-6 lg:px-8">
+        <section id="table-section" class="mx-auto max-w-[1440px] px-[10px] py-6 sm:px-6 lg:px-8">
 
 
             <!-- Filter Controls -->
-            <div class="mb-8 w-full space-y-4">
+            <div class="mb-2 w-full space-y-4">
                 <!-- Search & Advanced Filter Button -->
                 <div class="flex flex-col sm:flex-row gap-3">
                     <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1 sm:p-1.5 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
@@ -265,7 +265,7 @@
                 </div>
 
                 <!-- Advanced Filters -->
-                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 p-3 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
+                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 p-3.5 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
                     <!-- Responsive Grid for Inputs -->
                     <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-6">
                         <!-- Tỉnh thành dropdown (Full-width on mobile, auto on desktop) -->
@@ -386,332 +386,356 @@
                 </div>
             </div>
 
-            <!-- Vehicle Type Selector -->
-            <div class="mb-6 flex gap-2 sm:gap-3 w-full pb-1">
+            <!-- Vehicle Selector (Level 1) & Tab Switcher (Level 2) -->
+            <!-- Vehicle Type Selector (Level 1) -->
+            <div class="flex gap-2 mb-2">
                 <button
                     type="button"
                     @click="changeVehicle('car')"
-                    class="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold shadow-sm transition duration-200"
-                    :class="vehicle === 'car' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+                    class="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 select-none shadow-3xs"
+                    :class="vehicle === 'car' ? 'bg-[#8C1E1E] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'"
                 >
                     Biển số xe ô tô
                 </button>
                 <button
                     type="button"
                     @click="changeVehicle('motorcycle')"
-                    class="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold shadow-sm transition duration-200"
-                    :class="vehicle === 'motorcycle' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+                    class="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 select-none shadow-3xs"
+                    :class="vehicle === 'motorcycle' ? 'bg-[#8C1E1E] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'"
                 >
                     Biển xe máy, mô tô
                 </button>
             </div>
 
-            <!-- Tab Switcher -->
-            <div class="flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-none border-b border-gray-200 pb-px mb-6">
+            <!-- Tab Switcher (Level 2) -->
+            <div class="flex bg-transparent px-2 mb-2 gap-6 sm:gap-8">
                 <button
                     type="button"
                     @click="tab = 'announce'; submitForm(true);"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
-                    :class="tab === 'announce' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
+                    class="pb-3 pt-2 text-xs sm:text-sm font-bold border-b-2 transition-all duration-200 select-none focus:outline-none"
+                    :class="tab === 'announce' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'"
                 >
                     Biển số mới công bố
                 </button>
                 <button
                     type="button"
                     @click="tab = 'official'; submitForm(true);"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
-                    :class="tab === 'official' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
+                    class="pb-3 pt-2 text-xs sm:text-sm font-bold border-b-2 transition-all duration-200 select-none focus:outline-none"
+                    :class="tab === 'official' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'"
                 >
                     Biển số chính thức
                 </button>
                 <button
                     type="button"
                     @click="tab = 'result'; submitForm(true);"
-                    class="shrink-0 rounded-t-lg border-b-2 px-5 py-2.5 text-sm font-bold transition"
-                    :class="tab === 'result' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-800'"
+                    class="pb-3 pt-2 text-xs sm:text-sm font-bold border-b-2 transition-all duration-200 select-none focus:outline-none"
+                    :class="tab === 'result' ? 'border-[#8C1E1E] text-[#8C1E1E]' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'"
                 >
                     Kết quả đã công bố
                 </button>
             </div>
+            <input type="hidden" name="tab" :value="tab" />
 
-            <!-- Header of Data Table -->
-            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                <h2 class="text-lg sm:text-xl font-extrabold text-gray-900">Biển số đấu giá tại {{ $cleanProvinceName }}</h2>
-                <span class="text-xs text-gray-500">Tìm thấy {{ number_format($plates['total'], 0, ',', '.') }} biển số</span>
+            <!-- Header: Title & Total Results -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 p-2 border-b border-gray-100">
+                <h3 class="text-lg font-extrabold text-gray-900">
+                    Biển số đấu giá tại {{ $cleanProvinceName }}
+                </h3>
+                <span class="text-xs font-semibold text-gray-400">
+                    Tìm thấy {{ number_format($plates['total'], 0, ',', '.') }} biển số
+                </span>
             </div>
 
-            <!-- Data Table / Grid -->
-            <div class="space-y-4 w-full min-w-0">
-                <!-- Desktop Table -->
-                <div class="hidden md:block w-full overflow-x-auto bg-white border border-gray-200 rounded-2xl shadow-sm">
-                    <table class="w-full min-w-[600px] border-collapse text-left text-sm">
-                        <thead class="border-b border-gray-200 bg-gray-100/80 text-xs font-bold tracking-wider text-gray-700 uppercase">
-                            <tr>
-                                <th class="w-16 px-6 py-4 text-center">STT</th>
-                                <th class="px-6 py-4">Biển số</th>
-                                <th class="px-6 py-4">{{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}</th>
-                                <th class="px-6 py-4">Tỉnh, Thành phố</th>
-                                <th class="px-6 py-4">Loại biển</th>
-                                @if($activeTab !== 'announce')
-                                    <th class="px-6 py-4">Thời gian đấu giá</th>
-                                @endif
-                                <th class="w-40 px-6 py-4 text-center">Lựa chọn</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @forelse($filteredPlates as $index => $plate)
-                                <tr class="transition duration-150 hover:bg-gray-50/50">
-                                    <td class="px-6 py-4 text-center text-sm text-gray-500">
-                                        {{ $index + 1 + ($paginator->currentPage() - 1) * $paginator->perPage() }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm font-bold whitespace-nowrap {{ $plate['color'] === 1 ? 'text-amber-600' : 'text-gray-700' }}">
-                                        {{ $plate['display_number'] }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap font-bold text-[#8C1E1E]">
-                                        {{ $plate['winning_price'] > 0 ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
-                                        {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-700">
-                                        {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
-                                    </td>
-                                    @if($activeTab !== 'announce')
-                                        <td class="px-6 py-4 text-sm text-gray-700">
-                                            {{ $formatDate($plate['auction_start_time']) }}
-                                        </td>
-                                    @endif
-                                    <td class="px-6 py-4 text-center">
-                                        <a
-                                            href="/bien-so-{{ $plate['slug'] }}"
-                                            class="inline-block rounded-md border border-[#8C1E1E] px-3 py-2 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
+            <!-- Tab content container (White Card) -->
+            <div class="relative md:bg-white md:rounded-2xl md:border md:border-gray-200/80 md:shadow-xs bg-transparent border-0 shadow-none overflow-hidden">
+                <!-- Grid & List Plates -->
+                <div class="px-0 min-h-[400px]">
+
+                    <div class="relative">
+                        @if(count($filteredPlates) > 0)
+                        <!-- Desktop Table View -->
+                        <div class="hidden md:block overflow-x-auto mb-6">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 border-t border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider select-none">
+                                        <th class="w-16 px-6 py-4 text-center">STT</th>
+                                        <th class="px-6 py-4">Biển số</th>
+                                        <th class="px-6 py-4">{{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}</th>
+                                        <th class="px-6 py-4">Tỉnh, Thành phố</th>
+                                        <th class="px-6 py-4">Loại biển</th>
+                                        @if($activeTab !== 'announce')
+                                            <th class="px-6 py-4">Thời gian đấu giá</th>
+                                        @endif
+                                        <th class="w-40 px-6 py-4 text-center">Lựa chọn</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach($filteredPlates as $index => $plate)
+                                        <tr class="transition duration-150 hover:bg-gray-50/50">
+                                            <td class="px-3 py-2 text-center text-sm text-gray-500">
+                                                {{ $index + 1 + ($paginator->currentPage() - 1) * $paginator->perPage() }}
+                                            </td>
+                                            <td class="px-3 py-2 text-sm font-bold whitespace-nowrap {{ $plate['color'] === 1 ? 'text-amber-600' : 'text-gray-700' }}">
+                                                {{ $plate['display_number'] }}
+                                            </td>
+                                            <td class="px-3 py-2 text-sm text-gray-750 whitespace-nowrap font-bold text-[#8C1E1E]">
+                                                {{ $plate['winning_price'] > 0 ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
+                                            </td>
+                                            <td class="px-3 py-2 text-sm text-gray-700 whitespace-nowrap">
+                                                {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
+                                            </td>
+                                            <td class="px-3 py-2 text-sm text-gray-700">
+                                                {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
+                                            </td>
+                                            @if($activeTab !== 'announce')
+                                                <td class="px-3 py-2 text-sm text-gray-700">
+                                                    {{ $formatDate($plate['auction_start_time']) }}
+                                                </td>
+                                            @endif
+                                            <td class="px-3 py-2 text-center">
+                                                <a
+                                                    href="/bien-so-{{ $plate['slug'] }}"
+                                                    class="inline-block rounded-md border border-[#8C1E1E] px-3 py-2 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
+                                                >
+                                                    Phân tích biển số
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @endif
+
+                        @if(count($filteredPlates) > 0)
+                        <!-- Mobile Grid View -->
+                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:hidden select-none">
+                            @foreach($filteredPlates as $plate)
+                                <div class="group relative flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-2 shadow-3xs transition hover:-translate-y-0.5 hover:shadow-xs">
+                                    <!-- Card Header: Province & Badge -->
+                                    <div class="flex items-center justify-between mb-2 text-[11px] font-bold text-gray-500">
+                                        <span class="flex items-center gap-1.5">
+                                            <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
+                                        </span>
+                                        <span class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">
+                                            {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Card Center: Simulated License Plate -->
+                                    <div class="flex justify-center py-1 select-none">
+                                        <div
+                                            class="relative flex aspect-[520/110] w-full max-w-[240px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102 {{ $plate['color'] === 1 ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}"
                                         >
-                                            Phân tích biển số
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500 font-medium">Không tìm thấy biển số phù hợp.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Mobile/Tablet Cards -->
-                <div class="block md:hidden divide-y divide-gray-100 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                    @forelse($filteredPlates as $index => $plate)
-                        <div class="p-3 space-y-2.5 transition duration-150 hover:bg-gray-50/50">
-                            <!-- Top Row: STT, Province, Kind Badge -->
-                            <div class="flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="flex h-5 w-5 items-center justify-center rounded bg-gray-50 text-[10px] font-bold text-gray-600">
-                                        #{{ $index + 1 + ($paginator->currentPage() - 1) * $paginator->perPage() }}
-                                    </span>
-                                    <span class="text-gray-800 font-medium">
-                                        {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
-                                    </span>
-                                </div>
-                                <span class="rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide border {{ count($plate['kinds']) > 0 ? 'bg-red-50 text-[#8C1E1E] border-red-100' : 'bg-gray-50 text-gray-500 border-gray-100' }}">
-                                    {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
-                                </span>
-                            </div>
-
-                            <!-- Middle Row: Simulated Plate on Left, Price on Right -->
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="shrink-0 select-none">
-                                    <div class="relative flex aspect-[520/110] w-[140px] items-center justify-center rounded border p-0.5 shadow-sm {{ $plate['color'] === 1 ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}">
-                                        <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                                        <div class="flex h-full w-full items-center justify-center rounded border px-1.5 select-none {{ $plate['color'] === 1 ? 'border-black/30' : 'border-gray-200' }}">
-                                            <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black text-[0.85rem]">
-                                                <span>{{ $plate['display_number'] }}</span>
+                                            <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
+                                            <div class="flex h-full w-full items-center justify-center rounded border px-3 select-none {{ $plate['color'] === 1 ? 'border-black/30' : 'border-gray-200' }}">
+                                                <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black text-[1.1rem]">
+                                                    <span>{{ $plate['display_number'] }}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Card Body: Price and Time -->
+                                    <div class="flex justify-between items-center text-xs border-t border-gray-50 pt-1">
+                                        <div class="flex flex-col gap-0.5">
+                                            <span class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">
+                                                {{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}
+                                            </span>
+                                            <span class="text-sm font-black text-[#8C1E1E]">
+                                                {{ $plate['winning_price'] > 0 ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
+                                            </span>
+                                        </div>
+
+                                        @if($activeTab !== 'announce' && $plate['auction_start_time'])
+                                            <div class="flex flex-col items-end gap-0.5">
+                                                <span class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Ngày đấu</span>
+                                                <span class="text-[11px] font-bold text-gray-600">
+                                                    {{ explode(' ', $formatDate($plate['auction_start_time']))[0] }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Card Footer: Action -->
+                                    <div class="pt-1">
+                                        <a
+                                            href="/bien-so-{{ $plate['slug'] }}"
+                                            class="flex w-full items-center justify-center rounded-xl border border-[#8C1E1E] bg-red-50/20 py-2 text-xs font-bold text-[#8C1E1E] shadow-xs transition hover:bg-[#8C1E1E] hover:text-white"
+                                        >
+                                            Phân tích chi tiết biển số →
+                                        </a>
+                                    </div>
                                 </div>
-                                <div class="flex-1 flex flex-col items-end text-right text-xs">
-                                    <span class="text-[9px] font-semibold text-gray-450 uppercase tracking-wider">
-                                        {{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}
+                            @endforeach
+                        </div>
+                        @endif
+
+                        @if(count($filteredPlates) === 0)
+                            <div class="py-16 text-center text-gray-500 bg-transparent select-none">
+                                <h3 class="mb-1 text-base font-bold text-gray-700">Không tìm thấy kết quả phù hợp</h3>
+                                <p class="text-xs text-gray-400">Hãy thử thay đổi từ khóa tìm kiếm hoặc chỉnh lại bộ lọc.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                @if ($paginator->total() > 0)
+                    <div class="flex items-center justify-center bg-transparent border-0 md:bg-white md:border-t md:border-gray-100 px-4 py-3 md:py-4 select-none sm:px-6">
+                        @if ($paginator->lastPage() > 1)
+                            <div class="flex items-center justify-center">
+                                <!-- Desktop Pagination (hidden sm:flex) -->
+                                <nav class="hidden sm:flex flex-wrap items-center justify-center gap-1.5" aria-label="Pagination">
+                                    <!-- Previous Button -->
+                                    @if ($paginator->onFirstPage())
+                                        <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300 select-none">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </span>
+                                    @else
+                                        <a href="{{ $paginator->previousPageUrl() }}" aria-label="Trang trước" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </a>
+                                    @endif
+
+                                    <!-- Page Numbers with Ellipses -->
+                                    @php
+                                        $currentPage = $paginator->currentPage();
+                                        $lastPage = $paginator->lastPage();
+                                        $startPage = max(1, $currentPage - 2);
+                                        $endPage = min($lastPage, $currentPage + 2);
+                                    @endphp
+
+                                    @if ($startPage <= 4)
+                                        @for ($p = 1; $p <= $endPage; $p++)
+                                            @if ($p == $currentPage)
+                                                <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
+                                                    {{ $p }}
+                                                </span>
+                                            @else
+                                                <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                                    {{ $p }}
+                                                </a>
+                                            @endif
+                                        @endfor
+                                    @else
+                                        @for ($p = 1; $p <= 3; $p++)
+                                            @if ($p == $currentPage)
+                                                <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
+                                                    {{ $p }}
+                                                </span>
+                                            @else
+                                                <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                                    {{ $p }}
+                                                </a>
+                                            @endif
+                                        @endfor
+                                        <span class="flex h-8 w-8 items-center justify-center font-medium text-gray-400 select-none">...</span>
+                                        @for ($p = $startPage; $p <= $endPage; $p++)
+                                            @if ($p == $currentPage)
+                                                <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
+                                                    {{ $p }}
+                                                </span>
+                                            @else
+                                                <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                                    {{ $p }}
+                                                </a>
+                                            @endif
+                                        @endfor
+                                    @endif
+
+                                    @if ($endPage < $lastPage)
+                                        <span class="flex h-8 w-8 items-center justify-center font-medium text-gray-400 select-none">...</span>
+                                    @endif
+
+                                    <!-- Next Button -->
+                                    @if ($paginator->hasMorePages())
+                                        <a href="{{ $paginator->nextPageUrl() }}" aria-label="Trang sau" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    @else
+                                        <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300 select-none">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </span>
+                                    @endif
+                                </nav>
+
+                                <!-- Mobile Pagination (flex sm:hidden) -->
+                                <div class="flex sm:hidden items-center gap-2 select-none">
+                                    <!-- Prev Button -->
+                                    @if ($paginator->onFirstPage())
+                                        <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </span>
+                                    @else
+                                        <a href="{{ $paginator->previousPageUrl() }}" aria-label="Trang trước" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </a>
+                                    @endif
+
+                                    <span class="text-xs font-bold text-gray-600 px-1">
+                                        Trang {{ $currentPage }}
                                     </span>
-                                    <span class="text-sm font-black text-[#8C1E1E]">
-                                        {{ $plate['winning_price'] > 0 ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
-                                    </span>
-                                    @if($activeTab !== 'announce' && $plate['auction_start_time'])
-                                        <span class="text-[9px] font-medium text-gray-500 mt-0.5">
-                                            Ngày đấu: {{ explode(' ', $formatDate($plate['auction_start_time']))[0] }}
+
+                                    <!-- Next Button -->
+                                    @if ($paginator->hasMorePages())
+                                        <a href="{{ $paginator->nextPageUrl() }}" aria-label="Trang sau" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    @else
+                                        <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
                                         </span>
                                     @endif
                                 </div>
                             </div>
-
-                            <!-- Button Row -->
-                            <div class="pt-0.5">
-                                <a
-                                    href="/bien-so-{{ $plate['slug'] }}"
-                                    class="flex w-full items-center justify-center rounded-lg border border-[#8C1E1E] bg-red-50/20 py-2 text-xs font-bold text-[#8C1E1E] shadow-xs transition hover:bg-[#8C1E1E] hover:text-white"
-                                >
-                                    Phân tích chi tiết biển số
-                                </a>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="p-8 text-center text-gray-500 font-medium">Không tìm thấy biển số phù hợp.</div>
-                    @endforelse
-                </div>
+                        @endif
+                    </div>
+                @endif
             </div>
 
-            <!-- Pagination -->
-            @if ($paginator->total() > 0)
-                <div class="flex items-center justify-center bg-transparent px-4 py-2 sm:py-3 select-none sm:px-6 mt-4 sm:mt-6">
-                    @if ($paginator->lastPage() > 1)
-                        <div class="flex items-center justify-center">
-                            <!-- Desktop Pagination (hidden sm:flex) -->
-                            <nav class="hidden sm:flex flex-wrap items-center justify-center gap-1.5" aria-label="Pagination">
-                                <!-- Previous Button -->
-                                @if ($paginator->onFirstPage())
-                                    <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300 select-none">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </span>
-                                @else
-                                    <a href="{{ $paginator->previousPageUrl() }}" aria-label="Trang trước" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </a>
-                                @endif
-
-                                <!-- Page Numbers with Ellipses -->
-                                @php
-                                    $currentPage = $paginator->currentPage();
-                                    $lastPage = $paginator->lastPage();
-                                    $startPage = max(1, $currentPage - 2);
-                                    $endPage = min($lastPage, $currentPage + 2);
-                                @endphp
-
-                                @if ($startPage <= 4)
-                                    @for ($p = 1; $p <= $endPage; $p++)
-                                        @if ($p == $currentPage)
-                                            <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
-                                                {{ $p }}
-                                            </span>
-                                        @else
-                                            <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
-                                                {{ $p }}
-                                            </a>
-                                        @endif
-                                    @endfor
-                                @else
-                                    @for ($p = 1; $p <= 3; $p++)
-                                        @if ($p == $currentPage)
-                                            <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
-                                                {{ $p }}
-                                            </span>
-                                        @else
-                                            <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
-                                                {{ $p }}
-                                            </a>
-                                        @endif
-                                    @endfor
-                                    <span class="flex h-8 w-8 items-center justify-center font-medium text-gray-400 select-none">...</span>
-                                    @for ($p = $startPage; $p <= $endPage; $p++)
-                                        @if ($p == $currentPage)
-                                            <span class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-[#8C1E1E] px-2 text-sm font-bold text-white select-none">
-                                                {{ $p }}
-                                            </span>
-                                        @else
-                                            <a href="{{ $paginator->url($p) }}" class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-sm font-medium text-gray-500 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
-                                                {{ $p }}
-                                            </a>
-                                        @endif
-                                    @endfor
-                                @endif
-
-                                @if ($endPage < $lastPage)
-                                    <span class="flex h-8 w-8 items-center justify-center font-medium text-gray-400 select-none">...</span>
-                                @endif
-
-                                <!-- Next Button -->
-                                @if ($paginator->hasMorePages())
-                                    <a href="{{ $paginator->nextPageUrl() }}" aria-label="Trang sau" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-50 hover:text-[#8C1E1E]">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </a>
-                                @else
-                                    <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300 select-none">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </span>
-                                @endif
-                            </nav>
-
-                            <!-- Mobile Pagination (flex sm:hidden) -->
-                            <div class="flex sm:hidden items-center gap-2 select-none">
-                                <!-- Prev Button -->
-                                @if ($paginator->onFirstPage())
-                                    <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </span>
-                                @else
-                                    <a href="{{ $paginator->previousPageUrl() }}" aria-label="Trang trước" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </a>
-                                @endif
-
-                                <span class="text-xs font-bold text-gray-600 px-1">
-                                    Trang {{ $currentPage }}
-                                </span>
-
-                                <!-- Next Button -->
-                                @if ($paginator->hasMorePages())
-                                    <a href="{{ $paginator->nextPageUrl() }}" aria-label="Trang sau" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-[#8C1E1E]">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </a>
-                                @else
-                                    <span class="flex h-8 w-8 cursor-not-allowed items-center justify-center text-gray-300">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            @endif
-
             <!-- Bottom SEO & FAQ Content -->
-            <div class="mt-4 sm:mt-10 space-y-8">
+            <div class="mt-4 sm:mt-10 space-y-2">
                 <!-- Section: Top biển số đấu giá -->
                 @php
                     $cleanProvinceSlug = \Illuminate\Support\Str::slug($cleanProvinceName);
                 @endphp
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <h2 class="text-sm font-extrabold text-gray-900">Top biển số đấu giá {{ $cleanProvinceName }}</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <a href="/top-100-bien-so-dep-dat-nhat-{{ $cleanProvinceSlug }}" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                    <div class="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none pb-2 -mx-[10px] px-[10px] sm:mx-0 sm:px-0 sm:flex-wrap gap-2">
+                        <a href="/top-100-bien-so-dep-dat-nhat-{{ $cleanProvinceSlug }}" class="inline-flex shrink-0 items-center justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[11px] sm:text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
                             Top 100 biển {{ $cleanProvinceName }}
                         </a>
-                        <a href="/top-bien-so-ngu-quy-dat-nhat-viet-nam" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                        <a href="/top-bien-so-ngu-quy-dat-nhat-viet-nam" class="inline-flex shrink-0 items-center justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[11px] sm:text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
                             Top biển ngũ quý
                         </a>
-                        <a href="/top-bien-so-tu-quy-dat-nhat-viet-nam" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                        <a href="/top-bien-so-tu-quy-dat-nhat-viet-nam" class="inline-flex shrink-0 items-center justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[11px] sm:text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
                             Top biển tứ quý
                         </a>
-                        <a href="/top-bien-so-than-tai-dat-nhat-viet-nam" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                        <a href="/top-bien-so-than-tai-dat-nhat-viet-nam" class="inline-flex shrink-0 items-center justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[11px] sm:text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
                             Top thần tài
                         </a>
-                        <a href="/top-bien-so-loc-phat-dat-nhat-viet-nam" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                        <a href="/top-bien-so-loc-phat-dat-nhat-viet-nam" class="inline-flex shrink-0 items-center justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[11px] sm:text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
                             Top lộc phát
                         </a>
                     </div>
@@ -719,11 +743,11 @@
 
                 <!-- Section: Top đầu số -->
                 @if(!empty($topSeries))
-                    <div class="space-y-3">
+                    <div class="space-y-2">
                         <h2 class="text-sm font-extrabold text-gray-900">Top đầu số {{ $cleanProvinceName }}</h2>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none pb-2 -mx-[10px] px-[10px] sm:mx-0 sm:px-0 sm:flex-wrap gap-2">
                             @foreach($topSeries as $series)
-                                <a href="?search={{ $series }}" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                                <a href="?search={{ $series }}" class="inline-flex shrink-0 items-center justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[11px] sm:text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
                                     {{ $series }}
                                 </a>
                             @endforeach
@@ -732,9 +756,9 @@
                 @endif
 
                 <!-- Section: Nhóm biển số được quan tâm nhất -->
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <h2 class="text-sm font-extrabold text-gray-900">Nhóm biển số được quan tâm nhất</h2>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none pb-2 -mx-[10px] px-[10px] sm:mx-0 sm:px-0 sm:flex-wrap gap-2">
                         @php
                             $interestGroups = [
                                 ['name' => 'Ngũ quý', 'key' => 'Ngũ quý'],
@@ -755,7 +779,7 @@
                                     }
                                 }
                             @endphp
-                            <a href="?kind={{ $kindId }}" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                            <a href="?kind={{ $kindId }}" class="inline-flex shrink-0 items-center justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-gray-50 border border-gray-200 text-[11px] sm:text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
                                 {{ $group['name'] }}
                             </a>
                         @endforeach
@@ -763,9 +787,9 @@
                 </div>
 
                 <!-- Section: Phân tích thị trường -->
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <h2 class="text-lg font-bold text-gray-900">Phân tích thị trường đấu giá biển số {{ $cleanProvinceName }}</h2>
-                    <div class="space-y-3 text-sm text-gray-600 leading-relaxed text-justify">
+                    <div class="space-y-2 text-sm text-gray-600 leading-relaxed text-justify">
                         <p>
                             <strong>{{ $cleanProvinceName }}</strong> là một trong những địa phương có số lượng phiên đấu giá biển số tăng nhanh trong năm 2026.
                         </p>
@@ -814,7 +838,7 @@
                             ];
                         @endphp
                         @foreach($faqs as $i => $faq)
-                            <div class="py-2.5">
+                            <div class="py-2">
                                 <button type="button" @click="activeFaq = activeFaq === {{ $i }} ? null : {{ $i }}" class="flex w-full items-center justify-between text-left text-[14px] font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
                                     <span>{{ $faq['q'] }}</span>
                                     <svg class="h-3.5 w-3.5 text-gray-400 transform transition-transform duration-200" :class="activeFaq === {{ $i }} ? 'rotate-180 text-[#8C1E1E]' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
