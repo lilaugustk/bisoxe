@@ -236,6 +236,105 @@ class AnalysisController extends Controller
             ];
         }
 
+        // 5.2. Lọc theo Loại biển + Năm (Động hoàn toàn)
+        if (preg_match('/^top-bien-so-(ngu-quy|sanh-tien|tien|tu-quy|tam-hoa|than-tai|loc-phat|ong-dia|lap-doi|ganh|doi-xung-palindrome)-dat-nhat-nam-(202[3-9]|2030)$/i', $slug, $matches)) {
+            $kindSlug = strtolower($matches[1]);
+            $year = intval($matches[2]);
+            
+            $kindsSubMap = [
+                'ngu-quy' => [1, 'Ngũ Quý', 'các biển số ngũ quý (111.11 đến 999.99)'],
+                'sanh-tien' => [2, 'Sảnh Tiến', 'các biển số sảnh tiến (ví dụ: 123.45, 567.89...)'],
+                'tien' => [2, 'Số Tiến', 'các biển số tiến'],
+                'tu-quy' => [3, 'Tứ Quý', 'các biển số tứ quý (ví dụ: 8888, 9999)'],
+                'tam-hoa' => [4, 'Tam Hoa', 'các biển số tam hoa (lặp 3 số)'],
+                'than-tai' => [5, 'Thần Tài', 'các biển số thần tài (39, 79)'],
+                'loc-phat' => [6, 'Lộc Phát', 'các biển số lộc phát (68, 86)'],
+                'ong-dia' => [7, 'Ông Địa', 'các biển số ông địa (38, 78)'],
+                'lap-doi' => [8, 'Lặp Đôi', 'các biển số gánh lặp đôi'],
+                'ganh' => [9, 'Số Gánh', 'các biển số gánh, đối xứng'],
+                'doi-xung-palindrome' => [9, 'Đối Xứng (Palindrome)', 'các biển số đối xứng (Palindrome)'],
+            ];
+            
+            if (isset($kindsSubMap[$kindSlug])) {
+                $info = $kindsSubMap[$kindSlug];
+                $kindId = $info[0];
+                $kindName = $info[1];
+                $kindDesc = $info[2];
+                $kindPriority = \App\Models\PlateKind::find($kindId)?->priority;
+                
+                return [
+                    'title' => "Top Biển Số {$kindName} Đắt Nhất Năm {$year} (Cập Nhật 2026)",
+                    'meta_description' => "Danh sách bảng xếp hạng các biển số {$kindName} trúng đấu giá có giá trị cao nhất trong năm {$year}. Cập nhật dữ liệu nhanh và chính xác.",
+                    'h1' => "Top Biển Số {$kindName} Đắt Nhất Năm {$year}",
+                    'description' => "Thống kê chi tiết {$kindDesc} trúng đấu giá cao nhất trong năm {$year}. Dữ liệu được cập nhật tự động liên tục.",
+                    'query' => function() use ($kindPriority, $year) {
+                        return LicensePlate::where('status', 'completed')
+                            ->whereYear('auction_start_time', $year)
+                            ->where('min_kind_priority', $kindPriority)
+                            ->orderBy('winning_price', 'desc')
+                            ->limit(100);
+                    }
+                ];
+            }
+        }
+
+        // 5.3. Lọc theo Loại biển + Tỉnh thành (Động hoàn toàn)
+        if (preg_match('/^top-bien-so-(ngu-quy|sanh-tien|tien|tu-quy|tam-hoa|than-tai|loc-phat|ong-dia|lap-doi|ganh|doi-xung-palindrome)-dat-nhat-([a-z0-9-]+)$/i', $slug, $matches)) {
+            $kindSlug = strtolower($matches[1]);
+            $provSlug = strtolower($matches[2]);
+            
+            // Check if province exists
+            $provinces = Province::all();
+            $matchedProvince = null;
+            $provinceCleanName = '';
+            foreach ($provinces as $prov) {
+                $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $prov->name);
+                if ($provSlug === \Illuminate\Support\Str::slug($cleanName)) {
+                    $matchedProvince = $prov;
+                    $provinceCleanName = $cleanName;
+                    break;
+                }
+            }
+            
+            if ($matchedProvince) {
+                $kindsSubMap = [
+                    'ngu-quy' => [1, 'Ngũ Quý', 'các biển số ngũ quý (111.11 đến 999.99)'],
+                    'sanh-tien' => [2, 'Sảnh Tiến', 'các biển số sảnh tiến (ví dụ: 123.45, 567.89...)'],
+                    'tien' => [2, 'Số Tiến', 'các biển số tiến'],
+                    'tu-quy' => [3, 'Tứ Quý', 'các biển số tứ quý (ví dụ: 8888, 9999)'],
+                    'tam-hoa' => [4, 'Tam Hoa', 'các biển số tam hoa (lặp 3 số)'],
+                    'than-tai' => [5, 'Thần Tài', 'các biển số thần tài (39, 79)'],
+                    'loc-phat' => [6, 'Lộc Phát', 'các biển số lộc phát (68, 86)'],
+                    'ong-dia' => [7, 'Ông Địa', 'các biển số ông địa (38, 78)'],
+                    'lap-doi' => [8, 'Lặp Đôi', 'các biển số gánh lặp đôi'],
+                    'ganh' => [9, 'Số Gánh', 'các biển số gánh, đối xứng'],
+                    'doi-xung-palindrome' => [9, 'Đối Xứng (Palindrome)', 'các biển số đối xứng (Palindrome)'],
+                ];
+                
+                if (isset($kindsSubMap[$kindSlug])) {
+                    $info = $kindsSubMap[$kindSlug];
+                    $kindId = $info[0];
+                    $kindName = $info[1];
+                    $kindDesc = $info[2];
+                    $kindPriority = \App\Models\PlateKind::find($kindId)?->priority;
+                    
+                    return [
+                        'title' => "Top Biển Số {$kindName} Đắt Nhất {$provinceCleanName} (Cập Nhật 2026)",
+                        'meta_description' => "Danh sách bảng xếp hạng các biển số {$kindName} trúng đấu giá có giá trị cao nhất tại {$provinceCleanName}. Cập nhật dữ liệu nhanh và chính xác.",
+                        'h1' => "Top Biển Số {$kindName} Đắt Nhất {$provinceCleanName}",
+                        'description' => "Thống kê chi tiết {$kindDesc} trúng đấu giá cao nhất tại khu vực {$provinceCleanName}. Dữ liệu được cập nhật tự động liên tục.",
+                        'query' => function() use ($kindPriority, $matchedProvince) {
+                            return LicensePlate::where('status', 'completed')
+                                ->where('province_code', $matchedProvince->code)
+                                ->where('min_kind_priority', $kindPriority)
+                                ->orderBy('winning_price', 'desc')
+                                ->limit(100);
+                        }
+                    ];
+                }
+            }
+        }
+
         // 6. Các trường hợp tĩnh/đặc biệt
         if ($slug === 'top-100-bien-so-dat-nhat-viet-nam' || $slug === 'dat-nhat-viet-nam') {
             return [

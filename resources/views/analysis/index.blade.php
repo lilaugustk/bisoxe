@@ -343,11 +343,18 @@
                 </p>
 
                 {{-- Search Form --}}
-                <form action="/" method="GET" class="mt-8 max-w-lg mx-auto">
+                <form 
+                    action="/" 
+                    method="GET" 
+                    class="mt-8 max-w-lg mx-auto"
+                    x-data="{ search: '' }"
+                    @submit.prevent="window.location.href = search.trim() ? '/danh-sach-bien-so-xe-o-to-duoi-' + search.trim().toUpperCase().replace(/[^0-9A-Z]/g, '') : '/danh-sach-bien-so-xe-o-to'"
+                >
                     <div class="flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 p-1.5 backdrop-blur-sm focus-within:border-[#F5B800] focus-within:ring-2 focus-within:ring-[#F5B800]/30 transition-all duration-200">
                         <input
                             type="text"
                             name="search"
+                            x-model="search"
                             placeholder="Nhập biển số cần tra cứu"
                             class="w-full border-0 bg-transparent py-2.5 px-4 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-0"
                         />

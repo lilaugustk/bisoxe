@@ -222,6 +222,7 @@
 <div id="global-loading-bar" class="fixed top-0 left-0 right-0 h-1 bg-[#8C1E1E] z-50 transition-all duration-300 opacity-0 pointer-events-none shadow-[0_1px_10px_#8c1e1e]" style="width: 0%;"></div>
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
     <form id="filter-form" method="GET" @submit.prevent="submitForm(true)" x-data="{
+        provinces: {{ json_encode($provinces) }},
         search: {{ json_encode($search) }},
         province: {{ json_encode($province) }},
         letter: {{ json_encode($letter) }},
@@ -246,8 +247,7 @@
             let searchVal = this.search.trim().toUpperCase().replace(/[^0-9A-Z]/g, '');
             let base = '';
             if (this.province) {
-                let provinces = {{ json_encode($provinces) }};
-                let prov = provinces.find(p => String(p.code) === String(this.province));
+                let prov = this.provinces.find(p => String(p.code) === String(this.province));
                 if (prov) {
                     let cleanName = prov.name.replace(/^(Thành phố|Tỉnh)\s+/i, '');
                     let slug = this.toSlug(cleanName);
@@ -438,13 +438,11 @@
                                 open: false, 
                                 searchQuery: '',
                                 get filteredProvinces() {
-                                    let provinces = {{ json_encode($provinces) }};
                                     if (!this.searchQuery.trim()) return provinces;
                                     let query = toSlug(this.searchQuery);
                                     return provinces.filter(p => toSlug(p.name).includes(query));
                                 },
                                 get selectedProvinceName() {
-                                    let provinces = {{ json_encode($provinces) }};
                                     let found = provinces.find(p => String(p.code) === String(province));
                                     return found ? found.name : 'Tất cả';
                                 }
