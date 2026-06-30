@@ -265,10 +265,7 @@ class AuctionController extends Controller
             return $query->count();
         });
 
-        $itemsCacheKey = 'plates_items_auction_v3_' . $province->code . '_' . $page . '_' . $limit . '_' . $cacheHash;
-        $items = Cache::remember($itemsCacheKey, 120, function () use ($query, $page, $limit) {
-            return $query->forPage($page, $limit)->get();
-        });
+        $items = $query->forPage($page, $limit)->get();
 
         $paginatorQuery = $request->query();
 
