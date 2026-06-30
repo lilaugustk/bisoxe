@@ -94,7 +94,7 @@
          SECTION 1: HERO + THỐNG KÊ NHANH (2 cột trên Desktop)
     ═══════════════════════════════════════════════════════════════ --}}
     <section class="bg-white border-b border-gray-200 shadow-2xs">
-        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <div class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8 py-6 md:py-8">
             <div class="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-10 items-start">
  
                 {{-- Cột trái: Hero --}}
@@ -104,39 +104,41 @@
  
                         {{-- Sub-left: Tiêu đề + mô tả --}}
                         <div class="flex-1 min-w-0">
-                            <h1 class="text-3xl font-extrabold tracking-tight text-[#111827] sm:text-4xl leading-tight">
+                            <h1 class="text-2xl font-extrabold tracking-tight text-[#111827] sm:text-[32px] leading-tight">
                                 Bảng xếp hạng biển số đẹp Việt Nam
                             </h1>
-                            <p class="mt-3 text-sm leading-relaxed text-gray-500">
+                            <p class="mt-3 text-xs leading-relaxed text-gray-500">
                                 Tổng hợp các bảng xếp hạng biển số ô tô theo giá đấu, nhóm số đẹp, địa phương và thời gian. Dữ liệu được cập nhật liên tục từ các phiên đấu giá chính thức.
                             </p>
                         </div>
                     </div>
  
                     {{-- Trust Signals hàng ngang --}}
-                    <div class="mt-4 flex flex-wrap gap-5">
-                        <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
-                            <div>
-                                <span class="block text-base font-extrabold text-blue-600">100+</span>
-                                <span class="block text-[11px] text-gray-500">Bảng xếp hạng</span>
+                    <div class="mx-auto max-w-4xl mt-6">
+                        <div class="grid grid-cols-2 gap-y-6 gap-x-2 sm:grid-cols-4 bg-transparent border-0 p-0 shadow-none">
+                            <!-- Bảng xếp hạng -->
+                            <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
+                                <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Bảng xếp hạng</span>
+                                <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">100+</span>
+                                <span class="block text-[10px] font-medium text-gray-500 mt-0.5">danh sách</span>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
-                            <div>
-                                <span class="block text-base font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}+</span>
-                                <span class="block text-[11px] text-gray-500">Kết quả đấu giá</span>
+                            <!-- Kết quả đấu giá -->
+                            <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
+                                <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết quả đấu giá</span>
+                                <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ number_format($trustStats['total_completed'] ?? 276777, 0, ',', '.') }}+</span>
+                                <span class="block text-[10px] font-medium text-gray-500 mt-0.5">biển số</span>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
-                            <div>
-                                <span class="block text-base font-extrabold text-blue-600">{{ $trustStats['total_value_billion'] }} Tỷ+</span>
-                                <span class="block text-[11px] text-gray-500">Tổng giá trị đấu giá</span>
+                            <!-- Tổng giá trị đấu giá -->
+                            <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
+                                <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng giá trị</span>
+                                <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_value_billion'] ?? '12.746' }} Tỷ+</span>
+                                <span class="block text-[10px] font-medium text-gray-500 mt-0.5">đồng</span>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
-                            <div>
-                                <span class="block text-base font-extrabold text-blue-600">Cập nhật liên tục</span>
-                                <span class="block text-[11px] text-gray-500">Mỗi ngày</span>
+                            <!-- Cập nhật liên tục -->
+                            <div class="text-center py-2 bg-transparent border-0 shadow-none">
+                                <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Cập nhật</span>
+                                <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">Mỗi ngày</span>
+                                <span class="block text-[10px] font-medium text-gray-500 mt-0.5">liên tục</span>
                             </div>
                         </div>
                     </div>
@@ -148,11 +150,11 @@
                         </div>
 
                         {{-- Hàng 1: 4 card chính --}}
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3">
                             @foreach(array_slice($rankings, 0, 4) as $ranking)
                                 <a href="{{ url('/' . $ranking['slug']) }}" class="group block rounded-xl overflow-hidden border border-gray-200/60 bg-white">
                                     @php $cardStyle = $getCardStyle($ranking['slug']); @endphp
-                                    <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br {{ $cardStyle['gradient'] }} flex flex-col items-center justify-center p-3 text-center">
+                                    <div class="relative aspect-[21/9] sm:aspect-[4/3] overflow-hidden bg-gradient-to-br {{ $cardStyle['gradient'] }} flex flex-col items-center justify-center p-3 text-center">
                                         
                                         {{-- Soft Radial Glow in the center --}}
                                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
@@ -170,11 +172,11 @@
                         </div>
 
                         {{-- Hàng 2: 4 card phụ --}}
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                             @foreach(array_slice($rankings, 4, 4) as $ranking)
                                 <a href="{{ url('/' . $ranking['slug']) }}" class="group block rounded-xl overflow-hidden border border-gray-200/60 bg-white">
                                     @php $cardStyle = $getCardStyle($ranking['slug']); @endphp
-                                    <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br {{ $cardStyle['gradient'] }} flex flex-col items-center justify-center p-3 text-center">
+                                    <div class="relative aspect-[21/9] sm:aspect-[4/3] overflow-hidden bg-gradient-to-br {{ $cardStyle['gradient'] }} flex flex-col items-center justify-center p-3 text-center">
                                         
                                         {{-- Soft Radial Glow in the center --}}
                                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
@@ -202,22 +204,30 @@
                     </div>
 
                     {{-- Grid 4 thẻ --}}
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-center">
-                            <span class="block text-[10px] font-bold text-gray-500 uppercase">Giá trung bình Top 100</span>
-                            <span class="block mt-1 text-lg font-extrabold text-blue-600">{{ $latestStats['avg_top100_billion'] }} Tỷ</span>
+                    <div class="grid grid-cols-2 gap-y-6 gap-x-2 sm:grid-cols-4 bg-transparent border-0 p-0 shadow-none">
+                        <!-- Giá trung bình -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá TB</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $latestStats['avg_top100_billion'] }} Tỷ</span>
+                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">Top 100</span>
                         </div>
-                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-center">
-                            <span class="block text-[10px] font-bold text-gray-500 uppercase">Biển số đắt nhất</span>
-                            <span class="block mt-1 text-lg font-extrabold text-blue-600">{{ $latestStats['highest_plate_price_billion'] }} Tỷ</span>
+                        <!-- Biển số đắt nhất -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đắt nhất</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $latestStats['highest_plate_price_billion'] }} Tỷ</span>
+                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">kỷ lục</span>
                         </div>
-                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-center">
-                            <span class="block text-[10px] font-bold text-gray-500 uppercase">Tỉnh thành phủ sóng</span>
-                            <span class="block mt-1 text-lg font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
+                        <!-- Tỉnh thành phủ sóng -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
+                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">phủ sóng</span>
                         </div>
-                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-center">
-                            <span class="block text-[10px] font-bold text-gray-500 uppercase">Tổng bảng xếp hạng</span>
-                            <span class="block mt-1 text-lg font-extrabold text-blue-600">100+</span>
+                        <!-- Tổng bảng xếp hạng -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">BXH</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">100+</span>
+                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">đã cập nhật</span>
                         </div>
                     </div>
 
@@ -237,7 +247,7 @@
                                         @endif
                                         <span class="text-sm font-bold text-gray-800 group-hover:text-[#8C1E1E] transition truncate">{{ $ranking['name'] }}</span>
                                     </div>
-                                    <span class="text-[10px] text-gray-500 shrink-0 ml-2">Cập nhật: {{ $today }}</span>
+                                    <span class="text-[12px] text-gray-500 shrink-0 ml-2">Cập nhật: {{ $today }}</span>
                                 </a>
                             @endforeach
                         </div>
@@ -252,7 +262,7 @@
          SECTION 3: 3 CỘT PHÂN LOẠI (Theo ĐP / Nhóm số đẹp / Đầu số)
     ═══════════════════════════════════════════════════════════════ --}}
     <section class="bg-white">
-        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <div class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8 py-6 md:py-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
 
                 {{-- Cột 1: Theo Địa phương --}}
@@ -290,9 +300,9 @@
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-extrabold text-gray-900">Theo đầu số xe</h3>
                     </div>
-                    <div class="flex flex-wrap gap-1.5 max-h-72 overflow-y-auto pr-1" style="scrollbar-width: thin;">
+                    <div class="flex flex-wrap gap-1.5 pr-1">
                         @foreach($seriesList as $series)
-                            <a href="{{ url('/top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat') }}" class="px-2.5 py-1.5 bg-gray-50 border border-gray-200 text-xs font-bold text-gray-600 rounded-lg hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">
+                            <a href="{{ url('/top-bien-so-dep-dau-so-' . strtolower($series) . '-dat-nhat') }}" class="px-2.5 py-1.5 bg-white border border-gray-200 text-xs font-bold text-gray-600 rounded hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">
                                 {{ $series }}
                             </a>
                         @endforeach
@@ -306,7 +316,7 @@
     {{-- ═══════════════════════════════════════════════════════════════
          SECTION 4: DANH SÁCH TOÀN BỘ TỈNH THÀNH
     ═══════════════════════════════════════════════════════════════ --}}
-    <section class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+    <section class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8 py-6 md:py-8">
         <div class="flex items-center justify-between mb-5">
             <h2 class="text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">Bảng xếp hạng theo tỉnh thành</h2>
         </div>
@@ -323,7 +333,7 @@
          SECTION 5: CTA TRA CỨU BIỂN SỐ
     ═══════════════════════════════════════════════════════════════ --}}
     <section class="bg-[#111827] border-t border-gray-800">
-        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+        <div class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8 py-8 md:py-10">
             <div class="max-w-2xl mx-auto text-center">
                 <h2 class="text-2xl font-extrabold text-white sm:text-3xl tracking-tight">
                     Bạn muốn biết biển số của mình có giá trị thế nào?

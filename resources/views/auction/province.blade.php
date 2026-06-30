@@ -815,13 +815,13 @@
                         @endphp
                         @foreach($faqs as $i => $faq)
                             <div class="py-2.5">
-                                <button type="button" @click="activeFaq = activeFaq === {{ $i }} ? null : {{ $i }}" class="flex w-full items-center justify-between text-left text-xs sm:text-sm font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
+                                <button type="button" @click="activeFaq = activeFaq === {{ $i }} ? null : {{ $i }}" class="flex w-full items-center justify-between text-left text-[14px] font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
                                     <span>{{ $faq['q'] }}</span>
                                     <svg class="h-3.5 w-3.5 text-gray-400 transform transition-transform duration-200" :class="activeFaq === {{ $i }} ? 'rotate-180 text-[#8C1E1E]' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
-                                <div x-show="activeFaq === {{ $i }}" x-transition.opacity.duration.200ms class="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed text-justify">
+                                <div x-show="activeFaq === {{ $i }}" x-transition.opacity.duration.200ms class="mt-2 text-[14px] text-gray-600 leading-relaxed text-justify">
                                     {{ $faq['a'] }}
                                 </div>
                             </div>

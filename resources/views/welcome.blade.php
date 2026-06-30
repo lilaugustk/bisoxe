@@ -307,7 +307,7 @@
 
         <!-- 3. Landing Hero Section (Chứa H1 chuẩn SEO hiển thị và Ô tìm kiếm cùng Trust Signals) -->
         <section class="relative bg-white py-6 md:py-8 border-b border-gray-100">
-            <div class="relative z-10 mx-auto max-w-[1440px] px-4 text-center sm:px-6 lg:px-8">
+            <div class="relative z-10 mx-auto max-w-[1440px] px-[10px] text-center sm:px-6 lg:px-8">
                 <!-- H1 và Subtitle -->
                 <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-[32px]">
                     {!! $heroH1Html !!}
@@ -916,18 +916,18 @@
         --}}
 
         <!-- Section bảng xếp hạng nổi bật thay thế tạm thời -->
-        <section id="ranking-preview-section" class="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8">
+        <section id="ranking-preview-section" class="mx-auto max-w-[1440px] px-[10px] py-6 sm:py-12 sm:px-6 lg:px-8">
             <header class="mb-8 text-center sm:text-left">
-                <h2 class="text-2xl font-extrabold tracking-tight text-gray-900 lg:text-3xl">
+                <h2 class="text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl lg:text-3xl">
                     Bảng Xếp Hạng Biển Số Đẹp Nổi Bật
                 </h2>
-                <p class="mt-2 text-sm text-gray-500">Khám phá các phân tích chuyên sâu và bảng xếp hạng biển số xe trúng đấu giá có giá trị cao nhất.</p>
+                <p class="mt-2 text-xs sm:text-sm text-gray-500">Khám phá các phân tích chuyên sâu và bảng xếp hạng biển số xe trúng đấu giá có giá trị cao nhất.</p>
             </header>
 
-            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Card 1: Top 100 Biển Số Đắt Nhất Việt Nam -->
                 <a href="{{ url('/top-100-bien-so-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0B1528] via-[#122A54] to-[#08101E] flex flex-col items-center justify-center p-4 text-center">
+                    <div class="relative aspect-[21/9] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0B1528] via-[#122A54] to-[#08101E] flex flex-col items-center justify-center p-4 text-center">
                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                         <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">TOP 100</span>
                         <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Đắt Nhất Việt Nam</span>
@@ -939,7 +939,7 @@
 
                 <!-- Card 2: Top Biển Số Ngũ Quý Đắt Nhất -->
                 <a href="{{ url('/top-bien-so-ngu-quy-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#031B18] via-[#083D36] to-[#031513] flex flex-col items-center justify-center p-4 text-center">
+                    <div class="relative aspect-[21/9] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#031B18] via-[#083D36] to-[#031513] flex flex-col items-center justify-center p-4 text-center">
                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                         <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">NGŨ QUÝ</span>
                         <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Siêu Biển Ngũ Quý</span>
@@ -951,7 +951,7 @@
 
                 <!-- Card 3: Top Biển Số Tứ Quý Đắt Nhất -->
                 <a href="{{ url('/top-bien-so-tu-quy-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0B1220] via-[#1A2E4C] to-[#0A0F1A] flex flex-col items-center justify-center p-4 text-center">
+                    <div class="relative aspect-[21/9] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0B1220] via-[#1A2E4C] to-[#0A0F1A] flex flex-col items-center justify-center p-4 text-center">
                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                         <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">TỨ QUÝ</span>
                         <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Đẳng Cấp Tứ Quý</span>
@@ -963,7 +963,7 @@
 
                 <!-- Card 4: Biển Thần Tài Đắt Nhất -->
                 <a href="{{ url('/top-bien-so-than-tai-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1F0707] via-[#4A0E0E] to-[#120404] flex flex-col items-center justify-center p-4 text-center">
+                    <div class="relative aspect-[21/9] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1F0707] via-[#4A0E0E] to-[#120404] flex flex-col items-center justify-center p-4 text-center">
                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                         <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">THẦN TÀI</span>
                         <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Thần Tài Gõ Cửa</span>
@@ -975,7 +975,7 @@
 
                 <!-- Card 5: Biển Lộc Phát Đắt Nhất -->
                 <a href="{{ url('/top-bien-so-loc-phat-dat-nhat-viet-nam') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1E1103] via-[#442807] to-[#140B02] flex flex-col items-center justify-center p-4 text-center">
+                    <div class="relative aspect-[21/9] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1E1103] via-[#442807] to-[#140B02] flex flex-col items-center justify-center p-4 text-center">
                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                         <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">LỘC PHÁT</span>
                         <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Phát Tài Lộc Phát</span>
@@ -987,7 +987,7 @@
 
                 <!-- Card 6: Biển Số Đẹp Dưới 1 Tỷ Đồng -->
                 <a href="{{ url('/top-bien-so-dep-gia-duoi-1-ty-dong') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1E293B] to-[#334155] flex flex-col items-center justify-center p-4 text-center">
+                    <div class="relative aspect-[21/9] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1E293B] to-[#334155] flex flex-col items-center justify-center p-4 text-center">
                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                         <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">DƯỚI 1 TỶ</span>
                         <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Tầm Giá Hợp Lý</span>
@@ -999,7 +999,7 @@
 
                 <!-- Card 7: Top Siêu Biển Giá Trên 10 Tỷ -->
                 <a href="{{ url('/top-sieu-bien-so-gia-trung-tren-10-ty-dong') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#3d081e] via-[#611234] to-[#250311] flex flex-col items-center justify-center p-4 text-center">
+                    <div class="relative aspect-[21/9] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#3d081e] via-[#611234] to-[#250311] flex flex-col items-center justify-center p-4 text-center">
                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                         <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">TRÊN 10 TỶ</span>
                         <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Siêu Biển Vô Giá</span>
@@ -1011,7 +1011,7 @@
 
                 <!-- Card 8: Biển Số Đắt Nhất Năm 2026 -->
                 <a href="{{ url('/top-bien-so-dat-nhat-nam-2026') }}" class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0F0D1C] via-[#231F42] to-[#0A0912] flex flex-col items-center justify-center p-4 text-center">
+                    <div class="relative aspect-[21/9] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0F0D1C] via-[#231F42] to-[#0A0912] flex flex-col items-center justify-center p-4 text-center">
                         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none"></div>
                         <span class="text-[11px] font-extrabold tracking-widest text-white/80 uppercase mb-1">NĂM 2026</span>
                         <span class="text-sm sm:text-base font-black text-white tracking-wider uppercase leading-tight filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Kỷ Lục 2026</span>
@@ -1022,21 +1022,21 @@
                 </a>
             </div>
 
-            <div class="mt-10 text-center">
-                <a href="{{ url('/top') }}" class="inline-flex items-center justify-center rounded-xl bg-[#8C1E1E] px-8 py-3.5 text-sm font-bold text-white shadow-md transition duration-200 hover:bg-[#731919]">
-                    Xem Tất Cả Phân Tích & Bảng Xếp Hạng →
+            <div class="mt-6 sm:mt-10 text-center">
+                <a href="{{ url('/top') }}" class="inline-flex items-center justify-center rounded-xl bg-[#8C1E1E] px-5 py-2.5 sm:px-8 sm:py-3.5 text-xs sm:text-sm font-bold text-white shadow-md transition duration-200 hover:bg-[#731919]">
+                    Xem Tất Cả Phân Tích & Bảng Xếp Hạng
                 </a>
             </div>
         </section>
 
         <!-- 5. SEO Text Section -->
-        <section id="y-nghia-bien-so" class="scroll-mt-20 border-t border-b border-gray-200 bg-white py-16">
-            <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
-                <header class="mb-12 text-center">
-                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
+        <section id="y-nghia-bien-so" class="scroll-mt-20 border-t border-b border-gray-200 bg-white py-8 sm:py-16">
+            <div class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8">
+                <header class="mb-6 sm:mb-12 text-center">
+                    <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
                         {{ $seoHeading }}
                     </h2>
-                    <p class="mt-2 text-gray-500">
+                    <p class="mt-2 text-xs sm:text-sm text-gray-500">
                         {{ $seoSubheading }}
                     </p>
                 </header>
@@ -1046,52 +1046,52 @@
                         {{ $seoParagraph }}
                     </p>
 
-                    <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                            <h3 class="mb-1 text-base font-bold text-gray-900">Số 0 - Khởi đầu / Vô hạn</h3>
-                            <p class="text-xs sm:text-sm">
+                    <div class="mt-6 space-y-4 divide-y divide-gray-100">
+                        <div class="pt-3 first:pt-0">
+                            <h3 class="text-sm font-bold text-gray-900">Số 0 - Khởi đầu / Vô hạn</h3>
+                            <p class="mt-1 text-xs text-gray-600">
                                 Tượng trưng cho sự khai sinh, khởi đầu hoàn toàn mới. Thể hiện sự viên mãn khép kín và năng lượng vô tận của vũ trụ.
                             </p>
                         </div>
-                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                            <h3 class="mb-1 text-base font-bold text-gray-900">Số 1 - Nhất / Sinh tồn</h3>
-                            <p class="text-xs sm:text-sm">
+                        <div class="pt-3">
+                            <h3 class="text-sm font-bold text-gray-900">Số 1 - Nhất / Sinh tồn</h3>
+                            <p class="mt-1 text-xs text-gray-600">
                                 Đại diện cho vị trí độc tôn, vị thế dẫn đầu. Số 1 mang năng lượng của sự sinh sôi nảy nở, bản lĩnh tiên phong.
                             </p>
                         </div>
-                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                            <h3 class="mb-1 text-base font-bold text-gray-900">Số 2 - Mãi mãi / Song hỷ</h3>
-                            <p class="text-xs sm:text-sm">
+                        <div class="pt-3">
+                            <h3 class="text-sm font-bold text-gray-900">Số 2 - Mãi mãi / Song hỷ</h3>
+                            <p class="mt-1 text-xs text-gray-600">
                                 Tượng trưng cho sự cân bằng âm dương, sự gắn kết bền vững. Mang ý nghĩa hạnh phúc, may mắn nhân đôi.
                             </p>
                         </div>
-                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                            <h3 class="mb-1 text-base font-bold text-gray-900">Số 3 - Tài lộc / Vững chãi</h3>
-                            <p class="text-xs sm:text-sm">
+                        <div class="pt-3">
+                            <h3 class="text-sm font-bold text-gray-900">Số 3 - Tài lộc / Vững chãi</h3>
+                            <p class="mt-1 text-xs text-gray-600">
                                 Đại diện cho tài lộc dồi dào và sự kiên định, vững chãi như kiềng ba chân. Giúp gia cố năng lượng kinh doanh.
                             </p>
                         </div>
-                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                            <h3 class="mb-1 text-base font-bold text-gray-900">Số 5 - Ngũ hành / Cân bằng</h3>
-                            <p class="text-xs sm:text-sm">
+                        <div class="pt-3">
+                            <h3 class="text-sm font-bold text-gray-900">Số 5 - Ngũ hành / Cân bằng</h3>
+                            <p class="mt-1 text-xs text-gray-600">
                                 Con số trung tâm tượng trưng cho thuyết Ngũ hành (Kim - Mộc - Thủy - Hỏa - Thổ) đem đến sự hòa hợp toàn diện.
                             </p>
                         </div>
-                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                            <h3 class="mb-1 text-base font-bold text-gray-900">Số 6 - Lộc tài / Thịnh vượng</h3>
-                            <p class="text-xs sm:text-sm">
+                        <div class="pt-3">
+                            <h3 class="text-sm font-bold text-gray-900">Số 6 - Lộc tài / Thịnh vượng</h3>
+                            <p class="mt-1 text-xs text-gray-600">
                                 Theo phát âm Hán Việt (Lục gần với Lộc), đây là con số cực tốt đại diện cho tiền tài dồi dào, thuận buồm xuôi gió.
                             </p>
                         </div>
-                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                            <h3 class="mb-1 text-base font-bold text-gray-900">Số 8 - Phát đạt / Thành công</h3>
-                            <p class="text-xs sm:text-sm">
+                        <div class="pt-3">
+                            <h3 class="text-sm font-bold text-gray-900">Số 8 - Phát đạt / Thành công</h3>
+                            <p class="mt-1 text-xs text-gray-600">
                                 Phát âm (Bát gần với Phát), là số đẹp nhất đại diện cho sự phát tài, phát lộc, vinh hoa phú quý trường tồn.
                             </p>
                         </div>
-                        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                            <h3 class="mb-1 text-base font-bold text-gray-900">Số 9 - Vĩnh cửu / Quyền lực</h3>
-                            <p class="text-xs sm:text-sm">
+                        <div class="pt-3">
+                            <h3 class="text-sm font-bold text-gray-900">Số 9 - Vĩnh cửu / Quyền lực</h3>
+                            <p class="mt-1 text-xs text-gray-600">
                                 Con số tối thượng (Cửu) tượng trưng cho tuổi thọ dài lâu, quyền quý đỉnh cao, vạn sự hanh thông bền vững.
                             </p>
                         </div>
@@ -1101,39 +1101,43 @@
         </section>
 
         <!-- 6. FAQ Section -->
-        <section id="faq" class="scroll-mt-20 bg-[#F9FAFB] py-16">
-            <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
-                <header class="mb-12 text-center">
-                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
+        <section id="faq" class="scroll-mt-20 bg-[#F9FAFB] py-8 sm:py-16">
+            <div class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8">
+                <header class="mb-6 sm:mb-12 text-center">
+                    <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
                         Câu Hỏi Thường Gặp
                     </h2>
-                    <p class="mt-2 text-gray-500">
+                    <p class="mt-2 text-xs sm:text-sm text-gray-500">
                         Giải đáp thắc mắc phổ biến về ý nghĩa biển số xe
                     </p>
                 </header>
 
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div x-data="{ activeFaq: null }" class="space-y-2 max-w-3xl mx-auto divide-y divide-gray-200/80">
                     <!-- FAQ Item 1 -->
-                    <details class="group rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300">
-                        <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-gray-900 sm:text-base">
+                    <div class="py-3">
+                        <button type="button" @click="activeFaq = activeFaq === 1 ? null : 1" class="flex w-full items-center justify-between text-left text-[14px] font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
                             <span>{{ $faq1Question }}</span>
-                            <span class="text-gray-400 transition group-open:rotate-180">▼</span>
-                        </summary>
-                        <p class="mt-3 text-xs leading-relaxed text-gray-600 sm:text-sm">
+                            <svg class="h-3.5 w-3.5 text-gray-400 transform transition-transform duration-200" :class="activeFaq === 1 ? 'rotate-180 text-[#8C1E1E]' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="activeFaq === 1" x-transition.opacity.duration.200ms class="mt-2 text-[14px] text-gray-600 leading-relaxed text-justify">
                             {{ $faq1Answer }}
-                        </p>
-                    </details>
+                        </div>
+                    </div>
 
                     <!-- FAQ Item 2 -->
-                    <details class="group rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300">
-                        <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-gray-900 sm:text-base">
+                    <div class="py-3">
+                        <button type="button" @click="activeFaq = activeFaq === 2 ? null : 2" class="flex w-full items-center justify-between text-left text-[14px] font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
                             <span>{{ $faq2Question }}</span>
-                            <span class="text-gray-400 transition group-open:rotate-180">▼</span>
-                        </summary>
-                        <p class="mt-3 text-xs leading-relaxed text-gray-600 sm:text-sm">
+                            <svg class="h-3.5 w-3.5 text-gray-400 transform transition-transform duration-200" :class="activeFaq === 2 ? 'rotate-180 text-[#8C1E1E]' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="activeFaq === 2" x-transition.opacity.duration.200ms class="mt-2 text-[14px] text-gray-600 leading-relaxed text-justify">
                             {{ $faq2Answer }}
-                        </p>
-                    </details>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
