@@ -136,7 +136,7 @@
                 <div class="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-[#F5B800]/5 to-transparent blur-3xl"></div>
             </div>
 
-            <div class="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+            <div class="relative mx-auto max-w-4xl px-[10px] text-center sm:px-6 lg:px-8">
                 <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
                     {{ $heroH1 }}
                 </h1>
@@ -148,7 +148,7 @@
         </section>
 
         <!-- Main Body -->
-        <section id="table-section" class="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8">
+        <section id="table-section" class="mx-auto max-w-[1440px] px-[10px] py-6 sm:py-12 sm:px-6 lg:px-8">
             <!-- Filter Controls -->
             <div class="mb-8 w-full space-y-4">
                 <!-- Search & Advanced Filter Button -->
@@ -186,11 +186,12 @@
                 </div>
 
                 <!-- Advanced Filters -->
-                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 p-5 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                        <!-- Tỉnh thành dropdown -->
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 w-full sm:w-auto">
-                            <span class="text-sm font-bold text-gray-700 w-20 sm:w-auto shrink-0">Tỉnh thành</span>
+                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-5 p-4 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
+                    <!-- Responsive Grid for Inputs -->
+                    <div class="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:items-center sm:gap-6">
+                        <!-- Tỉnh thành dropdown (Full-width on mobile, auto on desktop) -->
+                        <div class="col-span-2 flex flex-col gap-1.5 w-full sm:w-auto">
+                            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
                             <div x-data="{ 
                                 open: false, 
                                 searchQuery: '',
@@ -224,45 +225,74 @@
                             </div>
                         </div>
 
-                        <!-- Chữ cái dropdown -->
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 w-full sm:w-auto">
-                            <span class="text-sm font-bold text-gray-700 w-20 sm:w-auto shrink-0">Chữ cái</span>
-                            <select x-model="letter" @change="submitForm(true)" class="w-full sm:w-40 rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-semibold text-gray-700 focus:border-[#8C1E1E] focus:outline-none focus:ring-0">
-                                <option value="">Tất cả</option>
-                                @foreach($uniqueLetters as $l)
-                                    <option value="{{ $l }}">{{ $l }}</option>
-                                @endforeach
-                            </select>
+                        <!-- Chữ cái dropdown (Half-width on mobile, auto on desktop) -->
+                        <div class="col-span-1 flex flex-col gap-1.5 w-full sm:w-auto">
+                            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Chữ cái</span>
+                            <div x-data="{ 
+                                open: false,
+                                get selectedLetterName() {
+                                    return letter ? letter : 'Tất cả';
+                                }
+                            }" class="relative w-full sm:w-40">
+                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
+                                    <span x-text="selectedLetterName"></span>
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.outside="open = false" class="absolute left-0 z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                                    <div class="space-y-0.5">
+                                        <button type="button" @click="letter = ''; open = false; submitForm(true);" class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold hover:bg-gray-50 text-gray-700">Tất cả</button>
+                                        @foreach($uniqueLetters as $l)
+                                            <button type="button" @click="letter = '{{ $l }}'; open = false; submitForm(true);" class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold hover:bg-gray-50" :class="letter === '{{ $l }}' ? 'bg-[#8C1E1E]/5 text-[#8C1E1E]' : 'text-gray-700'">{{ $l }}</button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Row 2: Số nút & Số cuối -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 w-full sm:w-auto">
-                            <span class="text-sm font-bold text-gray-700 w-20 sm:w-auto shrink-0">Số nút (0-9)</span>
-                            <select x-model="numButtons" @change="submitForm(true)" class="w-full sm:w-40 rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-semibold text-gray-700 focus:border-[#8C1E1E] focus:outline-none focus:ring-0">
-                                <option value="">Tất cả</option>
-                                @for($i = 0; $i <= 9; $i++)
-                                    <option value="{{ $i }}">{{ $i }} nút</option>
-                                @endfor
-                            </select>
+                        <!-- Số nút dropdown (Half-width on mobile, auto on desktop) -->
+                        <div class="col-span-1 flex flex-col gap-1.5 w-full sm:w-auto">
+                            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số nút (0-9)</span>
+                            <div x-data="{ 
+                                open: false,
+                                get selectedNumButtonsName() {
+                                    return (numButtons !== '' && numButtons !== null && numButtons !== undefined) ? numButtons + ' nút' : 'Tất cả';
+                                }
+                            }" class="relative w-full sm:w-40">
+                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
+                                    <span x-text="selectedNumButtonsName"></span>
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.outside="open = false" class="absolute left-0 z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                                    <div class="space-y-0.5">
+                                        <button type="button" @click="numButtons = ''; open = false; submitForm(true);" class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold hover:bg-gray-50 text-gray-700">Tất cả</button>
+                                        @for($i = 0; $i <= 9; $i++)
+                                            <button type="button" @click="numButtons = '{{ $i }}'; open = false; submitForm(true);" class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold hover:bg-gray-50" :class="String(numButtons) === '{{ $i }}' ? 'bg-[#8C1E1E]/5 text-[#8C1E1E]' : 'text-gray-700'">{{ $i }} nút</button>
+                                        @endfor
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 w-full sm:w-auto">
-                            <span class="text-sm font-bold text-gray-700 w-20 sm:w-auto shrink-0">Số cuối</span>
+                        <!-- Số cuối input (Full-width on mobile, auto on desktop) -->
+                        <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5 w-full sm:w-auto">
+                            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số cuối</span>
                             <input type="text" x-model="lastDigits" @keyup.enter="submitForm(true)" placeholder="Ví dụ: 88, 79" class="w-full sm:w-40 rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-semibold text-gray-700 placeholder-gray-400 focus:border-[#8C1E1E] focus:outline-none focus:ring-0" />
                         </div>
                     </div>
 
                     <!-- Row 3: Loại biển -->
-                    <div class="flex flex-col gap-2">
-                        <span class="text-sm font-bold text-gray-700">Loại biển số đẹp</span>
-                        <div class="flex flex-wrap gap-2">
-                            <button type="button" @click="kind = ''; submitForm(true);" class="rounded-xl px-4 py-2 text-xs font-bold transition border" :class="!kind ? 'bg-[#8C1E1E] border-[#8C1E1E] text-white' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Loại biển số đẹp</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button type="button" @click="kind = ''; submitForm(true);" class="rounded-lg px-3 py-1.5 text-xs font-semibold transition border" :class="!kind ? 'bg-[#8C1E1E] border-[#8C1E1E] text-white' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
                                 Tất cả biển
                             </button>
                             @foreach($uniqueKinds as $k)
-                                <button type="button" @click="kind = '{{ $k['id'] }}'; submitForm(true);" class="rounded-xl px-4 py-2 text-xs font-bold transition border" :class="String(kind) === '{{ $k['id'] }}' ? 'bg-[#8C1E1E] border-[#8C1E1E] text-white' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
+                                <button type="button" @click="kind = '{{ $k['id'] }}'; submitForm(true);" class="rounded-lg px-3 py-1.5 text-xs font-semibold transition border" :class="String(kind) === '{{ $k['id'] }}' ? 'bg-[#8C1E1E] border-[#8C1E1E] text-white' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
                                     {{ $k['name'] }}
                                 </button>
                             @endforeach
@@ -270,19 +300,19 @@
                     </div>
 
                     <!-- Reset & Submit Row -->
-                    <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-                        <button type="button" @click="clearAllFilters()" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-gray-800 transition">Xóa bộ lọc</button>
-                        <button type="button" @click="submitForm(true)" class="rounded-xl bg-[#8C1E1E] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#731919] transition">Áp dụng</button>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" @click="clearAllFilters()" class="flex-1 sm:flex-none text-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition">Xóa bộ lọc</button>
+                        <button type="button" @click="submitForm(true)" class="flex-1 sm:flex-none text-center rounded-xl bg-[#8C1E1E] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#731919] transition">Áp dụng</button>
                     </div>
                 </div>
             </div>
 
             <!-- Vehicle Type Selector -->
-            <div class="mb-6 flex gap-3 overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
+            <div class="mb-6 flex gap-2 sm:gap-3 w-full pb-1">
                 <button
                     type="button"
                     @click="changeVehicle('car')"
-                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
+                    class="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold shadow-sm transition duration-200"
                     :class="vehicle === 'car' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
                 >
                     Biển số xe ô tô
@@ -290,15 +320,15 @@
                 <button
                     type="button"
                     @click="changeVehicle('motorcycle')"
-                    class="flex shrink-0 items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-sm transition duration-200 sm:text-sm"
+                    class="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold shadow-sm transition duration-200"
                     :class="vehicle === 'motorcycle' ? 'border-[#8C1E1E] bg-[#8C1E1E] text-white' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
                 >
-                    Biển số xe máy, mô tô
+                    Biển xe máy, mô tô
                 </button>
             </div>
 
             <!-- Tab Switcher -->
-            <div class="flex items-center gap-1 overflow-x-auto border-b border-gray-200 pb-px mb-6">
+            <div class="flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-none border-b border-gray-200 pb-px mb-6">
                 <button
                     type="button"
                     @click="tab = 'announce'; submitForm(true);"
@@ -326,9 +356,9 @@
             </div>
 
             <!-- Header of Data Table -->
-            <div class="mb-4 flex items-center justify-between">
-                <h2 class="text-xl font-extrabold text-gray-900">{{ $tableTitle }}</h2>
-                <span class="text-xs font-bold text-gray-500">Tìm thấy {{ number_format($plates['total'], 0, ',', '.') }} biển số</span>
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <h2 class="text-lg sm:text-xl font-extrabold text-gray-900">{{ $tableTitle }}</h2>
+                <span class="text-xs text-gray-500">Tìm thấy {{ number_format($plates['total'], 0, ',', '.') }} biển số</span>
             </div>
 
             <!-- Data Table / Grid -->
@@ -399,7 +429,7 @@
                                     <span class="flex h-5 w-5 items-center justify-center rounded bg-gray-50 text-[10px] font-bold text-gray-600">
                                         #{{ $index + 1 + ($paginator->currentPage() - 1) * $paginator->perPage() }}
                                     </span>
-                                    <span class="font-bold text-gray-800">
+                                    <span class="text-gray-800">
                                         {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
                                     </span>
                                 </div>
@@ -444,7 +474,7 @@
                                     href="/bien-so-{{ $plate['slug'] }}"
                                     class="flex w-full items-center justify-center rounded-xl border border-[#8C1E1E] bg-red-50/20 py-2.5 text-xs font-bold text-[#8C1E1E] shadow-xs transition hover:bg-[#8C1E1E] hover:text-white"
                                 >
-                                    Phân tích chi tiết biển số →
+                                    Phân tích chi tiết biển số
                                 </a>
                             </div>
                         </div>
