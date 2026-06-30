@@ -123,8 +123,8 @@
                         </div>
                         <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">
                             <div>
-                                <span class="block text-base font-extrabold text-blue-600">{{ $trustStats['total_plates'] }}+</span>
-                                <span class="block text-[11px] text-gray-500">Biển số trong dữ liệu</span>
+                                <span class="block text-base font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}+</span>
+                                <span class="block text-[11px] text-gray-500">Kết quả đấu giá</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-3 border-l-4 border-blue-600 pl-3">

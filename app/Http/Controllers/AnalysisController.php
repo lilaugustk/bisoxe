@@ -18,11 +18,13 @@ class AnalysisController extends Controller
     {
         return Cache::remember('analysis_trust_stats_v2', 3600, function () {
             $totalPlates = LicensePlate::count();
+            $totalCompleted = LicensePlate::where('status', 'completed')->count();
             $totalWinningPrice = LicensePlate::where('status', 'completed')->sum('winning_price');
             $totalProvinces = Province::count();
             
             return [
                 'total_plates' => number_format($totalPlates, 0, ',', '.'),
+                'total_completed' => number_format($totalCompleted, 0, ',', '.'),
                 'total_value_billion' => number_format(round($totalWinningPrice / 1000000000, 0), 0, ',', '.'),
                 'total_provinces' => $totalProvinces,
             ];
