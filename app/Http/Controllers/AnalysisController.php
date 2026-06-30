@@ -16,7 +16,7 @@ class AnalysisController extends Controller
      */
     private function getTrustStats()
     {
-        return Cache::remember('analysis_trust_stats_v2', 3600, function () {
+        return Cache::remember('analysis_trust_stats_v3', 3600, function () {
             $totalPlates = LicensePlate::count();
             $totalCompleted = LicensePlate::where('status', 'completed')->count();
             $totalWinningPrice = LicensePlate::where('status', 'completed')->sum('winning_price');
