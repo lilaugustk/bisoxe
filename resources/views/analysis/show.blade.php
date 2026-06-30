@@ -414,7 +414,7 @@
                         <div class="space-y-[15px]">
                             <!-- Phân bố giá -->
                             <div class="space-y-3">
-                                <h4 class="font-bold text-gray-900 text-sm">Phân bố giá trong Top</h4>
+                                <h3 class="font-bold text-gray-900 text-sm">Phân bố giá trong Top</h3>
                                 <div class="overflow-hidden rounded-lg">
                                     <table class="min-w-full border-collapse border border-gray-200/60 text-xs text-gray-800">
                                         <thead class="bg-gray-50 font-bold text-gray-700">
@@ -437,13 +437,13 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <p class="text-xs text-gray-400 italic">Dữ liệu phân tích dựa trên cấu trúc giá của các biển số hiện hữu.</p>
+                                <p class="text-xs text-gray-500 italic">Dữ liệu phân tích dựa trên cấu trúc giá của các biển số hiện hữu.</p>
                             </div>
 
                             <!-- Địa phương có nhiều biển giá trị nhất -->
                             @if(count($topProvinces) > 1)
                             <div class="space-y-[15px]">
-                                <h4 class="font-bold text-gray-900 text-sm">Địa phương có nhiều biển số giá trị cao</h4>
+                                <h3 class="font-bold text-gray-900 text-sm">Địa phương có nhiều biển số giá trị cao</h3>
                                 <div class="overflow-hidden rounded-lg">
                                     <table class="min-w-full border-collapse border border-gray-200/60 text-xs text-gray-800">
                                         <thead class="bg-gray-50 font-bold text-gray-700">
@@ -468,7 +468,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <p class="text-xs text-gray-400 italic">Thống kê 5 tỉnh thành dẫn đầu trong danh sách bảng xếp hạng.</p>
+                                <p class="text-xs text-gray-500 italic">Thống kê 5 tỉnh thành dẫn đầu trong danh sách bảng xếp hạng.</p>
                             </div>
                             @endif
                         </div>
@@ -503,7 +503,7 @@
                                 <li>Nhóm biển số tiến sẽ tăng trưởng tốt nhờ mức giá tiếp cận hợp lý và thị hiếu ưa chuộng số tiến phát triển.</li>
                                 <li>Đầu số mới tại các đô thị lớn như Hà Nội và TP.HCM tiếp tục là tâm điểm đầu tư của thị trường.</li>
                             </ul>
-                            <p class="text-xs text-gray-400 italic mt-2">Lưu ý: Đây là dự báo mang tính chất tham khảo dựa trên mô hình phân tích dữ liệu, không phải cam kết về mặt giá trị giao dịch thực tế trong tương lai.</p>
+                            <p class="text-xs text-gray-500 italic mt-2">Lưu ý: Đây là dự báo mang tính chất tham khảo dựa trên mô hình phân tích dữ liệu, không phải cam kết về mặt giá trị giao dịch thực tế trong tương lai.</p>
                         </div>
                     </div>
 
@@ -512,25 +512,25 @@
                         <h2 class="text-lg font-bold text-gray-900">Câu hỏi thường gặp</h2>
                         <div class="space-y-[15px]">
                             <div>
-                                <h4 class="font-bold text-gray-900 text-sm mb-1">Biển số nào hiện có giá đấu cao nhất Việt Nam?</h4>
+                                <h3 class="font-bold text-gray-900 text-sm mb-1">Biển số nào hiện có giá đấu cao nhất Việt Nam?</h3>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Hiện tại, biển số có giá trúng đấu giá cao nhất Việt Nam trong hệ thống là <strong class="text-[#8C1E1E]">{{ $highestPlateOverall ? $highestPlateOverall->display_number : '' }}</strong> với mức giá kỷ lục là <strong class="text-gray-900">{{ $highestPlateOverall ? $formatMoney($highestPlateOverall->winning_price) : 'Đang cập nhật' }}</strong>.
                                 </p>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-900 text-sm mb-1">Bảng xếp hạng được cập nhật bao lâu một lần?</h4>
+                                <h3 class="font-bold text-gray-900 text-sm mb-1">Bảng xếp hạng được cập nhật bao lâu một lần?</h3>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Dữ liệu được đồng bộ hóa tự động ngay sau khi có kết quả đấu giá chính thức từ các phiên đấu giá công khai trên toàn quốc và hoàn tất quy trình đối soát dữ liệu của hệ thống.
                                 </p>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-900 text-sm mb-1">Giá định giá AI có phải giá giao dịch thực tế?</h4>
+                                <h3 class="font-bold text-gray-900 text-sm mb-1">Giá định giá AI có phải giá giao dịch thực tế?</h3>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Không. Mức giá AI là ước tính dựa trên dữ liệu thống kê, lịch sử đấu giá các biển số tương đồng và thuật toán phân tích xu hướng. Giá trị giao dịch thực tế có thể biến động tùy thuộc vào thỏa thuận trực tiếp và cung cầu thị trường.
                                 </p>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-900 text-sm mb-1">Làm sao để biết biển số của tôi có nằm trong Top?</h4>
+                                <h3 class="font-bold text-gray-900 text-sm mb-1">Làm sao để biết biển số của tôi có nằm trong Top?</h3>
                                 <p class="text-sm text-gray-600 leading-relaxed text-justify">
                                     Bạn chỉ cần nhập biển số vào công cụ định giá để xem thứ hạng, giá trị ước tính và các biển số tương tự trong hệ thống của chúng tôi.
                                 </p>
