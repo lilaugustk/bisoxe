@@ -369,7 +369,7 @@
                     @if (isset($trustStats))
                         <div class="mx-auto max-w-4xl mt-6 sm:px-0">
                             <div
-                                class="grid grid-cols-2 gap-y-6 gap-x-2 sm:grid-cols-4 bg-transparent border-0 p-0 shadow-none">
+                                class="grid grid-cols-2 gap-y-2 gap-x-2 sm:grid-cols-4 bg-transparent border-0 p-0 shadow-none">
                                 <!-- Biển số đã phân tích -->
                                 <div class="text-center bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                                     <span
@@ -1052,7 +1052,7 @@
                         biển số xe trúng đấu giá có giá trị cao nhất.</p>
                 </header>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                     <!-- Card 1: Top 100 Biển Số Đắt Nhất Việt Nam -->
                     <a href="{{ url('/top-100-bien-so-dat-nhat-viet-nam') }}"
                         class="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">

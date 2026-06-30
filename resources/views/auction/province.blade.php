@@ -180,7 +180,7 @@
 
                 <!-- Box Statistics -->
                 <div class="mx-auto max-w-5xl mt-4 px-4 sm:px-0">
-                    <div class="grid grid-cols-2 gap-y-6 gap-x-2 sm:grid-cols-3 lg:grid-cols-6 bg-transparent border-0 p-0 shadow-none">
+                    <div class="grid grid-cols-2 gap-y-2 gap-x-2 sm:grid-cols-3 lg:grid-cols-6 bg-transparent border-0 p-0 shadow-none">
                         <!-- Column 1 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng biển</span>
@@ -810,7 +810,7 @@
                 </div>
 
                 <!-- Section: FAQ -->
-                <div class="space-y-4">
+                <div class="space-y-2">
                     <h2 class="text-lg font-bold text-gray-900">Câu hỏi thường gặp (FAQ)</h2>
                     <div x-data="{ activeFaq: null }" class="space-y-2">
                         @php
