@@ -14,13 +14,31 @@
     $vehicleLabel = $activeVehicle === 'motorcycle' ? 'Xe Máy' : 'Ô Tô';
     $vehicleLabelLower = $activeVehicle === 'motorcycle' ? 'xe máy' : 'ô tô';
 
-    $pageTitle = "Đấu Giá Biển Số " . $vehicleLabel . " " . $cleanProvinceName . " | Danh Sách Biển Số Xe Đấu Giá Mới Nhất";
-    $pageDescription = "Cập nhật danh sách biển số " . $vehicleLabelLower . " đấu giá tại " . $cleanProvinceName . " mới nhất. Tra cứu biển số đang đấu giá, sắp đấu giá và kết quả đấu giá tại " . $cleanProvinceName . " nhanh chóng, chính xác.";
-    
-    $heroH1 = "Đấu Giá Biển Số " . $vehicleLabel . " " . $cleanProvinceName;
-    $heroSubtitle = "Tra cứu danh sách biển số " . $vehicleLabelLower . " đấu giá tại " . $cleanProvinceName . ", bao gồm biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất.";
+    if ($activeVehicle === 'motorcycle') {
+        $pageTitle = "Danh Sách Biển Số Xe Máy Đấu Giá " . $cleanProvinceName . " Mới Nhất 2026";
+        $pageDescription = "Tra cứu danh sách biển số xe máy đấu giá " . $cleanProvinceName . " được cập nhật liên tục. Xem biển số đang đấu giá, sắp đấu giá, kết quả đấu giá, giá khởi điểm và thống kê thị trường tại " . $cleanProvinceName . ".";
+        $heroH1 = "Danh Sách Biển Số Xe Máy Đấu Giá " . $cleanProvinceName;
+        $heroSubtitle = "Danh sách biển số xe máy đấu giá tại " . $cleanProvinceName;
+    } else {
+        $pageTitle = "Danh Sách Biển Số Xe Đấu Giá " . $cleanProvinceName . " Mới Nhất 2026";
+        $pageDescription = "Tra cứu danh sách biển số xe đấu giá " . $cleanProvinceName . " được cập nhật liên tục. Xem biển số đang đấu giá, sắp đấu giá, kết quả đấu giá, giá khởi điểm và thống kê thị trường tại " . $cleanProvinceName . ".";
+        $heroH1 = "Danh Sách Biển Số Xe Đấu Giá " . $cleanProvinceName;
+    }
 
     $formatMoney = function($value) {
+        return number_format($value, 0, ',', '.') . ' ₫';
+    };
+
+    $formatPriceText = function($value) {
+        if ($value >= 1000000000) {
+            $billion = $value / 1000000000;
+            $formatted = number_format($billion, 2, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' tỷ';
+        } elseif ($value >= 1000000) {
+            $million = $value / 1000000;
+            $formatted = number_format($million, 2, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' triệu';
+        }
         return number_format($value, 0, ',', '.') . ' ₫';
     };
 
@@ -51,6 +69,17 @@
 <div id="global-loading-bar" class="fixed top-0 left-0 right-0 h-1 bg-[#8C1E1E] z-50 transition-all duration-300 opacity-0 pointer-events-none shadow-[0_1px_10px_#8c1e1e]" style="width: 0%;"></div>
 
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
+    <!-- Breadcrumb -->
+    <nav class="bg-white border-b border-gray-200 py-3">
+        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+            <a href="/" class="hover:text-gray-900 shrink-0">Trang chủ</a>
+            <span class="shrink-0 text-gray-400">&gt;</span>
+            <a href="/dau-gia" class="hover:text-gray-900 shrink-0">Đấu giá</a>
+            <span class="shrink-0 text-gray-400">&gt;</span>
+            <span class="text-gray-900 truncate shrink-0 max-w-[180px] sm:max-w-none">{{ $cleanProvinceName }}</span>
+        </div>
+    </nav>
+
     <form id="filter-form" method="GET" @submit.prevent="submitForm(true)" x-data="{
         search: {{ json_encode($search) }},
         province: {{ json_encode($province->code) }},
@@ -129,7 +158,7 @@
         }
     }">
         <!-- Hero Section -->
-        <section class="relative overflow-hidden py-8 sm:py-12 border-b border-gray-100 bg-white">
+        <section class="relative overflow-hidden py-4 sm:py-6 border-b border-gray-100 bg-white">
             <!-- Background Decorative Elements -->
             <div class="absolute inset-0 pointer-events-none opacity-30">
                 <div class="absolute -top-40 -right-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-[#8C1E1E]/10 to-transparent blur-3xl"></div>
@@ -137,37 +166,87 @@
             </div>
 
             <div class="relative mx-auto max-w-4xl px-[10px] text-center sm:px-6 lg:px-8">
-                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-[32px]">
                     {{ $heroH1 }}
                 </h1>
                 
-                <p class="mx-auto mt-3 max-w-xl text-sm sm:text-base text-gray-500 leading-relaxed">
-                    {{ $heroSubtitle }}
+                <p class="mx-auto mt-2 max-w-2xl text-xs text-gray-500 leading-relaxed">
+                    Cập nhật liên tục biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất của {{ mb_strtolower($province->name) }}. Dữ liệu được tổng hợp theo từng phiên đấu giá chính thức.
                 </p>
+
+                <!-- Box Statistics -->
+                <div class="mx-auto max-w-5xl mt-4 px-4 sm:px-0">
+                    <div class="grid grid-cols-2 gap-y-6 gap-x-2 sm:grid-cols-3 lg:grid-cols-6 bg-transparent border-0 p-0 shadow-none">
+                        <!-- Column 1 -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng biển</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                                {{ number_format($provinceStats['total'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <!-- Column 2 -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đang đấu giá</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                                {{ number_format($provinceStats['announced'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <!-- Column 3 -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Sắp đấu giá</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                                {{ number_format($provinceStats['waiting'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <!-- Column 4 -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã đấu giá</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                                {{ number_format($provinceStats['completed'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <!-- Column 5 -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá TB</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                                {{ $formatPriceText($provinceStats['avg_price']) }}
+                            </span>
+                        </div>
+                        <!-- Column 6 -->
+                        <div class="text-center py-2 bg-transparent border-0 shadow-none">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá cao nhất</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                                {{ $formatPriceText($provinceStats['max_price']) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <!-- Main Body -->
-        <section id="table-section" class="mx-auto max-w-[1440px] px-[10px] py-6 sm:py-12 sm:px-6 lg:px-8">
+        <section id="table-section" class="mx-auto max-w-[1440px] px-[10px] py-6 sm:py-10 sm:px-6 lg:px-8">
+
+
             <!-- Filter Controls -->
             <div class="mb-8 w-full space-y-4">
                 <!-- Search & Advanced Filter Button -->
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1.5 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
+                    <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1 sm:p-1.5 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
                         <input
                             type="text"
                             name="search"
                             x-model="search"
                             @keyup.enter="submitForm(true)"
                             placeholder="Nhập biển số cần tìm..."
-                            class="w-full border-0 bg-transparent py-2.5 px-6 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
+                            class="w-full border-0 bg-transparent py-1.5 px-4 sm:py-2.5 sm:px-6 text-xs sm:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
                         />
                         <button
                             type="submit"
-                            class="mr-1 flex h-10 w-10 items-center justify-center rounded-full bg-[#8C1E1E] text-white shadow-md transition duration-200 hover:bg-[#731919] shrink-0"
+                            class="mr-1 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-[#8C1E1E] text-white shadow-md transition duration-200 hover:bg-[#731919] shrink-0"
                             aria-label="Tìm kiếm biển số"
                         >
-                            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <svg class="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </button>
@@ -176,9 +255,9 @@
                     <button
                         type="button"
                         @click="isFiltersExpanded = !isFiltersExpanded"
-                        class="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-bold text-gray-700 shadow-3xs transition duration-200 hover:bg-gray-50 hover:text-gray-900 shrink-0"
+                        class="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-bold text-gray-700 shadow-3xs transition duration-200 hover:bg-gray-50 hover:text-gray-900 shrink-0"
                     >
-                        <svg class="h-4 w-4 text-gray-500 transition-transform duration-200" :class="isFiltersExpanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500 transition-transform duration-200" :class="isFiltersExpanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
                         <span x-text="isFiltersExpanded ? 'Thu gọn bộ lọc' : 'Bộ lọc nâng cao'"></span>
@@ -186,12 +265,12 @@
                 </div>
 
                 <!-- Advanced Filters -->
-                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-5 p-4 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
+                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 p-3 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
                     <!-- Responsive Grid for Inputs -->
-                    <div class="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:items-center sm:gap-6">
+                    <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-6">
                         <!-- Tỉnh thành dropdown (Full-width on mobile, auto on desktop) -->
-                        <div class="col-span-2 flex flex-col gap-1.5 w-full sm:w-auto">
-                            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
+                        <div class="col-span-2 flex flex-col gap-1 w-full sm:w-auto">
+                            <span class="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
                             <div x-data="{ 
                                 open: false, 
                                 searchQuery: '',
@@ -207,9 +286,9 @@
                                     return found ? found.name : 'Tất cả';
                                 }
                             }" class="relative w-full sm:w-64">
-                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
+                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2 sm:px-4 sm:py-2.5 text-left text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
                                     <span x-text="selectedProvinceName"></span>
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
@@ -226,17 +305,17 @@
                         </div>
 
                         <!-- Chữ cái dropdown (Half-width on mobile, auto on desktop) -->
-                        <div class="col-span-1 flex flex-col gap-1.5 w-full sm:w-auto">
-                            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Chữ cái</span>
+                        <div class="col-span-1 flex flex-col gap-1 w-full sm:w-auto">
+                            <span class="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider">Chữ cái</span>
                             <div x-data="{ 
                                 open: false,
                                 get selectedLetterName() {
                                     return letter ? letter : 'Tất cả';
                                 }
                             }" class="relative w-full sm:w-40">
-                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
+                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2 sm:px-4 sm:py-2.5 text-left text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
                                     <span x-text="selectedLetterName"></span>
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
@@ -252,17 +331,17 @@
                         </div>
 
                         <!-- Số nút dropdown (Half-width on mobile, auto on desktop) -->
-                        <div class="col-span-1 flex flex-col gap-1.5 w-full sm:w-auto">
-                            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số nút (0-9)</span>
+                        <div class="col-span-1 flex flex-col gap-1 w-full sm:w-auto">
+                            <span class="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số nút (0-9)</span>
                             <div x-data="{ 
                                 open: false,
                                 get selectedNumButtonsName() {
                                     return (numButtons !== '' && numButtons !== null && numButtons !== undefined) ? numButtons + ' nút' : 'Tất cả';
                                 }
                             }" class="relative w-full sm:w-40">
-                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
+                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2 sm:px-4 sm:py-2.5 text-left text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
                                     <span x-text="selectedNumButtonsName"></span>
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
@@ -278,21 +357,21 @@
                         </div>
 
                         <!-- Số cuối input (Full-width on mobile, auto on desktop) -->
-                        <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5 w-full sm:w-auto">
-                            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số cuối</span>
-                            <input type="text" x-model="lastDigits" @keyup.enter="submitForm(true)" placeholder="Ví dụ: 88, 79" class="w-full sm:w-40 rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-semibold text-gray-700 placeholder-gray-400 focus:border-[#8C1E1E] focus:outline-none focus:ring-0" />
+                        <div class="col-span-2 sm:col-span-1 flex flex-col gap-1 w-full sm:w-auto">
+                            <span class="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số cuối</span>
+                            <input type="text" x-model="lastDigits" @keyup.enter="submitForm(true)" placeholder="Ví dụ: 88, 79" class="w-full sm:w-40 rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-gray-700 placeholder-gray-400 focus:border-[#8C1E1E] focus:outline-none focus:ring-0" />
                         </div>
                     </div>
 
                     <!-- Row 3: Loại biển -->
-                    <div class="flex flex-col gap-1.5">
-                        <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Loại biển số đẹp</span>
-                        <div class="flex flex-wrap gap-1.5">
-                            <button type="button" @click="kind = ''; submitForm(true);" class="rounded-lg px-3 py-1.5 text-xs font-semibold transition border" :class="!kind ? 'bg-[#8C1E1E] border-[#8C1E1E] text-white' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider">Loại biển số đẹp</span>
+                        <div class="flex flex-wrap gap-1">
+                            <button type="button" @click="kind = ''; submitForm(true);" class="rounded-lg px-2.5 py-1 sm:px-3 sm:py-1.5 text-[11px] sm:text-xs font-semibold transition border" :class="!kind ? 'bg-[#8C1E1E] border-[#8C1E1E] text-white' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
                                 Tất cả biển
                             </button>
                             @foreach($uniqueKinds as $k)
-                                <button type="button" @click="kind = '{{ $k['id'] }}'; submitForm(true);" class="rounded-lg px-3 py-1.5 text-xs font-semibold transition border" :class="String(kind) === '{{ $k['id'] }}' ? 'bg-[#8C1E1E] border-[#8C1E1E] text-white' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
+                                <button type="button" @click="kind = '{{ $k['id'] }}'; submitForm(true);" class="rounded-lg px-2.5 py-1 sm:px-3 sm:py-1.5 text-[11px] sm:text-xs font-semibold transition border" :class="String(kind) === '{{ $k['id'] }}' ? 'bg-[#8C1E1E] border-[#8C1E1E] text-white' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
                                     {{ $k['name'] }}
                                 </button>
                             @endforeach
@@ -300,9 +379,9 @@
                     </div>
 
                     <!-- Reset & Submit Row -->
-                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                        <button type="button" @click="clearAllFilters()" class="flex-1 sm:flex-none text-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition">Xóa bộ lọc</button>
-                        <button type="button" @click="submitForm(true)" class="flex-1 sm:flex-none text-center rounded-xl bg-[#8C1E1E] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#731919] transition">Áp dụng</button>
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                        <button type="button" @click="clearAllFilters()" class="flex-1 sm:flex-none text-center rounded-xl border border-gray-200 bg-white px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition">Xóa bộ lọc</button>
+                        <button type="button" @click="submitForm(true)" class="flex-1 sm:flex-none text-center rounded-xl bg-[#8C1E1E] px-4 py-2 sm:px-6 sm:py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#731919] transition">Áp dụng</button>
                     </div>
                 </div>
             </div>
@@ -357,7 +436,7 @@
 
             <!-- Header of Data Table -->
             <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                <h2 class="text-lg sm:text-xl font-extrabold text-gray-900">{{ $tableTitle }}</h2>
+                <h2 class="text-lg sm:text-xl font-extrabold text-gray-900">Biển số đấu giá tại {{ $cleanProvinceName }}</h2>
                 <span class="text-xs text-gray-500">Tìm thấy {{ number_format($plates['total'], 0, ',', '.') }} biển số</span>
             </div>
 
@@ -423,56 +502,54 @@
                 <!-- Mobile/Tablet Cards -->
                 <div class="block md:hidden divide-y divide-gray-100 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
                     @forelse($filteredPlates as $index => $plate)
-                        <div class="p-3.5 space-y-3 transition duration-150 hover:bg-gray-50/50">
+                        <div class="p-3 space-y-2.5 transition duration-150 hover:bg-gray-50/50">
+                            <!-- Top Row: STT, Province, Kind Badge -->
                             <div class="flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1.5">
                                     <span class="flex h-5 w-5 items-center justify-center rounded bg-gray-50 text-[10px] font-bold text-gray-600">
                                         #{{ $index + 1 + ($paginator->currentPage() - 1) * $paginator->perPage() }}
                                     </span>
-                                    <span class="text-gray-800">
+                                    <span class="text-gray-800 font-medium">
                                         {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
                                     </span>
                                 </div>
-                                <span class="rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide border {{ count($plate['kinds']) > 0 ? 'bg-red-50 text-[#8C1E1E] border-red-100' : 'bg-gray-50 text-gray-500 border-gray-100' }}">
+                                <span class="rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide border {{ count($plate['kinds']) > 0 ? 'bg-red-50 text-[#8C1E1E] border-red-100' : 'bg-gray-50 text-gray-500 border-gray-100' }}">
                                     {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
                                 </span>
                             </div>
 
-                            <div class="flex justify-center py-1 select-none">
-                                <div class="relative flex aspect-[520/110] w-full max-w-[240px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102 {{ $plate['color'] === 1 ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}">
-                                    <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                                    <div class="flex h-full w-full items-center justify-center rounded border px-3 select-none {{ $plate['color'] === 1 ? 'border-black/30' : 'border-gray-200' }}">
-                                        <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black text-[1.1rem]">
-                                            <span>{{ $plate['display_number'] }}</span>
+                            <!-- Middle Row: Simulated Plate on Left, Price on Right -->
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="shrink-0 select-none">
+                                    <div class="relative flex aspect-[520/110] w-[140px] items-center justify-center rounded border p-0.5 shadow-sm {{ $plate['color'] === 1 ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}">
+                                        <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
+                                        <div class="flex h-full w-full items-center justify-center rounded border px-1.5 select-none {{ $plate['color'] === 1 ? 'border-black/30' : 'border-gray-200' }}">
+                                            <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black text-[0.85rem]">
+                                                <span>{{ $plate['display_number'] }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="flex justify-between items-center text-xs border-t border-gray-50 pt-2.5">
-                                <div class="flex flex-col gap-0.5">
-                                    <span class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">
+                                <div class="flex-1 flex flex-col items-end text-right text-xs">
+                                    <span class="text-[9px] font-semibold text-gray-450 uppercase tracking-wider">
                                         {{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}
                                     </span>
                                     <span class="text-sm font-black text-[#8C1E1E]">
                                         {{ $plate['winning_price'] > 0 ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
                                     </span>
-                                </div>
-
-                                @if($activeTab !== 'announce' && $plate['auction_start_time'])
-                                    <div class="flex flex-col items-end gap-0.5">
-                                        <span class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Ngày đấu</span>
-                                        <span class="text-[11px] font-bold text-gray-600">
-                                            {{ explode(' ', $formatDate($plate['auction_start_time']))[0] }}
+                                    @if($activeTab !== 'announce' && $plate['auction_start_time'])
+                                        <span class="text-[9px] font-medium text-gray-500 mt-0.5">
+                                            Ngày đấu: {{ explode(' ', $formatDate($plate['auction_start_time']))[0] }}
                                         </span>
-                                    </div>
-                                @endif
+                                    @endif
+                                </div>
                             </div>
 
-                            <div class="pt-1">
+                            <!-- Button Row -->
+                            <div class="pt-0.5">
                                 <a
                                     href="/bien-so-{{ $plate['slug'] }}"
-                                    class="flex w-full items-center justify-center rounded-xl border border-[#8C1E1E] bg-red-50/20 py-2.5 text-xs font-bold text-[#8C1E1E] shadow-xs transition hover:bg-[#8C1E1E] hover:text-white"
+                                    class="flex w-full items-center justify-center rounded-lg border border-[#8C1E1E] bg-red-50/20 py-2 text-xs font-bold text-[#8C1E1E] shadow-xs transition hover:bg-[#8C1E1E] hover:text-white"
                                 >
                                     Phân tích chi tiết biển số
                                 </a>
@@ -486,7 +563,7 @@
 
             <!-- Pagination -->
             @if ($paginator->total() > 0)
-                <div class="flex items-center justify-center bg-transparent px-4 py-4 select-none sm:px-6 mt-8">
+                <div class="flex items-center justify-center bg-transparent px-4 py-2 sm:py-3 select-none sm:px-6 mt-4 sm:mt-6">
                     @if ($paginator->lastPage() > 1)
                         <div class="flex items-center justify-center">
                             <!-- Desktop Pagination (hidden sm:flex) -->
@@ -612,6 +689,146 @@
                     @endif
                 </div>
             @endif
+
+            <!-- Bottom SEO & FAQ Content -->
+            <div class="mt-4 sm:mt-10 space-y-8">
+                <!-- Section: Top biển số đấu giá -->
+                @php
+                    $cleanProvinceSlug = \Illuminate\Support\Str::slug($cleanProvinceName);
+                @endphp
+                <div class="space-y-3">
+                    <h2 class="text-sm font-extrabold text-gray-900">Top biển số đấu giá {{ $cleanProvinceName }}</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="/top-100-bien-so-dep-dat-nhat-{{ $cleanProvinceSlug }}" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                            Top 100 biển {{ $cleanProvinceName }}
+                        </a>
+                        <a href="/top-bien-so-ngu-quy-dat-nhat-viet-nam" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                            Top biển ngũ quý
+                        </a>
+                        <a href="/top-bien-so-tu-quy-dat-nhat-viet-nam" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                            Top biển tứ quý
+                        </a>
+                        <a href="/top-bien-so-than-tai-dat-nhat-viet-nam" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                            Top thần tài
+                        </a>
+                        <a href="/top-bien-so-loc-phat-dat-nhat-viet-nam" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                            Top lộc phát
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section: Top đầu số -->
+                @if(!empty($topSeries))
+                    <div class="space-y-3">
+                        <h2 class="text-sm font-extrabold text-gray-900">Top đầu số {{ $cleanProvinceName }}</h2>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($topSeries as $series)
+                                <a href="?search={{ $series }}" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                                    {{ $series }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Section: Nhóm biển số được quan tâm nhất -->
+                <div class="space-y-3">
+                    <h2 class="text-sm font-extrabold text-gray-900">Nhóm biển số được quan tâm nhất</h2>
+                    <div class="flex flex-wrap gap-2">
+                        @php
+                            $interestGroups = [
+                                ['name' => 'Ngũ quý', 'key' => 'Ngũ quý'],
+                                ['name' => 'Tứ quý', 'key' => 'Tứ quý'],
+                                ['name' => 'Thần tài', 'key' => 'Thần tài'],
+                                ['name' => 'Lộc phát', 'key' => 'Lộc phát'],
+                                ['name' => 'Sảnh tiến', 'key' => 'Sảnh tiến'],
+                                ['name' => 'Số gánh', 'key' => 'Số gánh']
+                            ];
+                        @endphp
+                        @foreach($interestGroups as $group)
+                            @php
+                                $kindId = null;
+                                foreach ($kinds as $k) {
+                                    if ($k['name'] === $group['key']) {
+                                        $kindId = $k['id'];
+                                        break;
+                                    }
+                                }
+                            @endphp
+                            <a href="?kind={{ $kindId }}" class="inline-flex items-center justify-center px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 hover:text-gray-900 rounded-xl transition duration-150 shadow-3xs">
+                                {{ $group['name'] }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Section: Phân tích thị trường -->
+                <div class="space-y-3">
+                    <h2 class="text-lg font-bold text-gray-900">Phân tích thị trường đấu giá biển số {{ $cleanProvinceName }}</h2>
+                    <div class="space-y-3 text-sm text-gray-600 leading-relaxed text-justify">
+                        <p>
+                            <strong>{{ $cleanProvinceName }}</strong> là một trong những địa phương có số lượng phiên đấu giá biển số tăng nhanh trong năm 2026.
+                        </p>
+                        <p>
+                            Theo dữ liệu của hệ thống, giá trúng đấu giá trung bình đạt <strong>{{ $formatPriceText($provinceStats['avg_price']) }}</strong>.
+                        </p>
+                        <p>
+                            Các biển số thuộc đầu <strong>{{ $topSeries[0] ?? ($province->code . 'A') }}</strong> tiếp tục chiếm phần lớn các giao dịch có giá trị cao.
+                        </p>
+                        <p>
+                            Trong nhóm biển số đẹp, ngũ quý và lộc phát là hai nhóm được nhiều người quan tâm nhất tại {{ $cleanProvinceName }}.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Section: FAQ -->
+                <div class="space-y-4">
+                    <h2 class="text-lg font-bold text-gray-900">Câu hỏi thường gặp (FAQ)</h2>
+                    <div x-data="{ activeFaq: null }" class="space-y-2">
+                        @php
+                            $faqs = [
+                                [
+                                    'q' => 'Biển số ' . $cleanProvinceName . ' đấu giá ở đâu?',
+                                    'a' => 'Biển số xe của ' . $cleanProvinceName . ' được đấu giá trực tuyến tại trang web chính thức của Công ty Đấu giá Hợp danh Việt Nam (VPA) - đơn vị duy nhất được Bộ Công an ủy quyền tổ chức đấu giá biển số ô tô và xe máy.'
+                                ],
+                                [
+                                    'q' => 'Lịch đấu giá ' . $cleanProvinceName . ' khi nào?',
+                                    'a' => 'Lịch đấu giá được cập nhật liên tục hàng tuần. Bạn có thể theo dõi danh sách các biển số sắp đấu giá của ' . $cleanProvinceName . ' tại tab "Biển số chính thức" trên website của chúng tôi để biết thời gian chi tiết của từng biển số.'
+                                ],
+                                [
+                                    'q' => 'Làm sao tham gia đấu giá biển số ' . $cleanProvinceName . '?',
+                                    'a' => 'Để tham gia đấu giá, người dân cần đăng ký tài khoản trên trang web của VPA, nộp tiền đặt trước (40 triệu đồng đối với ô tô, hoặc mức quy định đối với xe máy) và tiền hồ sơ tham gia đấu giá cho biển số mong muốn trước thời hạn quy định.'
+                                ],
+                                [
+                                    'q' => ($topSeries[0] ?? ($province->code . 'A')) . ' có phải đầu số đẹp không?',
+                                    'a' => 'Đầu số ' . ($topSeries[0] ?? ($province->code . 'A')) . ' là một trong những đầu số phổ biến và rất được ưa chuộng tại ' . $cleanProvinceName . '. Giá trị của biển số còn phụ thuộc nhiều vào các chữ số phía sau như ngũ quý, tứ quý, thần tài, lộc phát...'
+                                ],
+                                [
+                                    'q' => 'Có thể xem kết quả đấu giá ' . $cleanProvinceName . ' ở đâu?',
+                                    'a' => 'Kết quả đấu giá biển số tại ' . $cleanProvinceName . ' được cập nhật tức thời và chính xác nhất tại tab "Kết quả đã công bố" trên trang web này ngay sau khi phiên đấu giá kết thúc.'
+                                ],
+                                [
+                                    'q' => 'Dữ liệu cập nhật bao lâu một lần?',
+                                    'a' => 'Dữ liệu đấu giá biển số xe tại ' . $cleanProvinceName . ' được hệ thống của chúng tôi đồng bộ và cập nhật liên tục 24/7 theo thời gian thực từ cổng thông tin đấu giá chính thức.'
+                                ]
+                            ];
+                        @endphp
+                        @foreach($faqs as $i => $faq)
+                            <div class="py-2.5">
+                                <button type="button" @click="activeFaq = activeFaq === {{ $i }} ? null : {{ $i }}" class="flex w-full items-center justify-between text-left text-xs sm:text-sm font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
+                                    <span>{{ $faq['q'] }}</span>
+                                    <svg class="h-3.5 w-3.5 text-gray-400 transform transition-transform duration-200" :class="activeFaq === {{ $i }} ? 'rotate-180 text-[#8C1E1E]' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div x-show="activeFaq === {{ $i }}" x-transition.opacity.duration.200ms class="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed text-justify">
+                                    {{ $faq['a'] }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
         </section>
     </form>
 </div>

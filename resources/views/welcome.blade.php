@@ -306,13 +306,13 @@
     }">
 
         <!-- 3. Landing Hero Section (Chứa H1 chuẩn SEO hiển thị và Ô tìm kiếm cùng Trust Signals) -->
-        <section class="relative bg-white py-12 md:py-16 border-b border-gray-100">
+        <section class="relative bg-white py-6 md:py-8 border-b border-gray-100">
             <div class="relative z-10 mx-auto max-w-[1440px] px-4 text-center sm:px-6 lg:px-8">
                 <!-- H1 và Subtitle -->
-                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
+                <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-[32px]">
                     {!! $heroH1Html !!}
                 </h1>
-                <p class="mx-auto mt-4 max-w-2xl text-xs leading-relaxed text-gray-600 sm:text-sm md:text-base">
+                <p class="mx-auto mt-2 max-w-2xl text-xs text-gray-500 leading-relaxed">
                     {{ $heroDescription }}
                 </p>
 
@@ -348,31 +348,31 @@
 
                 <!-- Trust Signals -->
                 @if(isset($trustStats))
-                <div class="mx-auto max-w-4xl mt-12 px-4 sm:px-0">
+                <div class="mx-auto max-w-4xl mt-6 px-4 sm:px-0">
                     <div class="grid grid-cols-2 gap-y-6 gap-x-2 sm:grid-cols-4 bg-transparent border-0 p-0 shadow-none">
                         <!-- Biển số đã phân tích -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
-                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã phân tích</span>
-                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-blue-600">{{ $trustStats['total_articles'] }}</span>
-                            <span class="block text-[11px] font-medium text-gray-600 mt-0.5">biển số</span>
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã phân tích</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_articles'] }}</span>
+                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">biển số</span>
                         </div>
                         <!-- Kết quả đấu giá -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
-                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết quả đấu giá</span>
-                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}</span>
-                            <span class="block text-[11px] font-medium text-gray-600 mt-0.5">biển số</span>
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết quả đấu giá</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}</span>
+                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">biển số</span>
                         </div>
                         <!-- Tỉnh thành -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
-                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
-                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
-                            <span class="block text-[11px] font-medium text-gray-600 mt-0.5">đã cập nhật</span>
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
+                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">đã cập nhật</span>
                         </div>
                         <!-- Định giá tự động AI -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none">
-                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Định giá tự động</span>
-                            <span class="block mt-1 text-lg sm:text-xl font-extrabold text-blue-600">AI</span>
-                            <span class="block text-[11px] font-medium text-gray-600 mt-0.5">Siêu tốc</span>
+                            <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Định giá tự động</span>
+                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">AI</span>
+                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">Siêu tốc</span>
                         </div>
                     </div>
                 </div>
@@ -394,21 +394,21 @@
                 <!-- Thanh tìm kiếm & nút Toggle bộ lọc -->
                 <div class="flex flex-col sm:flex-row gap-3">
                     <!-- Ô tìm kiếm dạng viên thuốc -->
-                    <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1.5 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
+                    <div class="relative flex-1 flex items-center rounded-full border border-gray-200 bg-white p-1 sm:p-1.5 shadow-xs focus-within:border-[#8C1E1E] focus-within:ring-2 focus-within:ring-[#8C1E1E]/20 transition-all duration-200">
                         <input
                             type="text"
                             name="search"
                             x-model="search"
                             @keyup.enter="submitForm(true)"
                             placeholder="Nhập biển số cần tìm..."
-                            class="w-full border-0 bg-transparent py-2.5 px-6 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
+                            class="w-full border-0 bg-transparent py-1.5 px-4 sm:py-2.5 sm:px-6 text-xs sm:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0"
                         />
                         <button
                             type="submit"
-                            class="mr-1 flex h-10 w-10 items-center justify-center rounded-full bg-[#8C1E1E] text-white shadow-md transition duration-200 hover:bg-[#731919] shrink-0"
+                            class="mr-1 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-[#8C1E1E] text-white shadow-md transition duration-200 hover:bg-[#731919] shrink-0"
                             aria-label="Tìm kiếm biển số"
                         >
-                            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <svg class="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </button>
@@ -418,9 +418,9 @@
                     <button
                         type="button"
                         @click="isFiltersExpanded = !isFiltersExpanded"
-                        class="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-bold text-gray-700 shadow-3xs transition duration-200 hover:bg-gray-50 hover:text-gray-900 shrink-0"
+                        class="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-bold text-gray-700 shadow-3xs transition duration-200 hover:bg-gray-50 hover:text-gray-900 shrink-0"
                     >
-                        <svg class="h-4 w-4 text-gray-500 transition-transform duration-200" :class="isFiltersExpanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500 transition-transform duration-200" :class="isFiltersExpanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
                         <span x-text="isFiltersExpanded ? 'Thu gọn bộ lọc' : 'Bộ lọc nâng cao'"></span>
@@ -428,7 +428,7 @@
                 </div>
 
                 <!-- Danh sách bộ lọc chi tiết -->
-                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 p-5 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
+                <div x-show="isFiltersExpanded" x-transition.opacity.duration.200ms class="space-y-4 p-3.5 sm:p-6 bg-white rounded-2xl border border-gray-200/80 shadow-sm mt-4">
                     <!-- Row 1: Tỉnh thành & Chữ cái -->
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                         <!-- Tỉnh thành -->

@@ -33,7 +33,7 @@
     }
 }">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden py-8 sm:py-12 border-b border-gray-100 bg-white">
+    <section class="relative overflow-hidden py-4 sm:py-6 border-b border-gray-100 bg-white">
         <!-- Background Decorative Elements -->
         <div class="absolute inset-0 pointer-events-none opacity-30">
             <div class="absolute -top-40 -right-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-[#8C1E1E]/10 to-transparent blur-3xl"></div>
@@ -41,11 +41,11 @@
         </div>
 
         <div class="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+            <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-[32px]">
                 Đấu Giá Biển Số Ô Tô Toàn Quốc
             </h1>
             
-            <p class="mx-auto mt-3 max-w-xl text-sm sm:text-base text-gray-500 leading-relaxed">
+            <p class="mx-auto mt-2 max-w-2xl text-xs text-gray-500 leading-relaxed">
                 Tra cứu danh sách biển số xe đấu giá tại các tỉnh thành, bao gồm biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất.
             </p>
         </div>

@@ -326,8 +326,60 @@ class AuctionController extends Controller
 
         $tableDescription = 'Danh sách biển số ' . $vehicleLabelLower . ' được cập nhật trực tiếp từ Cục CSGT.';
 
+        $provinceStats = Cache::remember('province_stats_v2_' . $province->code . '_' . $vehicle, 3600, function () use ($province, $vehicle) {
+            $baseQuery = LicensePlate::where('province_code', $province->code)
+                ->where('vehicle_type', $vehicle)
+                ->where('color', 0);
+
+            $total = $baseQuery->count();
+            
+            $announced = (clone $baseQuery)->where('status', 'announced')->count();
+            
+            $waiting = (clone $baseQuery)->where('status', 'waiting_auction')
+                ->where('auction_start_time', '>=', today())
+                ->count();
+                
+            $completed = (clone $baseQuery)->where('status', 'completed')->count();
+            
+            $avgPrice = (clone $baseQuery)->where('status', 'completed')
+                ->where('winning_price', '>', 0)
+                ->avg('winning_price') ?? 0;
+                
+            $maxPrice = (clone $baseQuery)->where('status', 'completed')
+                ->where('winning_price', '>', 0)
+                ->max('winning_price') ?? 0;
+
+            return [
+                'total' => $total,
+                'announced' => $announced,
+                'waiting' => $waiting,
+                'completed' => $completed,
+                'avg_price' => (float) $avgPrice,
+                'max_price' => (float) $maxPrice,
+            ];
+        });
+
+        $topSeries = Cache::remember('province_top_series_v2_' . $province->code . '_' . $vehicle, 86400, function () use ($province, $vehicle) {
+            return LicensePlate::where('province_code', $province->code)
+                ->where('vehicle_type', $vehicle)
+                ->where('color', 0)
+                ->selectRaw('local_symbol, serial_letter, count(*) as count')
+                ->groupBy('local_symbol', 'serial_letter')
+                ->orderBy('count', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function ($item) {
+                    return $item->local_symbol . $item->serial_letter;
+                })
+                ->filter()
+                ->values()
+                ->toArray();
+        });
+
         return view('auction.province', [
             'province' => $province,
+            'provinceStats' => $provinceStats,
+            'topSeries' => $topSeries,
             'cleanProvinceName' => $cleanProvinceName,
             'provinceSlug' => $canonicalFullSlug,
             'paginator' => $paginated,
