@@ -44,6 +44,143 @@
 
         <x-footer />
         <x-back-to-top />
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // 1. Đối tượng điều khiển thanh tiến trình (Loading progress bar)
+                const LoadingBar = {
+                    el: null,
+                    timer: null,
+                    start() {
+                        if (!this.el) {
+                            this.el = document.getElementById('global-loading-bar');
+                        }
+                        if (!this.el) return;
+
+                        clearTimeout(this.timer);
+                        this.el.style.transition = 'width 0.4s ease-out, opacity 0.2s ease-in-out';
+                        this.el.style.opacity = '1';
+                        this.el.style.width = '0%';
+
+                        // Force reflow
+                        this.el.offsetWidth;
+
+                        this.el.style.width = '70%';
+
+                        this.timer = setTimeout(() => {
+                            this.el.style.transition = 'width 10s ease-out';
+                            this.el.style.width = '90%';
+                        }, 400);
+                    },
+                    stop() {
+                        if (!this.el) return;
+                        clearTimeout(this.timer);
+                        this.el.style.transition = 'width 0.2s ease-out, opacity 0.2s ease-in-out';
+                        this.el.style.width = '100%';
+                        this.timer = setTimeout(() => {
+                            this.el.style.opacity = '0';
+                            setTimeout(() => {
+                                this.el.style.width = '0%';
+                            }, 200);
+                        }, 200);
+                    }
+                };
+
+                // 2. Hàm tải trang qua AJAX
+                window.loadLicensePlatePage = async function(url, shouldScroll = false, pushState = true) {
+                    LoadingBar.start();
+
+                    try {
+                        let response = await fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        if (!response.ok) throw new Error('Yêu cầu không thành công');
+
+                        let html = await response.text();
+                        let parser = new DOMParser();
+                        let doc = parser.parseFromString(html, 'text/html');
+
+                        // Cập nhật title của trang
+                        let newTitle = doc.querySelector('title');
+                        if (newTitle) {
+                            document.title = newTitle.textContent;
+                        }
+
+                        // Thay thế thẻ form cũ bằng form mới
+                        let newForm = doc.getElementById('filter-form');
+                        let currentForm = document.getElementById('filter-form');
+                        if (newForm && currentForm) {
+                            currentForm.replaceWith(newForm);
+
+                            // Khởi tạo lại Alpine trên form mới
+                            if (window.Alpine) {
+                                window.Alpine.initTree(newForm);
+                            }
+                        }
+
+                        // Cập nhật URL trên thanh địa chỉ nếu cần
+                        if (pushState) {
+                            history.pushState({
+                                url: url
+                            }, '', url);
+                        }
+
+                        // Cuộn trang mượt mà lên vùng bảng hiển thị nếu được yêu cầu
+                        if (shouldScroll) {
+                            const target = document.getElementById('table-section');
+                            if (target) {
+                                target.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Lỗi khi tải trang AJAX:', error);
+                        // Fallback tải lại trang truyền thống nếu có lỗi xảy ra
+                        if (pushState) {
+                            window.location.href = url;
+                        } else {
+                            window.location.reload();
+                        }
+                    } finally {
+                        LoadingBar.stop();
+                    }
+                };
+
+                // 3. Xử lý nút Back/Forward của trình duyệt
+                window.addEventListener('popstate', (e) => {
+                    let url = window.location.href;
+                    if (window.loadLicensePlatePage) {
+                        window.loadLicensePlatePage(url, false, false);
+                    }
+                });
+
+                // 4. Đánh chặn (Intercept) click vào phân trang
+                document.addEventListener('click', (e) => {
+                    let anchor = e.target.closest('a');
+                    if (!anchor || !anchor.href) return;
+
+                    try {
+                        let urlObj = new URL(anchor.href, window.location.origin);
+                        if (urlObj.origin !== window.location.origin) return;
+
+                        let path = urlObj.pathname;
+                        // Chỉ bắt các link nằm bên trong phần phân trang hoặc bảng
+                        let isListingPath = (path === '/' || path.startsWith('/danh-sach-bien-so-xe-') || path.startsWith('/dau-gia-bien-so-'));
+                        if (isListingPath && urlObj.searchParams.has('page')) {
+                            e.preventDefault();
+                            if (window.loadLicensePlatePage) {
+                                window.loadLicensePlatePage(anchor.href, true, true);
+                            }
+                        }
+                    } catch (err) {
+                        // bỏ qua lỗi URL không hợp lệ
+                    }
+                });
+            });
+        </script>
         @yield('scripts')
     </body>
 </html>

@@ -68,7 +68,7 @@
                     Danh sách tỉnh/thành phố
                 </h2>
                 <p class="mt-1.5 text-xs text-gray-400 font-medium">
-                    Cập nhật dữ liệu mới nhất ngày: 29/06/2025
+                    Cập nhật dữ liệu mới nhất ngày: {{ date('d/m/Y') }}
                 </p>
             </div>
 

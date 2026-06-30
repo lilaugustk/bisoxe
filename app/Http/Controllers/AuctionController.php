@@ -245,8 +245,7 @@ class AuctionController extends Controller
             $page = 1;
         }
 
-        // Cache total count of plates to avoid slow count(*) query on large datasets
-        $cacheKey = 'plates_count_auction_' . $province->code . '_' . md5(serialize([
+        $cacheHash = md5(serialize([
             'tab' => $tab,
             'search' => $search,
             'color' => $color,
@@ -256,13 +255,20 @@ class AuctionController extends Controller
             'end_date' => $endDate,
             'birth_years' => $birthYears,
             'avoid_numbers' => $avoidNumbers,
+            'letter' => $letter,
+            'num_buttons' => $numButtons,
+            'last_digits' => $lastDigits,
         ]));
 
-        $total = Cache::remember($cacheKey, 120, function () use ($query) {
+        $totalCacheKey = 'plates_count_auction_v3_' . $province->code . '_' . $cacheHash;
+        $total = Cache::remember($totalCacheKey, 120, function () use ($query) {
             return $query->count();
         });
 
-        $items = $query->forPage($page, $limit)->get();
+        $itemsCacheKey = 'plates_items_auction_v3_' . $province->code . '_' . $page . '_' . $limit . '_' . $cacheHash;
+        $items = Cache::remember($itemsCacheKey, 120, function () use ($query, $page, $limit) {
+            return $query->forPage($page, $limit)->get();
+        });
 
         $paginatorQuery = $request->query();
 

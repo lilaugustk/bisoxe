@@ -144,7 +144,11 @@
         submitForm(shouldScroll = false) {
             this.$nextTick(() => {
                 let url = this.buildUrl();
-                window.location.href = url;
+                if (window.loadLicensePlatePage) {
+                    window.loadLicensePlatePage(url, shouldScroll);
+                } else {
+                    window.location.href = url;
+                }
             });
         },
         clearAllFilters() {
@@ -449,7 +453,7 @@
             <!-- Tab content container (White Card) -->
             <div class="relative md:bg-white md:rounded-2xl md:border md:border-gray-200/80 md:shadow-xs bg-transparent border-0 shadow-none overflow-hidden">
                 <!-- Grid & List Plates -->
-                <div class="px-0 min-h-[400px]">
+                <div class="px-0 min-h-[200px]">
 
                     <div class="relative">
                         @if(count($filteredPlates) > 0)
