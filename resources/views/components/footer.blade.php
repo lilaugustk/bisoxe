@@ -1,4 +1,4 @@
-<footer class="border-t border-gray-800 bg-[#111827] text-sm text-gray-400">
+<footer class="border-t border-gray-800 bg-[#111827] text-sm text-gray-300">
     <!-- Main Footer Grid -->
     <div class="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-12 lg:gap-12">
@@ -90,7 +90,7 @@
                     </svg>
                     <span class="text-xl font-black tracking-wide text-white">BISOXE.COM</span>
                 </a>
-                <p class="text-xs leading-relaxed font-light text-gray-400">
+                <p class="text-xs leading-relaxed font-light text-gray-300">
                     Cổng tra cứu danh sách biển số xe đấu giá toàn quốc và
                     công cụ phân tích ý nghĩa biển số tự động dựa
                     trên quan niệm dân gian, phân loại biển đẹp xấu và định giá biển số.
@@ -142,7 +142,7 @@
                 <div class="border-l-2 border-[#8C1E1E] pl-2.5 text-xs font-black tracking-wider text-white uppercase">
                     Hỗ trợ & Liên hệ
                 </div>
-                <ul class="space-y-2.5 text-xs font-medium text-gray-400">
+                <ul class="space-y-2.5 text-xs font-medium text-gray-300">
                     <li>
                         <a href="/gioi-thieu" class="transition-colors duration-200 hover:text-[#F5B800]">Giới thiệu</a>
                     </li>
@@ -152,10 +152,10 @@
                     <li>
                         <a href="/chinh-sach" class="transition-colors duration-200 hover:text-[#F5B800]">Chính sách bảo mật</a>
                     </li>
-                    <li class="pt-2 text-xs font-light text-gray-500">
+                    <li class="pt-2 text-xs font-light text-gray-300">
                         <span>Hà Nội, Việt Nam</span>
                     </li>
-                    <li class="flex items-center gap-2 text-xs font-light text-gray-500">
+                    <li class="flex items-center gap-2 text-xs font-light text-gray-300">
                         <a href="mailto:support@bisoxe.com" class="transition hover:text-[#F5B800]">support@bisoxe.com</a>
                     </li>
                 </ul>
@@ -171,7 +171,7 @@
                 <p class="text-xs font-bold text-gray-300">
                     © 2026 BISOXE.COM. Bảo lưu mọi quyền.
                 </p>
-                <div class="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs text-gray-400 md:justify-end">
+                <div class="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs text-gray-300 md:justify-end">
                     <a href="/" class="transition-colors hover:text-gray-200 whitespace-nowrap">Tra cứu</a>
                     <span class="text-gray-600">•</span>
                     <a href="/top" class="transition-colors hover:text-gray-200 whitespace-nowrap">Bảng xếp hạng</a>
@@ -183,7 +183,7 @@
                     <a href="/chinh-sach" class="transition-colors hover:text-gray-200 whitespace-nowrap">Chính sách</a>
                 </div>
             </div>
-            <p class="text-justify text-[11px] leading-relaxed font-light text-gray-400 md:text-left">
+            <p class="text-justify text-[11px] leading-relaxed font-light text-gray-300 md:text-left">
                 * Khước từ trách nhiệm: Nội dung giải luận, phân tích biển
                 số xe đẹp xấu mang tính chất tham khảo, tổng hợp theo các quan
                 niệm số học dân gian truyền thống, được hỗ trợ tổng hợp

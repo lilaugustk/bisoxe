@@ -440,6 +440,21 @@ class ImportVpaData extends Command
         $this->info('============================================================');
         $this->info('TẤT CẢ DỮ LIỆU ĐÃ ĐƯỢC NẠP THÀNH CÔNG!');
 
+        $this->info('Đang tính toán lại số lượng biển số theo tỉnh thành và cập nhật Cache...');
+        \Illuminate\Support\Facades\Cache::forget('auction_provinces_count_v3');
+        \Illuminate\Support\Facades\Cache::remember('auction_provinces_count_v3', 86400 * 30, function () {
+            return LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
+                ->groupBy('province_code')
+                ->get()
+                ->keyBy('province_code')
+                ->map(fn($item) => [
+                    'total' => $item->total,
+                    'active' => $item->active ?? 0,
+                ])
+                ->toArray();
+        });
+        $this->info('Đã cập nhật Cache thành công!');
+
         return self::SUCCESS;
     }
 }
