@@ -174,7 +174,7 @@
                     {{ $heroH1 }}
                 </h1>
                 
-                <p class="mx-auto mt-2 max-w-2xl text-xs text-gray-500 leading-relaxed">
+                <p class="mx-auto mt-4 mb-4 max-w-2xl text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">
                     Cập nhật liên tục biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất của {{ mb_strtolower($province->name) }}. Dữ liệu được tổng hợp theo từng phiên đấu giá chính thức.
                 </p>
 
@@ -184,42 +184,42 @@
                         <!-- Column 1 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng biển</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ number_format($provinceStats['total'], 0, ',', '.') }}
                             </span>
                         </div>
                         <!-- Column 2 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đang đấu giá</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ number_format($provinceStats['announced'], 0, ',', '.') }}
                             </span>
                         </div>
                         <!-- Column 3 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Sắp đấu giá</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ number_format($provinceStats['waiting'], 0, ',', '.') }}
                             </span>
                         </div>
                         <!-- Column 4 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã đấu giá</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ number_format($provinceStats['completed'], 0, ',', '.') }}
                             </span>
                         </div>
                         <!-- Column 5 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá TB</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ $formatPriceText($provinceStats['avg_price']) }}
                             </span>
                         </div>
                         <!-- Column 6 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá cao nhất</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ $formatPriceText($provinceStats['max_price']) }}
                             </span>
                         </div>
@@ -392,7 +392,7 @@
 
             <!-- Vehicle Selector (Level 1) & Tab Switcher (Level 2) -->
             <!-- Vehicle Type Selector (Level 1) -->
-            <div class="flex gap-2 mb-2">
+            <div class="flex gap-2 mb-4">
                 <button
                     type="button"
                     @click="changeVehicle('car')"

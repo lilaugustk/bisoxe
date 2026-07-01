@@ -54,7 +54,7 @@
                 Đấu Giá Biển Số Ô Tô Toàn Quốc
             </h1>
             
-            <p class="mx-auto mt-2 max-w-2xl text-xs text-gray-500 leading-relaxed">
+            <p class="mx-auto mt-4 mb-4 max-w-2xl text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">
                 Tra cứu danh sách biển số xe đấu giá tại các tỉnh thành, bao gồm biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất.
             </p>
         </div>

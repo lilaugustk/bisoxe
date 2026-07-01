@@ -333,7 +333,7 @@
                     <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-[32px]">
                         {!! $heroH1Html !!}
                     </h1>
-                    <p class="mx-auto mt-2 max-w-2xl text-xs text-gray-500 leading-relaxed">
+                    <p class="mx-auto mt-4 mb-4 max-w-2xl text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">
                         {{ $heroDescription }}
                     </p>
 
@@ -360,7 +360,7 @@
                             </button>
                         </div>
                         <!-- Gợi ý ví dụ -->
-                        <p class="mt-2 text-center text-xs text-gray-600">
+                        <p class="mt-4 text-center text-xs text-gray-600">
                             Ví dụ: <span class="font-semibold text-gray-700">30K-888.88</span>
                         </p>
                     </div>
@@ -964,12 +964,12 @@
 
 
             <!-- Section bảng xếp hạng nổi bật thay thế tạm thời -->
-            <section id="ranking-preview-section" class="mx-auto max-w-[1440px] px-[10px] pt-2 pb-6 sm:px-6 lg:px-8">
+            <section id="ranking-preview-section" class="mx-auto max-w-[1440px] px-[10px] pt-6 pb-6 sm:px-6 lg:px-8">
                 <header class="mb-8 text-center sm:text-left">
                     <h2 class="text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl lg:text-3xl">
                         Bảng Xếp Hạng Biển Số Đẹp Nổi Bật
                     </h2>
-                    <p class="mt-2 text-xs sm:text-sm text-gray-500">Khám phá các phân tích chuyên sâu và bảng xếp hạng
+                    <p class="mt-4 text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">Khám phá các phân tích chuyên sâu và bảng xếp hạng
                         biển số xe trúng đấu giá có giá trị cao nhất.</p>
                 </header>
 

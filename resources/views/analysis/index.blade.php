@@ -115,7 +115,7 @@
                             <h1 class="text-2xl font-extrabold tracking-tight text-[#111827] sm:text-[32px] leading-tight">
                                 Bảng xếp hạng biển số đẹp Việt Nam
                             </h1>
-                            <p class="mt-3 text-xs leading-relaxed text-gray-500">
+                            <p class="mt-3 text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">
                                 Tổng hợp các bảng xếp hạng biển số ô tô theo giá đấu, nhóm số đẹp, địa phương và thời gian. Dữ liệu được cập nhật liên tục từ các phiên đấu giá chính thức.
                             </p>
                         </div>

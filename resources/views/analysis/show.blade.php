@@ -24,11 +24,11 @@
     $formatPriceText = function($value) {
         if ($value >= 1000000000) {
             $billion = $value / 1000000000;
-            $formatted = number_format($billion, 3, ',', '.');
+            $formatted = number_format($billion, 2, ',', '.');
             return rtrim(rtrim($formatted, '0'), ',') . ' tỷ';
         } else {
             $million = $value / 1000000;
-            $formatted = number_format($million, 3, ',', '.');
+            $formatted = number_format($million, 2, ',', '.');
             return rtrim(rtrim($formatted, '0'), ',') . ' triệu';
         }
     };
