@@ -127,26 +127,26 @@
                             <!-- Bảng xếp hạng -->
                             <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                                 <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Bảng xếp hạng</span>
-                                <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">100+</span>
-                                <span class="block text-[10px] font-medium text-gray-500 mt-0.5">danh sách</span>
+                                <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">100+</span>
+                                <span class="block text-[12px] font-medium text-gray-500 mt-2">danh sách</span>
                             </div>
                             <!-- Kết quả đấu giá -->
                             <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                                 <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết quả đấu giá</span>
-                                <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ number_format($trustStats['total_completed'] ?? 276777, 0, ',', '.') }}+</span>
-                                <span class="block text-[10px] font-medium text-gray-500 mt-0.5">biển số</span>
+                                <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ number_format($trustStats['total_completed'] ?? 276777, 0, ',', '.') }}+</span>
+                                <span class="block text-[12px] font-medium text-gray-500 mt-2">biển số</span>
                             </div>
                             <!-- Tổng giá trị đấu giá -->
                             <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                                 <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng giá trị</span>
-                                <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_value_billion'] ?? '12.746' }} Tỷ+</span>
-                                <span class="block text-[10px] font-medium text-gray-500 mt-0.5">đồng</span>
+                                <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_value_billion'] ?? '12.746' }} Tỷ+</span>
+                                <span class="block text-[12px] font-medium text-gray-500 mt-2">đồng</span>
                             </div>
                             <!-- Cập nhật liên tục -->
                             <div class="text-center py-2 bg-transparent border-0 shadow-none">
                                 <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Cập nhật</span>
-                                <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">Mỗi ngày</span>
-                                <span class="block text-[10px] font-medium text-gray-500 mt-0.5">liên tục</span>
+                                <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">Mỗi ngày</span>
+                                <span class="block text-[12px] font-medium text-gray-500 mt-2">liên tục</span>
                             </div>
                         </div>
                     </div>
@@ -216,26 +216,26 @@
                         <!-- Giá trung bình -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá TB</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $latestStats['avg_top100_billion'] }} Tỷ</span>
-                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">Top 100</span>
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $latestStats['avg_top100_billion'] }} Tỷ</span>
+                            <span class="block text-[12px] font-medium text-gray-500 mt-2">Top 100</span>
                         </div>
                         <!-- Biển số đắt nhất -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đắt nhất</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $latestStats['highest_plate_price_billion'] }} Tỷ</span>
-                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">kỷ lục</span>
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $latestStats['highest_plate_price_billion'] }} Tỷ</span>
+                            <span class="block text-[12px] font-medium text-gray-500 mt-2">kỷ lục</span>
                         </div>
                         <!-- Tỉnh thành phủ sóng -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh thành</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
-                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">phủ sóng</span>
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
+                            <span class="block text-[12px] font-medium text-gray-500 mt-2">phủ sóng</span>
                         </div>
                         <!-- Tổng bảng xếp hạng -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">BXH</span>
-                            <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">100+</span>
-                            <span class="block text-[10px] font-medium text-gray-500 mt-0.5">đã cập nhật</span>
+                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">100+</span>
+                            <span class="block text-[12px] font-medium text-gray-500 mt-2">đã cập nhật</span>
                         </div>
                     </div>
 

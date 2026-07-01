@@ -376,8 +376,8 @@
                                         class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã
                                         phân tích</span>
                                     <span
-                                        class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_articles'] }}</span>
-                                    <span class="block text-[10px] font-medium text-gray-500 mt-0.5">biển số</span>
+                                        class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_articles'] }}</span>
+                                    <span class="block text-[12px] font-medium text-gray-500 mt-2">biển số</span>
                                 </div>
                                 <!-- Kết quả đấu giá -->
                                 <div class="text-center bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
@@ -385,8 +385,8 @@
                                         class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết
                                         quả đấu giá</span>
                                     <span
-                                        class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}</span>
-                                    <span class="block text-[10px] font-medium text-gray-500 mt-0.5">biển số</span>
+                                        class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}</span>
+                                    <span class="block text-[12px] font-medium text-gray-500 mt-2">biển số</span>
                                 </div>
                                 <!-- Tỉnh thành -->
                                 <div class="text-center bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
@@ -394,16 +394,16 @@
                                         class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh
                                         thành</span>
                                     <span
-                                        class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
-                                    <span class="block text-[10px] font-medium text-gray-500 mt-0.5">đã cập nhật</span>
+                                        class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
+                                    <span class="block text-[12px] font-medium text-gray-500 mt-2">đã cập nhật</span>
                                 </div>
                                 <!-- Định giá tự động AI -->
                                 <div class="text-center bg-transparent border-0 shadow-none">
                                     <span
                                         class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Định
                                         giá tự động</span>
-                                    <span class="block mt-0.5 text-sm sm:text-base font-extrabold text-blue-600">AI</span>
-                                    <span class="block text-[10px] font-medium text-gray-500 mt-0.5">Siêu tốc</span>
+                                    <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">AI</span>
+                                    <span class="block text-[12px] font-medium text-gray-500 mt-2">Siêu tốc</span>
                                 </div>
                             </div>
                         </div>
@@ -1239,59 +1239,59 @@
                             {{ $seoParagraph }}
                         </p>
 
-                        <div class="mt-6 space-y-4 divide-y divide-gray-100">
-                            <div class="pt-3 first:pt-0">
-                                <h3 class="text-sm font-bold text-gray-900">Số 0 - Khởi đầu / Vô hạn</h3>
-                                <p class="mt-1 text-xs text-gray-600">
+                        <div class="mt-6 space-y-4">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Số 0 - Khởi đầu / Vô hạn</h3>
+                                <p class="mt-2 text-sm text-gray-600">
                                     Tượng trưng cho sự khai sinh, khởi đầu hoàn toàn mới. Thể hiện sự viên mãn khép kín và
                                     năng lượng vô tận của vũ trụ.
                                 </p>
                             </div>
-                            <div class="pt-3">
-                                <h3 class="text-sm font-bold text-gray-900">Số 1 - Nhất / Sinh tồn</h3>
-                                <p class="mt-1 text-xs text-gray-600">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Số 1 - Nhất / Sinh tồn</h3>
+                                <p class="mt-2 text-sm text-gray-600">
                                     Đại diện cho vị trí độc tôn, vị thế dẫn đầu. Số 1 mang năng lượng của sự sinh sôi nảy
                                     nở, bản lĩnh tiên phong.
                                 </p>
                             </div>
-                            <div class="pt-3">
-                                <h3 class="text-sm font-bold text-gray-900">Số 2 - Mãi mãi / Song hỷ</h3>
-                                <p class="mt-1 text-xs text-gray-600">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Số 2 - Mãi mãi / Song hỷ</h3>
+                                <p class="mt-2 text-sm text-gray-600">
                                     Tượng trưng cho sự cân bằng âm dương, sự gắn kết bền vững. Mang ý nghĩa hạnh phúc, may
                                     mắn nhân đôi.
                                 </p>
                             </div>
-                            <div class="pt-3">
-                                <h3 class="text-sm font-bold text-gray-900">Số 3 - Tài lộc / Vững chãi</h3>
-                                <p class="mt-1 text-xs text-gray-600">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Số 3 - Tài lộc / Vững chãi</h3>
+                                <p class="mt-2 text-sm text-gray-600">
                                     Đại diện cho tài lộc dồi dào và sự kiên định, vững chãi như kiềng ba chân. Giúp gia cố
                                     năng lượng kinh doanh.
                                 </p>
                             </div>
-                            <div class="pt-3">
-                                <h3 class="text-sm font-bold text-gray-900">Số 5 - Ngũ hành / Cân bằng</h3>
-                                <p class="mt-1 text-xs text-gray-600">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Số 5 - Ngũ hành / Cân bằng</h3>
+                                <p class="mt-2 text-sm text-gray-600">
                                     Con số trung tâm tượng trưng cho thuyết Ngũ hành (Kim - Mộc - Thủy - Hỏa - Thổ) đem đến
                                     sự hòa hợp toàn diện.
                                 </p>
                             </div>
-                            <div class="pt-3">
-                                <h3 class="text-sm font-bold text-gray-900">Số 6 - Lộc tài / Thịnh vượng</h3>
-                                <p class="mt-1 text-xs text-gray-600">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Số 6 - Lộc tài / Thịnh vượng</h3>
+                                <p class="mt-2 text-sm text-gray-600">
                                     Theo phát âm Hán Việt (Lục gần với Lộc), đây là con số cực tốt đại diện cho tiền tài dồi
                                     dào, thuận buồm xuôi gió.
                                 </p>
                             </div>
-                            <div class="pt-3">
-                                <h3 class="text-sm font-bold text-gray-900">Số 8 - Phát đạt / Thành công</h3>
-                                <p class="mt-1 text-xs text-gray-600">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Số 8 - Phát đạt / Thành công</h3>
+                                <p class="mt-2 text-sm text-gray-600">
                                     Phát âm (Bát gần với Phát), là số đẹp nhất đại diện cho sự phát tài, phát lộc, vinh hoa
                                     phú quý trường tồn.
                                 </p>
                             </div>
-                            <div class="pt-3">
-                                <h3 class="text-sm font-bold text-gray-900">Số 9 - Vĩnh cửu / Quyền lực</h3>
-                                <p class="mt-1 text-xs text-gray-600">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Số 9 - Vĩnh cửu / Quyền lực</h3>
+                                <p class="mt-2 text-sm text-gray-600">
                                     Con số tối thượng (Cửu) tượng trưng cho tuổi thọ dài lâu, quyền quý đỉnh cao, vạn sự
                                     hanh thông bền vững.
                                 </p>
@@ -1313,39 +1313,25 @@
                         </p>
                     </header>
 
-                    <div x-data="{ activeFaq: null }" class="space-y-2 max-w-3xl mx-auto divide-y divide-gray-200/80">
+                    <div class="space-y-5 max-w-3xl mx-auto">
                         <!-- FAQ Item 1 -->
-                        <div class="py-3">
-                            <button type="button" @click="activeFaq = activeFaq === 1 ? null : 1"
-                                class="flex w-full items-center justify-between text-left text-[14px] font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
-                                <span>{{ $faq1Question }}</span>
-                                <svg class="h-3.5 w-3.5 text-gray-400 transform transition-transform duration-200"
-                                    :class="activeFaq === 1 ? 'rotate-180 text-[#8C1E1E]' : ''" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div x-show="activeFaq === 1" x-transition.opacity.duration.200ms
-                                class="mt-2 text-[14px] text-gray-600 leading-relaxed text-justify">
+                        <div>
+                            <h3 class="text-sm sm:text-base font-bold text-gray-900">
+                                {{ $faq1Question }}
+                            </h3>
+                            <p class="mt-2 text-sm text-gray-600 leading-relaxed text-justify">
                                 {{ $faq1Answer }}
-                            </div>
+                            </p>
                         </div>
 
                         <!-- FAQ Item 2 -->
-                        <div class="py-3">
-                            <button type="button" @click="activeFaq = activeFaq === 2 ? null : 2"
-                                class="flex w-full items-center justify-between text-left text-[14px] font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
-                                <span>{{ $faq2Question }}</span>
-                                <svg class="h-3.5 w-3.5 text-gray-400 transform transition-transform duration-200"
-                                    :class="activeFaq === 2 ? 'rotate-180 text-[#8C1E1E]' : ''" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div x-show="activeFaq === 2" x-transition.opacity.duration.200ms
-                                class="mt-2 text-[14px] text-gray-600 leading-relaxed text-justify">
+                        <div>
+                            <h3 class="text-sm sm:text-base font-bold text-gray-900">
+                                {{ $faq2Question }}
+                            </h3>
+                            <p class="mt-2 text-sm text-gray-600 leading-relaxed text-justify">
                                 {{ $faq2Answer }}
-                            </div>
+                            </p>
                         </div>
                     </div>
                 </div>
