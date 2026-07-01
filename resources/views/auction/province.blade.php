@@ -70,7 +70,7 @@
 
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
     <!-- Breadcrumb -->
-    <nav class="bg-white border-b border-gray-200 py-3">
+    <nav class="bg-white py-3">
         <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
             <a href="/" class="hover:text-gray-900 shrink-0">Trang chủ</a>
             <span class="shrink-0 text-gray-400">&raquo;</span>
@@ -162,7 +162,7 @@
         }
     }">
         <!-- Hero Section -->
-        <section class="relative overflow-hidden py-4 sm:py-6 border-b border-gray-100 bg-white">
+        <section class="relative overflow-hidden py-4 sm:py-6 bg-white">
             <!-- Background Decorative Elements -->
             <div class="absolute inset-0 pointer-events-none opacity-30">
                 <div class="absolute -top-40 -right-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-[#8C1E1E]/10 to-transparent blur-3xl"></div>
@@ -174,7 +174,7 @@
                     {{ $heroH1 }}
                 </h1>
                 
-                <p class="mx-auto mt-4 mb-4 max-w-2xl text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">
+                <p class="mx-auto mt-8 mb-8 max-w-2xl text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">
                     Cập nhật liên tục biển số đang đấu giá, sắp đấu giá và kết quả đấu giá mới nhất của {{ mb_strtolower($province->name) }}. Dữ liệu được tổng hợp theo từng phiên đấu giá chính thức.
                 </p>
 
@@ -184,35 +184,35 @@
                         <!-- Column 1 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng biển</span>
-                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ number_format($provinceStats['total'], 0, ',', '.') }}
                             </span>
                         </div>
                         <!-- Column 2 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đang đấu giá</span>
-                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ number_format($provinceStats['announced'], 0, ',', '.') }}
                             </span>
                         </div>
                         <!-- Column 3 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Sắp đấu giá</span>
-                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ number_format($provinceStats['waiting'], 0, ',', '.') }}
                             </span>
                         </div>
                         <!-- Column 4 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã đấu giá</span>
-                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ number_format($provinceStats['completed'], 0, ',', '.') }}
                             </span>
                         </div>
                         <!-- Column 5 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none lg:border-r border-gray-200/60">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá TB</span>
-                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ $formatPriceText($provinceStats['avg_price']) }}
                             </span>
                         </div>
@@ -441,7 +441,7 @@
             <input type="hidden" name="tab" :value="tab" />
 
             <!-- Header: Title & Total Results -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 p-2 border-b border-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 p-2">
                 <h3 class="text-lg font-extrabold text-gray-900">
                     Biển số đấu giá tại {{ $cleanProvinceName }}
                 </h3>

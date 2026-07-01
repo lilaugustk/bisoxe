@@ -33,7 +33,7 @@
     }
 }">
     <!-- Breadcrumb -->
-    <nav class="bg-white border-b border-gray-200 py-3">
+    <nav class="bg-white py-3">
         <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
             <a href="/" class="hover:text-gray-900 shrink-0">Trang chủ</a>
             <span class="shrink-0 text-gray-400">&raquo;</span>
@@ -42,7 +42,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative overflow-hidden py-4 sm:py-6 border-b border-gray-100 bg-white">
+    <section class="relative overflow-hidden py-4 sm:py-6 bg-white">
         <!-- Background Decorative Elements -->
         <div class="absolute inset-0 pointer-events-none opacity-30">
             <div class="absolute -top-40 -right-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-[#8C1E1E]/10 to-transparent blur-3xl"></div>
@@ -62,7 +62,7 @@
 
     <!-- Main Grid Section -->
     <section class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
-        <div class="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-gray-100 pb-5">
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-5">
             <div>
                 <h2 class="text-2xl font-bold tracking-tight text-gray-900">
                     Danh sách tỉnh/thành phố

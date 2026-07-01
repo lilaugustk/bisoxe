@@ -90,7 +90,7 @@
 </style>
 <div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased">
     <!-- Breadcrumb -->
-    <nav class="bg-white border-b border-gray-200 py-3">
+    <nav class="bg-white py-3">
         <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
             <a href="/" class="hover:text-gray-900 shrink-0">Trang chủ</a>
             <span class="shrink-0 text-gray-400">&raquo;</span>
@@ -101,7 +101,7 @@
     {{-- ═══════════════════════════════════════════════════════════════
          SECTION 1: HERO + THỐNG KÊ NHANH (2 cột trên Desktop)
     ═══════════════════════════════════════════════════════════════ --}}
-    <section class="bg-white border-b border-gray-200 shadow-2xs">
+    <section class="bg-white shadow-2xs">
         <div class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8 py-6 md:py-8">
             <div class="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-10 items-start">
  

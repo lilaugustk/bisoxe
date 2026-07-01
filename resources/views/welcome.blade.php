@@ -327,13 +327,13 @@
         }">
 
             <!-- 3. Landing Hero Section (Chứa H1 chuẩn SEO hiển thị và Ô tìm kiếm cùng Trust Signals) -->
-            <section class="relative bg-white py-6 md:py-8 border-b border-gray-100">
+            <section class="relative bg-white py-6 md:py-8">
                 <div class="relative z-10 mx-auto max-w-[1440px] px-[10px] text-center sm:px-6 lg:px-8">
                     <!-- H1 và Subtitle -->
                     <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-[32px]">
                         {!! $heroH1Html !!}
                     </h1>
-                    <p class="mx-auto mt-4 mb-4 max-w-2xl text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">
+                    <p class="mx-auto mt-8 mb-8 max-w-2xl text-xs sm:text-sm text-gray-500" style="line-height: 1.8;">
                         {{ $heroDescription }}
                     </p>
 
@@ -360,14 +360,14 @@
                             </button>
                         </div>
                         <!-- Gợi ý ví dụ -->
-                        <p class="mt-4 text-center text-xs text-gray-600">
+                        <p class="mt-8 text-center text-xs text-gray-600">
                             Ví dụ: <span class="font-semibold text-gray-700">30K-888.88</span>
                         </p>
                     </div>
 
                     <!-- Trust Signals -->
                     @if (isset($trustStats))
-                        <div class="mx-auto max-w-4xl mt-6 sm:px-0">
+                        <div class="mx-auto max-w-4xl mt-8 sm:px-0">
                             <div
                                 class="grid grid-cols-2 gap-y-2 gap-x-2 sm:grid-cols-4 bg-transparent border-0 p-0 shadow-none">
                                 <!-- Biển số đã phân tích -->
@@ -376,8 +376,8 @@
                                         class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã
                                         phân tích</span>
                                     <span
-                                        class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_articles'] }}</span>
-                                    <span class="block text-[12px] font-medium text-gray-500 mt-2">biển số</span>
+                                        class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_articles'] }}</span>
+                                    <span class="block text-[12px] font-medium text-gray-500 mt-4">biển số</span>
                                 </div>
                                 <!-- Kết quả đấu giá -->
                                 <div class="text-center bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
@@ -385,8 +385,8 @@
                                         class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Kết
                                         quả đấu giá</span>
                                     <span
-                                        class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}</span>
-                                    <span class="block text-[12px] font-medium text-gray-500 mt-2">biển số</span>
+                                        class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_completed'] }}</span>
+                                    <span class="block text-[12px] font-medium text-gray-500 mt-4">biển số</span>
                                 </div>
                                 <!-- Tỉnh thành -->
                                 <div class="text-center bg-transparent border-0 shadow-none sm:border-r border-gray-200/60">
@@ -394,16 +394,16 @@
                                         class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Tỉnh
                                         thành</span>
                                     <span
-                                        class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
-                                    <span class="block text-[12px] font-medium text-gray-500 mt-2">đã cập nhật</span>
+                                        class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">{{ $trustStats['total_provinces'] }}</span>
+                                    <span class="block text-[12px] font-medium text-gray-500 mt-4">đã cập nhật</span>
                                 </div>
                                 <!-- Định giá tự động AI -->
                                 <div class="text-center bg-transparent border-0 shadow-none">
                                     <span
                                         class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Định
                                         giá tự động</span>
-                                    <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">AI</span>
-                                    <span class="block text-[12px] font-medium text-gray-500 mt-2">Siêu tốc</span>
+                                    <span class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">AI</span>
+                                    <span class="block text-[12px] font-medium text-gray-500 mt-4">Siêu tốc</span>
                                 </div>
                             </div>
                         </div>
@@ -714,7 +714,7 @@
                 <input type="hidden" name="tab" :value="tab" />
                 <!-- Header: Title & Total Results -->
                 <div
-                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 p-2 border-b border-gray-100">
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 p-2">
                     <h3 class="text-lg font-extrabold text-gray-900">
                         {{ $tableTitle }}
                     </h3>
@@ -1144,7 +1144,7 @@
             </section>
 
             <!-- 5. SEO Text Section -->
-            <section id="y-nghia-bien-so" class="scroll-mt-20 border-t border-b border-gray-200 bg-white py-8">
+            <section id="y-nghia-bien-so" class="scroll-mt-20 bg-white py-8">
                 <div class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8">
                     <header class="mb-6 text-center">
                         <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight text-gray-900">

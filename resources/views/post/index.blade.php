@@ -103,7 +103,7 @@
     <!-- Main Body -->
     <main class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
         <!-- Filter Bar & Search -->
-        <div class="mb-8 flex flex-col items-center justify-between gap-4 border-b border-gray-200 pb-6 md:flex-row">
+        <div class="mb-8 flex flex-col items-center justify-between gap-4 pb-6 md:flex-row">
             <!-- Tabs -->
             <div class="flex w-full overflow-x-auto gap-2 whitespace-nowrap scrollbar-none pb-1 md:w-auto md:flex-wrap">
                 @foreach($categories as $cat)
