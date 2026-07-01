@@ -15,10 +15,13 @@ class AuctionController extends Controller
     /**
      * Hiển thị danh sách 34 tỉnh thành đấu giá biển số xe.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $counts = Cache::remember('auction_provinces_count_v3', 3600, function () {
-            return LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
+        $start = microtime(true);
+        $isNoCache = $request->has('nocache');
+
+        if ($isNoCache) {
+            $counts = LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
                 ->groupBy('province_code')
                 ->get()
                 ->keyBy('province_code')
@@ -27,7 +30,21 @@ class AuctionController extends Controller
                     'active' => $item->active ?? 0,
                 ])
                 ->toArray();
-        });
+        } else {
+            $counts = Cache::remember('auction_provinces_count_v3', 3600, function () {
+                return LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
+                    ->groupBy('province_code')
+                    ->get()
+                    ->keyBy('province_code')
+                    ->map(fn($item) => [
+                        'total' => $item->total,
+                        'active' => $item->active ?? 0,
+                    ])
+                    ->toArray();
+            });
+        }
+
+        $queryTime = microtime(true) - $start;
 
         $provinceImages = [
             'ha-noi' => 'https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?w=150&h=150&fit=crop&q=80', // Tháp Rùa
@@ -82,6 +99,8 @@ class AuctionController extends Controller
 
         return view('auction.index', [
             'provinces' => $provinces,
+            'queryTime' => $queryTime,
+            'isNoCache' => $isNoCache,
         ]);
     }
 

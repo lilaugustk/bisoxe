@@ -125,4 +125,16 @@
         </div>
     </section>
 </div>
+
+@if(request()->has('debug') || request()->has('nocache'))
+    <div class="fixed bottom-4 right-4 bg-gray-950/90 text-white text-xs font-mono px-4 py-2.5 rounded-2xl shadow-2xl border border-gray-800 z-[9999] flex flex-col gap-1 backdrop-blur-sm">
+        <div class="flex items-center gap-1.5">
+            <span class="inline-block w-2 h-2 rounded-full {{ $isNoCache ? 'bg-red-500' : 'bg-green-500' }}"></span>
+            <span class="font-bold">{{ $isNoCache ? 'NO-CACHE (DB Query)' : 'CACHE' }}</span>
+        </div>
+        <div class="text-[10px] text-gray-400">
+            Backend load: <span class="text-white font-bold">{{ number_format($queryTime * 1000, 2) }} ms</span>
+        </div>
+    </div>
+@endif
 @endsection
