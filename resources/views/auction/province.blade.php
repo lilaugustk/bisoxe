@@ -457,49 +457,49 @@
 
                     <div class="relative">
                         @if(count($filteredPlates) > 0)
-                        <!-- Desktop Table View -->
-                        <div class="hidden md:block overflow-x-auto mb-6">
+                        <!-- Desktop/Mobile Table View -->
+                        <div class="overflow-x-auto mb-6">
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="bg-gray-50 border-t border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider select-none">
-                                        <th class="w-16 px-6 py-4 text-center">STT</th>
-                                        <th class="px-6 py-4">Biển số</th>
-                                        <th class="px-6 py-4">{{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}</th>
-                                        <th class="px-6 py-4">Tỉnh, Thành phố</th>
-                                        <th class="px-6 py-4">Loại biển</th>
+                                        <th class="w-16 px-3 py-2.5 text-center whitespace-nowrap">STT</th>
+                                        <th class="px-3 py-2.5 whitespace-nowrap">Biển số</th>
+                                        <th class="px-3 py-2.5 whitespace-nowrap">{{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}</th>
+                                        <th class="px-3 py-2.5 whitespace-nowrap">Tỉnh, Thành phố</th>
+                                        <th class="px-3 py-2.5 whitespace-nowrap">Loại biển</th>
                                         @if($activeTab !== 'announce')
-                                            <th class="px-6 py-4">Thời gian đấu giá</th>
+                                            <th class="px-3 py-2.5 whitespace-nowrap">Thời gian đấu giá</th>
                                         @endif
-                                        <th class="w-40 px-6 py-4 text-center">Lựa chọn</th>
+                                        <th class="w-40 px-3 py-2.5 text-center whitespace-nowrap">Lựa chọn</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     @foreach($filteredPlates as $index => $plate)
                                         <tr class="transition duration-150 hover:bg-gray-50/50">
-                                            <td class="px-3 py-2 text-center text-sm text-gray-500">
+                                            <td class="px-3 py-1.5 text-center text-sm text-gray-500">
                                                 {{ $index + 1 + ($paginator->currentPage() - 1) * $paginator->perPage() }}
                                             </td>
-                                            <td class="px-3 py-2 text-sm font-bold whitespace-nowrap {{ $plate['color'] === 1 ? 'text-amber-600' : 'text-gray-700' }}">
+                                            <td class="px-3 py-1.5 text-sm font-bold whitespace-nowrap {{ $plate['color'] === 1 ? 'text-amber-600' : 'text-gray-700' }}">
                                                 {{ $plate['display_number'] }}
                                             </td>
-                                            <td class="px-3 py-2 text-sm text-gray-750 whitespace-nowrap font-bold text-[#8C1E1E]">
+                                            <td class="px-3 py-1.5 text-sm text-gray-750 whitespace-nowrap font-bold text-[#8C1E1E]">
                                                 {{ $plate['winning_price'] > 0 ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
                                             </td>
-                                            <td class="px-3 py-2 text-sm text-gray-700 whitespace-nowrap">
+                                            <td class="px-3 py-1.5 text-sm text-gray-700 whitespace-nowrap">
                                                 {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
                                             </td>
-                                            <td class="px-3 py-2 text-sm text-gray-700">
+                                            <td class="px-3 py-1.5 text-sm text-gray-700">
                                                 {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
                                             </td>
                                             @if($activeTab !== 'announce')
-                                                <td class="px-3 py-2 text-sm text-gray-700">
+                                                <td class="px-3 py-1.5 text-sm text-gray-700">
                                                     {{ $formatDate($plate['auction_start_time']) }}
                                                 </td>
                                             @endif
-                                            <td class="px-3 py-2 text-center">
+                                            <td class="px-3 py-1.5 text-center">
                                                 <a
                                                     href="/bien-so-{{ $plate['slug'] }}"
-                                                    class="inline-block rounded-md border border-[#8C1E1E] px-3 py-2 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
+                                                    class="inline-block rounded-md border border-[#8C1E1E] px-2.5 py-1.5 text-xs font-bold whitespace-nowrap text-[#8C1E1E] shadow-sm transition duration-200 hover:bg-[#8C1E1E] hover:text-white"
                                                 >
                                                     Phân tích biển số
                                                 </a>
@@ -508,74 +508,6 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-                        @endif
-
-                        @if(count($filteredPlates) > 0)
-                        <!-- Mobile Grid View -->
-                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:hidden select-none">
-                            @foreach($filteredPlates as $plate)
-                                <div class="group relative flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-2 shadow-3xs transition hover:-translate-y-0.5 hover:shadow-xs">
-                                    <!-- Card Header: Province & Badge -->
-                                    <div class="flex items-center justify-between mb-2 text-[11px] font-bold text-gray-500">
-                                        <span class="flex items-center gap-1.5">
-                                            <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                            {{ $plate['province'] ? $plate['province']['name'] : 'Chưa xác định' }}
-                                        </span>
-                                        <span class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">
-                                            {{ count($plate['kinds']) > 0 ? $plate['kinds'][0]['name'] : 'Biển thường' }}
-                                        </span>
-                                    </div>
-
-                                    <!-- Card Center: Simulated License Plate -->
-                                    <div class="flex justify-center py-1 select-none">
-                                        <div
-                                            class="relative flex aspect-[520/110] w-full max-w-[240px] items-center justify-center rounded border p-0.5 shadow-sm transition hover:scale-102 {{ $plate['color'] === 1 ? 'border-2 border-black/80 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}"
-                                        >
-                                            <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                                            <div class="flex h-full w-full items-center justify-center rounded border px-3 select-none {{ $plate['color'] === 1 ? 'border-black/30' : 'border-gray-200' }}">
-                                                <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black text-[1.1rem]">
-                                                    <span>{{ $plate['display_number'] }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Card Body: Price and Time -->
-                                    <div class="flex justify-between items-center text-xs border-t border-gray-50 pt-1">
-                                        <div class="flex flex-col gap-0.5">
-                                            <span class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">
-                                                {{ $activeTab === 'result' ? 'Giá trúng' : 'Giá khởi điểm' }}
-                                            </span>
-                                            <span class="text-sm font-black text-[#8C1E1E]">
-                                                {{ $plate['winning_price'] > 0 ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
-                                            </span>
-                                        </div>
-
-                                        @if($activeTab !== 'announce' && $plate['auction_start_time'])
-                                            <div class="flex flex-col items-end gap-0.5">
-                                                <span class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Ngày đấu</span>
-                                                <span class="text-[11px] font-bold text-gray-600">
-                                                    {{ explode(' ', $formatDate($plate['auction_start_time']))[0] }}
-                                                </span>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <!-- Card Footer: Action -->
-                                    <div class="pt-1">
-                                        <a
-                                            href="/bien-so-{{ $plate['slug'] }}"
-                                            class="flex w-full items-center justify-center rounded-xl border border-[#8C1E1E] bg-red-50/20 py-2 text-xs font-bold text-[#8C1E1E] shadow-xs transition hover:bg-[#8C1E1E] hover:text-white"
-                                        >
-                                            Phân tích chi tiết biển số →
-                                        </a>
-                                    </div>
-                                </div>
-                            @endforeach
                         </div>
                         @endif
 

@@ -1,4 +1,4 @@
-<?php
+c:\Users\Admin\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{7F00BA8A-B87F-49C7-A60F-80901C6D6615}.png<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
