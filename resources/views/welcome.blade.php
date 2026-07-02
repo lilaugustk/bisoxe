@@ -1143,6 +1143,20 @@
                 </div>
             </section>
 
+            <!-- Bảng xếp hạng theo tỉnh thành -->
+            <section class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8 py-6 md:py-8">
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">Bảng xếp hạng theo tỉnh thành</h2>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    @foreach($provincesList as $prov)
+                        <a href="{{ url('/' . $prov['slug']) }}" class="px-3 py-1.5 bg-white border border-gray-200 text-xs font-bold text-gray-600 rounded-lg hover:bg-[#8C1E1E]/5 hover:text-[#8C1E1E] hover:border-[#8C1E1E]/20 transition shadow-3xs">
+                            {{ $prov['name'] }}
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+
             <!-- 5. SEO Text Section -->
             <section id="y-nghia-bien-so" class="scroll-mt-20 bg-white py-8">
                 <div class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8">

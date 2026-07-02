@@ -115,13 +115,13 @@
                 >
                     Đấu giá
                 </a>
-                {{-- <a
+                <a
                     href="/dinh-gia"
                     class="{{ $isValuationActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
                     Định giá AI
                 </a>
-                <a
+                {{-- <a
                     href="/chinh-thuc"
                     class="{{ $isOfficialActive ? 'text-[#8C1E1E]' : 'transition hover:text-[#8C1E1E]' }}"
                 >
@@ -218,14 +218,14 @@
             >
                 Đấu giá
             </a>
-            {{-- <a
+            <a
                 href="/dinh-gia"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isValuationActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"
             >
                 Định giá AI
             </a>
-            <a
+            {{-- <a
                 href="/chinh-thuc"
                 class="py-3 transition hover:text-[#8C1E1E] {{ $isOfficialActive ? 'text-[#8C1E1E]' : '' }}"
                 @click="isMobileMenuOpen = false"

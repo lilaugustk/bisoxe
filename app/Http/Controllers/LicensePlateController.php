@@ -333,6 +333,16 @@ class LicensePlateController extends Controller
                 ->toArray();
         });
 
+        $provincesList = Cache::remember('analysis_provinces_v2', 3600, function () {
+            return Province::all()->map(function ($p) {
+                $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
+                return [
+                    'name' => $cleanName,
+                    'slug' => 'top-100-bien-so-dep-dat-nhat-' . \Illuminate\Support\Str::slug($cleanName),
+                ];
+            })->sortBy('name')->values()->toArray();
+        });
+
         return view('welcome', [
             'paginator' => $paginated,
             'plates' => $plates,
@@ -340,6 +350,7 @@ class LicensePlateController extends Controller
             'kinds' => PlateKind::select('id', 'name')->get()->toArray(),
             'uniqueLetters' => $uniqueLetters,
             'trustStats' => $trustStats,
+            'provincesList' => $provincesList,
             'filters' => [
                 'tab' => $tab,
                 'search' => $search,
