@@ -48,6 +48,7 @@
             'send_to': 'AW-16670995979/hWC9CJHak8oZEIvsrI0-'
         });
     </script>
+    @yield('style')
 </head>
 
 <body class="font-sans antialiased text-gray-900 bg-gray-50 flex flex-col min-h-screen">
