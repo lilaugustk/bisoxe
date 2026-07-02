@@ -30,6 +30,11 @@
 
         <!-- Vite CSS & JS -->
         @vite(['resources/css/app.css', 'resources/js/app.ts'])
+
+        <!-- Event snippet for Onsite 5 Minutes conversion page -->
+        <script>
+          gtag('event', 'conversion', {'send_to': 'AW-16670995979/hWC9CJHak8oZEIvsrI0-'});
+        </script>
     </head>
     <body class="font-sans antialiased text-gray-900 bg-gray-50 flex flex-col min-h-screen">
         <!-- Google Tag Manager (noscript) -->
