@@ -1,13 +1,15 @@
 @import 'tailwindcss';
 
 
-
 /* Alpine.js: ẩn các element có x-cloak trước khi Alpine khởi tạo */
-[x-cloak] { display: none !important; }
+[x-cloak] {
+    display: none !important;
+}
 
 html {
     scroll-behavior: smooth;
-    scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears/disappears */
+    scrollbar-gutter: stable;
+    /* Prevent layout shift when scrollbar appears/disappears */
 }
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -17,7 +19,13 @@ html {
     --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-body, h1, h2, h3, h4, h5, h6 {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: var(--font-sans);
 }
 
@@ -46,7 +54,8 @@ body, h1, h2, h3, h4, h5, h6 {
 .ai-content-body p {
     margin-bottom: 1.25rem;
     line-height: 1.8;
-    text-align: justify; /* Căn đều 2 bên */
+    text-align: justify;
+    /* Căn đều 2 bên */
 }
 
 .ai-content-body ul,
@@ -128,8 +137,8 @@ body, h1, h2, h3, h4, h5, h6 {
 }
 
 /* Khi toàn bộ bảng không có thead — target tr đầu tiên của table */
-.ai-content-body table > tbody > tr:first-child > td,
-.ai-content-body table > tr:first-child > td {
+.ai-content-body table>tbody>tr:first-child>td,
+.ai-content-body table>tr:first-child>td {
     background: #8c1e1e !important;
     color: white !important;
     font-weight: 700 !important;
@@ -217,10 +226,13 @@ body, h1, h2, h3, h4, h5, h6 {
 
 /* Custom scrollbar-none utility to hide scrollbars */
 @utility scrollbar-none {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+
+    /* Firefox */
     &::-webkit-scrollbar {
-        display: none; /* Chrome, Safari and Opera */
+        display: none;
+        /* Chrome, Safari and Opera */
     }
 }
-
