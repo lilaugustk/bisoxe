@@ -116,8 +116,7 @@ class LicensePlateController extends Controller
             ];
             if (array_key_exists($tabValue, $tabSegmentMap)) {
                 $segment = $tabSegmentMap[$tabValue];
-                $query = $request->query();
-                unset($query['tab']);
+                $query = $request->except(['tab', 'vehicle']); // 'vehicle' đã encode trong URL path
 
                 $baseUrl = $request->url();
                 $newUrl = rtrim($baseUrl, '/');
@@ -136,7 +135,7 @@ class LicensePlateController extends Controller
         
         // Nếu người dùng vào /cong-bo trực tiếp, redirect 301 về base URL không có /cong-bo để tránh trùng lặp nội dung
         if ($tabSegment === 'cong-bo') {
-            $query = $request->query();
+            $query = $request->except(['vehicle']); // 'vehicle' đã encode trong URL path
             $baseUrl = $request->url();
             $newUrl = preg_replace('/\/cong-bo$/', '', rtrim($baseUrl, '/'));
             if ($newUrl === '') {
@@ -281,10 +280,15 @@ class LicensePlateController extends Controller
 
         $items = $query->forPage($page, $limit)->get();
 
-        $paginatorQuery = $request->query();
+        // Loại bỏ các param đã được encode trong URL path khỏi link phân trang:
+        // - 'vehicle': loại xe đã phân biệt qua path (/danh-sach-bien-so-xe-o-to vs /danh-sach-bien-so-xe-may)
+        // - 'province': tỉnh đã phân biệt qua route segment {province_slug}
+        // Việc giữ lại các param này gây URL dư thừa, có thể gây 404 hoặc duplicate content.
+        $paramsToRemove = ['vehicle'];
         if ($request->route('province_slug')) {
-            unset($paginatorQuery['province']);
+            $paramsToRemove[] = 'province';
         }
+        $paginatorQuery = $request->except($paramsToRemove);
 
         $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
             $items,

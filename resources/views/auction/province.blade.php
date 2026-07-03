@@ -20,9 +20,9 @@
         $heroH1 = "Danh Sách Biển Số Xe Máy Đấu Giá " . $cleanProvinceName;
         $heroSubtitle = "Danh sách biển số xe máy đấu giá tại " . $cleanProvinceName;
     } else {
-        $pageTitle = "Danh Sách Biển Số Xe Đấu Giá " . $cleanProvinceName . " Mới Nhất 2026";
-        $pageDescription = "Tra cứu danh sách biển số xe đấu giá " . $cleanProvinceName . " được cập nhật liên tục. Xem biển số đang đấu giá, sắp đấu giá, kết quả đấu giá, giá khởi điểm và thống kê thị trường tại " . $cleanProvinceName . ".";
-        $heroH1 = "Danh Sách Biển Số Xe Đấu Giá " . $cleanProvinceName;
+        $pageTitle = "Danh Sách Biển Số Xe Ô TÔ Đấu Giá " . $cleanProvinceName . " Mới Nhất 2026";
+        $pageDescription = "Tra cứu danh sách biển số xe ô tô đấu giá " . $cleanProvinceName . " được cập nhật liên tục. Xem biển số đang đấu giá, sắp đấu giá, kết quả đấu giá, giá khởi điểm và thống kê thị trường tại " . $cleanProvinceName . ".";
+        $heroH1 = "Danh Sách Biển Số Xe Ô Tô Đấu Giá " . $cleanProvinceName;
     }
 
     $formatMoney = function($value) {
@@ -219,7 +219,7 @@
                         <!-- Column 6 -->
                         <div class="text-center py-2 bg-transparent border-0 shadow-none">
                             <span class="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá cao nhất</span>
-                            <span class="block mt-2 text-sm sm:text-base font-extrabold text-blue-600">
+                            <span class="block mt-4 text-sm sm:text-base font-extrabold text-blue-600">
                                 {{ $formatPriceText($provinceStats['max_price']) }}
                             </span>
                         </div>
@@ -744,7 +744,7 @@
                 <!-- Section: FAQ -->
                 <div class="space-y-2">
                     <h2 class="text-lg font-bold text-gray-900">Câu hỏi thường gặp (FAQ)</h2>
-                    <div x-data="{ activeFaq: null }" class="space-y-2">
+                    <div class="space-y-4 pt-2">
                         @php
                             $faqs = [
                                 [
@@ -773,17 +773,14 @@
                                 ]
                             ];
                         @endphp
-                        @foreach($faqs as $i => $faq)
-                            <div class="py-2">
-                                <button type="button" @click="activeFaq = activeFaq === {{ $i }} ? null : {{ $i }}" class="flex w-full items-center justify-between text-left text-[14px] font-bold text-gray-800 focus:outline-none transition-colors duration-150 py-1 hover:text-[#8C1E1E]">
-                                    <span>{{ $faq['q'] }}</span>
-                                    <svg class="h-3.5 w-3.5 text-gray-400 transform transition-transform duration-200" :class="activeFaq === {{ $i }} ? 'rotate-180 text-[#8C1E1E]' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                                <div x-show="activeFaq === {{ $i }}" x-transition.opacity.duration.200ms class="mt-2 text-[14px] text-gray-600 leading-relaxed text-justify">
+                        @foreach($faqs as $faq)
+                            <div class="space-y-1">
+                                <h3 class="text-[14px] font-bold text-gray-800">
+                                    {{ $faq['q'] }}
+                                </h3>
+                                <p class="text-[14px] text-gray-600 leading-relaxed text-justify">
                                     {{ $faq['a'] }}
-                                </div>
+                                </p>
                             </div>
                         @endforeach
                     </div>

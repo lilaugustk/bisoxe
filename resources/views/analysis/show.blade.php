@@ -538,6 +538,29 @@
                         </div>
                     </div>
 
+                    @if(isset($config['province']))
+                        @php
+                            $targetProvince = $config['province'];
+                            $provinceCleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $targetProvince->name);
+                            $provinceFullSlug = \Illuminate\Support\Str::slug($targetProvince->name);
+                        @endphp
+                        <!-- Link điều hướng về trang đấu giá của tỉnh -->
+                        <div class="bg-gray-50 rounded-xl space-y-2">
+                            <h2 class="text-lg font-bold text-gray-900">Xem danh sách đấu giá chi tiết</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                Để cập nhật danh sách các biển số xe ô tô và xe máy đang trong quá trình công bố, chuẩn bị lên sàn đấu giá hoặc kết quả đấu giá đầy đủ tại khu vực này, vui lòng truy cập:
+                            </p>
+                            <div>
+                                <a href="/dau-gia-bien-so-o-to-{{ $provinceFullSlug }}" class="inline-flex items-center gap-1 text-sm font-bold text-[#8C1E1E] hover:underline">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    Danh Sách Biển Số Xe Đấu Giá {{ $provinceCleanName }} Mới Nhất 2026
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Định giá biển số của bạn (CTA) -->
                     <div class="text-center space-y-[15px]">
                         <h3 class="text-lg font-bold text-[#8C1E1E]">Định giá biển số của bạn</h3>

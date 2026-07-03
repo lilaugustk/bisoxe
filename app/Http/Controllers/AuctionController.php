@@ -148,7 +148,8 @@ class AuctionController extends Controller
         
         // Tránh trùng lặp nội dung khi truy cập trực tiếp bằng /cong-bo
         if ($tabSegment === 'cong-bo') {
-            $query = $request->query();
+            // Loại bỏ 'vehicle' khỏi query vì đã được encode trong URL path
+            $query = $request->except(['vehicle']);
             $newUrl = $vehiclePrefix . $canonicalFullSlug;
             if (count($query) > 0) {
                 $newUrl .= '?' . http_build_query($query);
@@ -286,7 +287,10 @@ class AuctionController extends Controller
 
         $items = $query->forPage($page, $limit)->get();
 
-        $paginatorQuery = $request->query();
+        // Loại bỏ param 'vehicle' khỏi link phân trang vì loại xe đã được
+        // phân biệt qua URL path (/dau-gia-bien-so-o-to-... vs /dau-gia-bien-so-xe-may-...)
+        // Giữ lại param 'vehicle' trong query sẽ gây URL dư thừa và có thể gây duplicate content.
+        $paginatorQuery = $request->except(['vehicle']);
 
         $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
             $items,

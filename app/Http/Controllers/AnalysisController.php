@@ -149,6 +149,7 @@ class AnalysisController extends Controller
                         'meta_description' => "Cập nhật bảng xếp hạng 100 biển số đấu giá có giá trị cao nhất tại khu vực {$cleanName}. Xem giá trúng đấu giá và thông tin chi tiết.",
                         'h1' => "Top 100 Biển Số Đẹp Đắt Nhất {$cleanName}",
                         'description' => "Danh sách chi tiết 100 biển số xe đẹp trúng đấu giá với mức giá cao nhất tại {$cleanName} (bao gồm cả xe ô tô và xe máy). Toàn bộ dữ liệu được cập nhật tự động trực tiếp từ phiên đấu giá chính thức.",
+                        'province' => $prov,
                         'query' => function() use ($prov) {
                             return LicensePlate::where('status', 'completed')
                                 ->where('province_code', $prov->code)
@@ -323,6 +324,7 @@ class AnalysisController extends Controller
                         'meta_description' => "Danh sách bảng xếp hạng các biển số {$kindName} trúng đấu giá có giá trị cao nhất tại {$provinceCleanName}. Cập nhật dữ liệu nhanh và chính xác.",
                         'h1' => "Top Biển Số {$kindName} Đắt Nhất {$provinceCleanName}",
                         'description' => "Thống kê chi tiết {$kindDesc} trúng đấu giá cao nhất tại khu vực {$provinceCleanName}. Dữ liệu được cập nhật tự động liên tục.",
+                        'province' => $matchedProvince,
                         'query' => function() use ($kindPriority, $matchedProvince) {
                             return LicensePlate::where('status', 'completed')
                                 ->where('province_code', $matchedProvince->code)
