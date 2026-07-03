@@ -182,7 +182,7 @@
     </nav>
 
     <!-- Main Content Layout (2 Cột rộng để lắp đầy không gian) -->
-    <main class="mx-auto max-w-[1440px] p-[14px] sm:p-6 lg:p-8">
+    <main class="mx-auto max-w-[1440px] p-[10px] sm:p-6 lg:p-8">
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             

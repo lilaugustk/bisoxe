@@ -61,7 +61,7 @@
     </section>
 
     <!-- Main Grid Section -->
-    <section class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-[1440px] px-[10px] sm:px-6 lg:px-8 py-6 md:py-8">
         <div class="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-5">
             <div>
                 <h2 class="text-2xl font-bold tracking-tight text-gray-900">

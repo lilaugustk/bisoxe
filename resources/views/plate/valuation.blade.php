@@ -12,7 +12,7 @@
 @endsection
 
 @section('content')
-<div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] antialiased"
+<div class="min-h-screen bg-white font-sans text-[#111827] antialiased"
      x-data="{
         vehicle_type: '{{ old('vehicle_type', 'car') }}',
         local_symbol: '{{ old('local_symbol', '') }}',
@@ -150,44 +150,59 @@
         }
      }">
     
-    <!-- Giao diện công cụ chính -->
-    <main class="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <!-- Tiêu đề trang cho SEO & UX (Ẩn đi theo yêu cầu) -->
-        <h1 class="sr-only">Định giá biển số xe trực tuyến</h1>
+    <!-- Breadcrumb -->
+    <nav class="py-3 bg-white">
+        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 text-xs font-semibold text-gray-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+            <a href="/" class="hover:text-[#8C1E1E] transition shrink-0">Trang chủ</a>
+            <span class="shrink-0 text-gray-300">&raquo;</span>
+            <span class="text-gray-900 truncate shrink-0 max-w-[180px] sm:max-w-none">Định giá biển số</span>
+        </div>
+    </nav>
 
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden py-6 sm:py-6 bg-white">
+        <!-- Background Decorative Elements -->
+        <div class="absolute inset-0 pointer-events-none opacity-30">
+            <div class="absolute -top-40 -right-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-[#8C1E1E]/10 to-transparent blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-[#F5B800]/5 to-transparent blur-3xl"></div>
+        </div>
+
+        <div class="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+            <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-[32px]">
+                Định giá biển số xe trực tuyến
+            </h1>
+            <p class="mx-auto mt-4 mb-4 max-w-2xl text-xs sm:text-sm text-gray-500">
+                Nhập biển số xe ô tô hoặc xe máy của bạn để tự định giá, xem thông tin định giá tham khảo của hệ thống và đối chiếu lịch sử đấu giá.
+            </p>
+        </div>
+    </section>
+
+    <!-- Giao diện công cụ chính -->
+    <main class="mx-auto max-w-4xl px-2.5 sm:px-6 lg:px-8 py-6 md:py-8">
+        
+        <div class="max-w-4xl mx-auto space-y-12">
             
-            <!-- Cột trái: Biển số ảo Live Preview và Form nhập liệu -->
-            <div class="space-y-6 lg:col-span-7">
+            <!-- Biển số ảo Live Preview và Form nhập liệu -->
+            <div class="space-y-6">
                 
                 <!-- Box Preview biển số xe ảo -->
-                <div class="relative flex flex-col items-center justify-center overflow-hidden rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-6 shadow-none sm:shadow-sm min-h-[220px]">
+                <div class="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl py-6 px-4 bg-gray-50/30">
                     <!-- Hiệu ứng nền -->
                     <div class="absolute -top-12 -left-12 h-32 w-32 rounded-full bg-red-50/20 blur-2xl"></div>
                     <div class="absolute -right-12 -bottom-12 h-32 w-32 rounded-full bg-red-50/50 blur-2xl"></div>
 
-                    <!-- Header preview -->
-                    <div class="relative z-10 mb-4 flex w-full justify-between items-center px-2">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Xem trước biển số</span>
-                        <span x-show="parsedPlate.provinceName" class="text-xs font-bold text-[#8C1E1E]" x-text="'Tỉnh/TP: ' + parsedPlate.provinceName"></span>
-                    </div>
+                    <!-- Province info display -->
+                    <span x-show="parsedPlate.provinceName" class="absolute top-3 right-4 text-[10px] font-bold text-[#8C1E1E]" x-text="'Tỉnh/TP: ' + parsedPlate.provinceName"></span>
 
                     <!-- Khung hiển thị biển số ảo -->
-                    <div class="relative z-10 flex w-full items-center justify-center py-2 select-none">
+                    <div class="relative z-10 flex w-full items-center justify-center select-none">
                         <div class="perspective-1000 w-full flex justify-center">
                             <div class="transform transition-transform duration-500 hover:scale-102 w-full flex justify-center">
                                 
                                 <!-- 1. Biển dài (Long Plate Style) -->
-                                <div x-show="plateStyle === 'long'"
-                                    class="relative flex aspect-[520/110] w-full max-w-[420px] items-center justify-center rounded-lg border p-1 shadow-[0_8px_16px_-3px_rgba(0,0,0,0.08),inset_0_2px_4px_rgba(255,255,255,0.7)] transition-all duration-300"
-                                    :class="color === 1 
-                                        ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' 
-                                        : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
-                                >
+                                <div class="relative flex aspect-[520/110] w-full max-w-[420px] items-center justify-center rounded-lg border p-1 shadow-[0_8px_16px_-3px_rgba(0,0,0,0.08),inset_0_2px_4px_rgba(255,255,255,0.7)] transition-all duration-300 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black">
                                     <div class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                                    <div class="flex h-full w-full items-center justify-center rounded border px-6 select-none"
-                                        :class="color === 1 ? 'border-black/30' : 'border-gray-200'"
-                                    >
+                                    <div class="flex h-full w-full items-center justify-center rounded border px-6 select-none border-gray-200">
                                         <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black">
                                             <span class="text-[1.8rem] min-[400px]:text-[2.2rem] leading-none uppercase" x-text="(parsedPlate.localSymbol || '30') + (parsedPlate.serialLetter || (vehicle_type === 'car' ? 'K' : 'AA'))"></span>
                                             <span class="mx-2 text-[1.6rem] min-[400px]:text-[2rem] leading-none text-black/75">-</span>
@@ -198,48 +213,13 @@
                                     </div>
                                 </div>
 
-                                <!-- 2. Biển vuông (Square Plate Style) -->
-                                <div x-show="plateStyle === 'square'"
-                                    class="relative flex aspect-[280/200] w-full max-w-[210px] items-center justify-center rounded-xl border p-1.5 shadow-[0_8px_16px_-3px_rgba(0,0,0,0.08),inset_0_2px_4px_rgba(255,255,255,0.7)] transition-all duration-300"
-                                    :class="color === 1 
-                                        ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' 
-                                        : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black'"
-                                >
-                                    <div class="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                                    <div class="flex h-full w-full flex-col items-center justify-center gap-y-1.5 min-[400px]:gap-y-2 rounded border px-4 py-3 select-none"
-                                        :class="color === 1 ? 'border-black/30' : 'border-gray-200'"
-                                    >
-                                        <div class="w-full text-center text-[2.0rem] min-[400px]:text-[2.3rem] leading-none font-black uppercase"
-                                             x-text="(parsedPlate.localSymbol || '30') + (parsedPlate.serialLetter || (vehicle_type === 'car' ? 'K' : 'AA'))">
-                                        </div>
-                                        <div class="flex w-full items-end justify-center text-center text-[2.0rem] min-[400px]:text-[2.3rem] leading-none font-black">
-                                            <span x-text="parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(0, 3) : '999'"></span>.<span x-text="parsedPlate.serialNumber ? parsedPlate.serialNumber.substring(3) : '99'"></span>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Chuyển đổi dáng biển số -->
-                    <div class="mt-4 flex rounded-lg border border-gray-200 bg-gray-100 p-0.5">
-                        <button @click="plateStyle = 'long'" type="button"
-                            class="rounded-md px-3.5 py-1 text-xs font-bold transition"
-                            :class="plateStyle === 'long' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
-                        >
-                            Biển dài
-                        </button>
-                        <button @click="plateStyle = 'square'" type="button"
-                            class="rounded-md px-3.5 py-1 text-xs font-bold transition"
-                            :class="plateStyle === 'square' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
-                        >
-                            Biển vuông
-                        </button>
-                    </div>
                 </div>
 
-                <!-- Card Form nhập liệu -->
-                <div class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-8 shadow-none sm:shadow-sm">
+                <!-- Form nhập liệu -->
+                <div>
                     <form action="{{ url('/dinh-gia') }}" method="POST" class="space-y-6">
                         @csrf
                         
@@ -362,56 +342,30 @@
                             @enderror
                         </div>
 
-                        <!-- Nhập mức giá mong muốn (asking_price) và chọn màu biển số -->
-                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                            
-                            <!-- Giá trị mong muốn -->
-                            <div>
-                                <label for="asking_price" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                                    Mức giá bạn tự định giá (VND) <span class="text-red-500">*</span>
-                                </label>
-                                <div class="relative">
-                                    <input
-                                        id="asking_price"
-                                        name="asking_price"
-                                        type="text"
-                                        x-model="asking_price"
-                                        @input="formatPriceInput"
-                                        placeholder="Nhập mức giá bạn định giá"
-                                        class="block w-full rounded-xl border py-3.5 pl-4 pr-12 text-sm font-semibold shadow-sm focus:border-[#8C1E1E] focus:ring-[#8C1E1E] @error('asking_price') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-200 @enderror"
-                                    />
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4">
-                                        <span class="text-xs font-bold text-gray-400">VND</span>
-                                    </div>
-                                </div>
-                                @error('asking_price')
-                                    <p class="mt-1.5 text-xs font-semibold text-red-600">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
-                            </div>
-
-                            <!-- Màu sắc biển số -->
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                                    Loại biển số (Màu sắc)
-                                </label>
-                                <div class="flex rounded-xl border border-gray-200 p-1 bg-gray-50">
-                                    <button type="button" @click="color = 0"
-                                        class="flex-1 rounded-lg py-2.5 text-[10px] min-[375px]:text-xs font-bold transition whitespace-nowrap"
-                                        :class="color === 0 ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-900'"
-                                    >
-                                        Nền Trắng <span class="min-[380px]:inline hidden">(Cá nhân)</span>
-                                    </button>
-                                    <button type="button" @click="color = 1"
-                                        class="flex-1 rounded-lg py-2.5 text-[10px] min-[375px]:text-xs font-bold transition whitespace-nowrap"
-                                        :class="color === 1 ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-900'"
-                                    >
-                                        Nền Vàng <span class="min-[380px]:inline hidden">(Kinh doanh)</span>
-                                    </button>
+                        <!-- Nhập mức giá mong muốn (asking_price) -->
+                        <div>
+                            <label for="asking_price" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+                                Mức giá bạn tự định giá (VND) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input
+                                    id="asking_price"
+                                    name="asking_price"
+                                    type="text"
+                                    x-model="asking_price"
+                                    @input="formatPriceInput"
+                                    placeholder="Nhập mức giá bạn định giá"
+                                    class="block w-full rounded-xl border py-3.5 pl-4 pr-12 text-sm font-semibold shadow-sm focus:border-[#8C1E1E] focus:ring-[#8C1E1E] @error('asking_price') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-200 @enderror"
+                                />
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                                    <span class="text-xs font-bold text-gray-400">VND</span>
                                 </div>
                             </div>
-
+                            @error('asking_price')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">
+                                    {{ $message }}
+                                </p>
+                            @enderror
                         </div>
 
                         <!-- Button gửi đi -->
@@ -427,84 +381,87 @@
 
             </div>
 
-            <!-- Cột phải: Hướng dẫn định giá & Biển số định giá gần đây -->
-            <div class="space-y-6 lg:col-span-5">
-                
-                <!-- Box Hướng dẫn / Lợi ích -->
-                <div class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-6 shadow-none sm:shadow-sm">
-                    <h3 class="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
-                        Quy trình định giá hoạt động
-                    </h3>
-                    <ul class="mt-4 space-y-3.5 text-xs text-gray-600 leading-relaxed">
-                        <li class="flex items-start gap-2.5">
-                            <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-50 text-[10px] font-bold text-[#8C1E1E]">1</span>
-                            <div>
-                                <strong class="text-gray-800">Tự nhập mức định giá:</strong> Bạn điền mức giá trị mà bạn tự định giá hoặc mong muốn giao dịch cho biển số xe của mình.
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-2.5">
-                            <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-50 text-[10px] font-bold text-[#8C1E1E]">2</span>
-                            <div>
-                                <strong class="text-gray-800">Định giá tham khảo hệ thống:</strong> Hệ thống tự động phân tích thế số, sê-ri đầu số và khu vực đăng ký để đưa ra khoảng định giá khách quan.
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-2.5">
-                            <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-50 text-[10px] font-bold text-[#8C1E1E]">3</span>
-                            <div>
-                                <strong class="text-gray-800">Đối chiếu lịch sử đấu giá:</strong> So sánh giá trị đề xuất với kết quả trúng đấu giá chính thức từ VPA của các biển số cùng sê-ri số đuôi.
-                            </div>
-                        </li>
-                    </ul>
-                </div>
+            <!-- Quy trình định giá hoạt động -->
+            <div>
+                <h3 class="text-base font-bold text-gray-900 pb-3">
+                    Quy trình định giá hoạt động
+                </h3>
+                <ul class="mt-4 space-y-3.5 text-xs text-gray-600 leading-relaxed">
+                    <li class="flex items-start gap-2.5">
+                        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-50 text-[10px] font-bold text-[#8C1E1E]">1</span>
+                        <div>
+                            <strong class="text-gray-800">Tự nhập mức định giá:</strong> Bạn điền mức giá trị mà bạn tự định giá hoặc mong muốn giao dịch cho biển số xe của mình.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-2.5">
+                        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-50 text-[10px] font-bold text-[#8C1E1E]">2</span>
+                        <div>
+                            <strong class="text-gray-800">Định giá tham khảo hệ thống:</strong> Hệ thống tự động phân tích thế số, sê-ri đầu số và khu vực đăng ký để đưa ra khoảng định giá khách quan.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-2.5">
+                        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-50 text-[10px] font-bold text-[#8C1E1E]">3</span>
+                        <div>
+                            <strong class="text-gray-800">Đối chiếu lịch sử đấu giá:</strong> So sánh giá trị đề xuất với kết quả trúng đấu giá chính thức từ VPA của các biển số cùng sê-ri số đuôi.
+                        </div>
+                    </li>
+                </ul>
+            </div>
 
-                <!-- Danh sách định giá gần đây -->
-                <div class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-4 sm:p-6 shadow-none sm:shadow-sm">
-                    <h3 class="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center justify-between">
-                        <span>Định giá gần đây</span>
-                        <span class="rounded bg-gray-100 px-2 py-0.5 text-[9px] font-black text-gray-500 uppercase">CỘNG ĐỒNG</span>
+            <!-- Danh sách định giá gần đây -->
+            <div>
+                <h3 class="text-base font-bold text-gray-900 pb-3 flex items-center justify-between">
+                    <span>Định giá gần đây</span>
                     </h3>
-                    
-                    @if(count($recent_valuations) === 0)
-                        <div class="py-8 text-center text-xs text-gray-400">
-                            Chưa có lượt định giá nào gần đây.
-                        </div>
-                    @else
-                        <div class="mt-4 divide-y divide-gray-100">
-                            @foreach($recent_valuations as $recent)
-                                <div class="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
-                                    <div class="flex items-center gap-3">
-                                        <!-- Biển số mini mô phỏng -->
-                                        <button @click="openValuationModal({{ json_encode($recent) }})" type="button"
-                                            class="relative flex aspect-[280/100] w-20 shrink-0 items-center justify-center rounded border p-0.5 font-sans text-[10px] font-black tracking-tight text-black shadow-sm transition hover:scale-105 cursor-pointer"
-                                            :class="{{ $recent['color'] }} === 1 
-                                                ? 'border-black/50 bg-gradient-to-b from-amber-400 to-amber-500' 
-                                                : 'border-gray-200 bg-white'"
-                                        >
+                
+                @if(count($recent_valuations) === 0)
+                    <div class="py-8 text-center text-xs text-gray-400">
+                        Chưa có lượt định giá nào gần đây.
+                    </div>
+                @else
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[500px] sm:min-w-0">
+                            <thead>
+                                <tr class="bg-gray-50 border-t border-b border-gray-200 text-xs font-bold uppercase tracking-wider select-none">
+                                    <th class="px-4 py-2.5 whitespace-nowrap">Biển số</th>
+                                    <th class="px-4 py-2.5 whitespace-nowrap">Tỉnh thành</th>
+                                    <th class="px-4 py-2.5 whitespace-nowrap">Phương tiện</th>
+                                    <th class="px-4 py-2.5 whitespace-nowrap">Loại biển</th>
+                                    <th class="px-4 py-2.5 text-center whitespace-nowrap">Kết quả</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach($recent_valuations as $recent)
+                                    <tr class="transition duration-155 hover:bg-gray-50/50">
+                                        <td class="px-4 py-3 text-sm font-bold text-gray-800 whitespace-nowrap">
                                             {{ $recent['display_number'] }}
-                                        </button>
-                                        <div class="flex flex-col gap-0.5">
-                                            <span class="text-xs font-bold text-gray-800">{{ $recent['province_name'] }}</span>
-                                            <span class="text-[9px] font-bold text-gray-400">
-                                                {{ $recent['vehicle_type'] === 'car' ? 'Ô tô' : 'Xe máy' }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col items-end gap-1">
-                                        <!-- Hiển thị phân loại VIP nếu có -->
-                                        @if(count($recent['kinds']) > 0)
-                                            <span class="rounded bg-red-50 px-1.5 py-0.5 text-[8px] font-black text-[#8C1E1E] uppercase">
-                                                {{ $recent['kinds'][0]['name'] }}
-                                            </span>
-                                        @endif
-                                        <button @click="openValuationModal({{ json_encode($recent) }})" type="button" class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 px-2.5 py-1 text-[10px] font-bold text-[#8C1E1E] hover:bg-red-50 hover:text-[#721818] shadow-sm transition cursor-pointer">
-                                            Xem kết quả
-                                        </button>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                                            {{ $recent['province_name'] }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                                            {{ $recent['vehicle_type'] === 'car' ? 'Ô tô' : 'Xe máy' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                                            @if(count($recent['kinds']) > 0)
+                                                    {{ $recent['kinds'][0]['name'] }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">Biển thường</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                                            <button @click="openValuationModal({{ json_encode($recent) }})" type="button" class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 px-2.5 py-1 text-[11px] font-bold text-[#8C1E1E] hover:bg-[#8C1E1E] hover:text-white shadow-sm transition cursor-pointer">
+                                                Xem kết quả
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
 
             </div>
 
