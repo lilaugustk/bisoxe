@@ -15,7 +15,7 @@ class BlockSandboxSearch
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->query('search') === '{search_term_string}') {
+        if ($request->has('search')) {
             abort(404);
         }
 
