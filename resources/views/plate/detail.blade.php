@@ -153,6 +153,7 @@
         isTocExpanded: window.innerWidth >= 768,
         isPending: {{ $is_pending ? 'true' : 'false' }},
         plateId: {{ $plate['id'] ?? 'null' }},
+        errorGenerating: false,
     
         toSlug(str) {
             return str
@@ -377,15 +378,25 @@
     
         initPendingPoll() {
             if (this.isPending && this.plateId) {
-                fetch(`/api/bien-so/${this.plateId}/generate-article`)
+                this.errorGenerating = false;
+                fetch(`/api/bien-so/${this.plateId}/generate-article?t=${Date.now()}`)
                     .then(res => {
-                        if (res.ok) {
-                            window.location.reload();
+                        if (!res.ok) {
+                            throw new Error('Failed to generate article');
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'success' && data.slug) {
+                            window.location.href = `/bien-so-${data.slug}`;
                         } else {
-                            console.error('Failed to generate article');
+                            throw new Error(data.error || 'Failed to generate article');
                         }
                     })
-                    .catch(err => console.error(err));
+                    .catch(err => {
+                        this.errorGenerating = true;
+                        console.error(err);
+                    });
             }
         },
     
@@ -892,19 +903,38 @@
 
             <!-- Loading state: If content is still generating (Ẩn nếu là biển tự định giá) -->
             @if ($is_pending && ($plate['status'] ?? '') !== 'custom_valuation')
-                <div id="pending-loader-desktop" class="flex flex-col items-center justify-center py-16 text-center">
-                    <div class="relative mb-6 h-16 w-16">
-                        <!-- Pulse spinner -->
-                        <div class="absolute inset-0 animate-ping rounded-full border-4 border-[#8C1E1E]/20"></div>
-                        <div
-                            class="absolute inset-0 animate-spin rounded-full border-4 border-t-[#8C1E1E] border-r-transparent border-b-transparent border-l-transparent">
+                <div id="pending-loader-desktop" class="flex flex-col items-center justify-center py-16 text-center" x-show="isPending">
+                    <!-- Spinner shown if no error -->
+                    <div x-show="!errorGenerating" class="flex flex-col items-center space-y-6">
+                        <div class="relative h-16 w-16">
+                            <!-- Pulse spinner -->
+                            <div class="absolute inset-0 animate-ping rounded-full border-4 border-[#8C1E1E]/20"></div>
+                            <div
+                                class="absolute inset-0 animate-spin rounded-full border-4 border-t-[#8C1E1E] border-r-transparent border-b-transparent border-l-transparent">
+                            </div>
                         </div>
+                        <h3 class="text-xl font-bold text-gray-900">Đang tổng hợp dữ liệu...</h3>
+                        <p class="max-w-md text-sm text-gray-500">
+                            Hệ thống đang tiến hành tra cứu ý nghĩa thế số, đối chiếu lịch sử giá trúng đấu giá và lập báo cáo
+                            chi tiết. Vui lòng đợi trong giây lát!
+                        </p>
                     </div>
-                    <h3 class="mb-2 text-xl font-bold text-gray-900">Đang tổng hợp dữ liệu...</h3>
-                    <p class="max-w-md text-sm text-gray-500">
-                        Hệ thống đang tiến hành tra cứu ý nghĩa thế số, đối chiếu lịch sử giá trúng đấu giá và lập báo cáo
-                        chi tiết. Vui lòng tải lại trang sau ít phút!
-                    </p>
+
+                    <!-- Error state shown if errorGenerating is true -->
+                    <div x-show="errorGenerating" class="flex flex-col items-center space-y-4" style="display: none;">
+                        <div class="rounded-full bg-red-50 p-3 text-[#8C1E1E]">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Không thể tải thông tin chi tiết</h3>
+                        <p class="max-w-md text-sm text-gray-500 font-semibold">
+                            Đã xảy ra lỗi trong quá trình phân tích ý nghĩa biển số bằng AI. Vui lòng bấm thử lại hoặc tải lại trang sau.
+                        </p>
+                        <button @click="initPendingPoll()" type="button" class="inline-flex items-center justify-center rounded-xl bg-[#8C1E1E] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#701818] transition cursor-pointer">
+                            Thử lại
+                        </button>
+                    </div>
                 </div>
             @elseif(($plate['status'] ?? '') !== 'custom_valuation')
                 <!-- Main Article Content (Ẩn nếu là biển tự định giá) -->

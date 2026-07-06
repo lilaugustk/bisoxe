@@ -659,22 +659,34 @@ class LicensePlateController extends Controller
 
         // Nếu bài viết đã tồn tại rồi thì trả về success luôn
         if ($plate->seoArticle) {
-            return response()->json(['status' => 'success', 'message' => 'Bài viết đã tồn tại.']);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Bài viết đã tồn tại.',
+                'slug' => $plate->seoArticle->slug,
+            ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+              ->header('Pragma', 'no-cache')
+              ->header('Expires', '0');
         }
 
         try {
             // Sử dụng dispatchSync để sinh bài viết đồng bộ ngay trong API request này
             GenerateSeoArticleJob::dispatchSync($plate);
 
+            // Tải lại quan hệ để lấy slug bài viết vừa tạo
+            $plate->load('seoArticle');
+
             return response()->json([
                 'status' => 'success',
-                'message' => 'Đã sinh bài viết thành công.'
-            ]);
+                'message' => 'Đã sinh bài viết thành công.',
+                'slug' => $plate->seoArticle?->slug,
+            ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+              ->header('Pragma', 'no-cache')
+              ->header('Expires', '0');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Sinh bài viết từ API thất bại cho biển {$plate->full_number}: " . $e->getMessage());
             return response()->json([
                 'error' => 'Sinh bài viết thất bại: ' . $e->getMessage()
-            ], 500);
+            ], 500)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         }
     }
 
