@@ -913,8 +913,7 @@
                 @endif
 
                 <!-- Article footer indexing badge -->
-                <div class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-6 text-xs text-gray-500">
-                    <span class="font-bold text-[#8C1E1E]">BISOXE.COM</span>
+                <div class="mt-12 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-500">
                     @if($generatedAt)
                         <span class="font-medium">Ngày khởi tạo nội dung: {{ $formatDate($generatedAt) }}</span>
                     @endif
@@ -924,7 +923,7 @@
 
         <!-- Related License Plates Section -->
         @if(count($related_plates) > 0)
-            <div class="mt-8 border-t border-gray-200 pt-8">
+            <div class="mt-8">
                 <h3 class="mb-6 text-xl font-extrabold tracking-tight text-gray-900">
                     Đề xuất biển số xe liên quan
                 </h3>

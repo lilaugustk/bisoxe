@@ -52,10 +52,34 @@
         html, body, h1, h2, h3, h4, h5, h6 {
             font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
         }
+
+        /* Prevent Flash of Unstyled Content (FOUC) */
+        html.fouc-active body {
+            opacity: 0 !important;
+        }
     </style>
+
+    <script>
+        document.documentElement.classList.add('fouc-active');
+    </script>
 
     <!-- Vite CSS & JS -->
     @vite(['resources/css/app.css', 'resources/js/app.ts'])
+
+    <script>
+        (function() {
+            function showPage() {
+                document.documentElement.classList.remove('fouc-active');
+            }
+            if (document.readyState === 'interactive' || document.readyState === 'complete') {
+                showPage();
+            } else {
+                document.addEventListener('DOMContentLoaded', showPage);
+            }
+            // Fallback to show page after 1.5s in case CSS fails to load
+            setTimeout(showPage, 1500);
+        })();
+    </script>
 
     <!-- Event snippet for Onsite 5 Minutes conversion page -->
     <script>

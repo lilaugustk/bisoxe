@@ -37,6 +37,8 @@
                 <a href="/" class="flex items-center gap-3" @click="isMobileMenuOpen = false">
                     <svg
                         class="h-10 w-10 rounded-lg shadow-md"
+                        width="40"
+                        height="40"
                         viewBox="0 0 100 100"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -166,6 +168,8 @@
                         <svg
                             x-show="!isMobileMenuOpen"
                             class="h-6 w-6"
+                            width="24"
+                            height="24"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -178,6 +182,8 @@
                             x-show="isMobileMenuOpen"
                             x-cloak
                             class="h-6 w-6"
+                            width="24"
+                            height="24"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
