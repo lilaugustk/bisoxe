@@ -32,6 +32,16 @@ class AnalysisController extends Controller
     }
 
     /**
+     * Lấy toàn bộ danh sách tỉnh thành từ cache.
+     */
+    private function getAllProvinces()
+    {
+        return Cache::remember('all_provinces_cache_v3', 86400, function () {
+            return Province::all();
+        });
+    }
+
+    /**
      * Chuyển đổi slug cũ sang slug trực tiếp mới dạng tiêu đề (cho redirect 301).
      */
     public function getNewSlugFromOld(string $oldSlug): ?string
@@ -75,7 +85,7 @@ class AnalysisController extends Controller
         }
 
         // 6. Lọc theo tỉnh thành cũ
-        $provinces = Province::all();
+        $provinces = $this->getAllProvinces();
         foreach ($provinces as $prov) {
             $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $prov->name);
             $provSlug = \Illuminate\Support\Str::slug($cleanName);
@@ -140,7 +150,7 @@ class AnalysisController extends Controller
         // 2. Lọc theo Tỉnh thành (Động hoàn toàn)
         if (str_starts_with($slug, 'top-100-bien-so-dep-dat-nhat-')) {
             $provSlug = substr($slug, 29); // độ dài của 'top-100-bien-so-dep-dat-nhat-'
-            $provinces = Province::all();
+            $provinces = $this->getAllProvinces();
             foreach ($provinces as $prov) {
                 $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $prov->name);
                 if ($provSlug === \Illuminate\Support\Str::slug($cleanName)) {
@@ -285,7 +295,7 @@ class AnalysisController extends Controller
             $provSlug = strtolower($matches[2]);
             
             // Check if province exists
-            $provinces = Province::all();
+            $provinces = $this->getAllProvinces();
             $matchedProvince = null;
             $provinceCleanName = '';
             foreach ($provinces as $prov) {
@@ -543,8 +553,10 @@ class AnalysisController extends Controller
         });
         $highestPlateOverall = $highestPlateOverallData ? (object) $highestPlateOverallData : null;
         
-        // Eager loading
-        $plates = $config['query']()->with(['province', 'kinds', 'seoArticle'])->get();
+        // Eager loading với cache 1 giờ (3600s)
+        $plates = Cache::remember("analysis_plates_{$slug}_v3", 3600, function() use ($config) {
+            return $config['query']()->with(['province', 'kinds', 'seoArticle'])->get();
+        });
 
         // 1. Gom nhóm giá trúng để vẽ biểu đồ Phân bổ mức giá (Bar Chart)
         $priceGroups = [

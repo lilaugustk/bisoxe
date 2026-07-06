@@ -20,32 +20,6 @@ class AuctionController extends Controller
         $start = microtime(true);
         $isNoCache = $request->has('nocache');
 
-        if ($isNoCache) {
-            $counts = LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
-                ->groupBy('province_code')
-                ->get()
-                ->keyBy('province_code')
-                ->map(fn($item) => [
-                    'total' => $item->total,
-                    'active' => $item->active ?? 0,
-                ])
-                ->toArray();
-        } else {
-            $counts = Cache::remember('auction_provinces_count_v3', 3600, function () {
-                return LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
-                    ->groupBy('province_code')
-                    ->get()
-                    ->keyBy('province_code')
-                    ->map(fn($item) => [
-                        'total' => $item->total,
-                        'active' => $item->active ?? 0,
-                    ])
-                    ->toArray();
-            });
-        }
-
-        $queryTime = microtime(true) - $start;
-
         $provinceImages = [
             'ha-noi' => 'https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?w=150&h=150&fit=crop&q=80', // Tháp Rùa
             'tp-ho-chi-minh' => 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=150&h=150&fit=crop&q=80', // Landmark 81
@@ -58,7 +32,6 @@ class AuctionController extends Controller
             'lam-dong' => 'https://images.unsplash.com/photo-1549693578-d683be217e58?w=150&h=150&fit=crop&q=80', // Đà Lạt / Rừng thông
         ];
 
-        // 10 ảnh phong cảnh Việt Nam tuyển chọn siêu đẹp để luân phiên cho các tỉnh khác
         $generalImages = [
             'https://images.unsplash.com/photo-1508873699372-7aeab60b44ab?w=150&h=150&fit=crop&q=80', // Ruộng bậc thang
             'https://images.unsplash.com/photo-1528127269322-539801943592?w=150&h=150&fit=crop&q=80', // Vịnh Hạ Long
@@ -72,30 +45,71 @@ class AuctionController extends Controller
             'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=150&h=150&fit=crop&q=80', // Kinh thành Huế
         ];
 
-        $provinces = Province::all()->map(function ($p) use ($counts, $provinceImages, $generalImages) {
-            // Robust regex to clean prefixes like Tỉnh, Tinh, Thành phố, TP, TP. (case-insensitive)
-            $cleanName = preg_replace('/^(Thành phố|Tỉnh|Tinh|TP\.?)\s+/iu', '', $p->name);
-            $slug = \Illuminate\Support\Str::slug($cleanName);
-            if ($slug === 'ho-chi-minh') {
-                $slug = 'tp-ho-chi-minh';
-            }
-            
-            $provinceData = $counts[$p->code] ?? ['total' => 0, 'active' => 0];
-            
-            // Lấy ảnh tuyển chọn riêng hoặc chọn ngẫu nhiên có định danh từ list phong cảnh Việt Nam
-            $image = $provinceImages[$slug] ?? $generalImages[abs(crc32($slug)) % count($generalImages)];
-            
-            return [
-                'code' => $p->code,
-                'name' => $p->name,
-                'clean_name' => $cleanName,
-                'slug' => $slug,
-                'full_slug' => \Illuminate\Support\Str::slug($p->name),
-                'count' => number_format($provinceData['total'], 0, ',', '.'),
-                'active_count' => number_format($provinceData['active'], 0, ',', '.'),
-                'image' => $image,
-            ];
-        })->sortBy('clean_name', SORT_LOCALE_STRING)->values()->toArray();
+        if ($isNoCache) {
+            $counts = LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
+                ->groupBy('province_code')
+                ->get()
+                ->keyBy('province_code')
+                ->map(fn($item) => [
+                    'total' => $item->total,
+                    'active' => $item->active ?? 0,
+                ])
+                ->toArray();
+
+            $provinces = Province::all()->map(function ($p) use ($counts, $provinceImages, $generalImages) {
+                $cleanName = preg_replace('/^(Thành phố|Tỉnh|Tinh|TP\.?)\s+/iu', '', $p->name);
+                $slug = \Illuminate\Support\Str::slug($cleanName);
+                if ($slug === 'ho-chi-minh') {
+                    $slug = 'tp-ho-chi-minh';
+                }
+                $provinceData = $counts[$p->code] ?? ['total' => 0, 'active' => 0];
+                $image = $provinceImages[$slug] ?? $generalImages[abs(crc32($slug)) % count($generalImages)];
+                return [
+                    'code' => $p->code,
+                    'name' => $p->name,
+                    'clean_name' => $cleanName,
+                    'slug' => $slug,
+                    'full_slug' => \Illuminate\Support\Str::slug($p->name),
+                    'count' => number_format($provinceData['total'], 0, ',', '.'),
+                    'active_count' => number_format($provinceData['active'], 0, ',', '.'),
+                    'image' => $image,
+                ];
+            })->sortBy('clean_name', SORT_LOCALE_STRING)->values()->toArray();
+        } else {
+            $provinces = Cache::remember('auction_provinces_list_v4', 3600, function () use ($provinceImages, $generalImages) {
+                $counts = LicensePlate::selectRaw('province_code, count(*) as total, sum(case when status = "announced" then 1 else 0 end) as active')
+                    ->groupBy('province_code')
+                    ->get()
+                    ->keyBy('province_code')
+                    ->map(fn($item) => [
+                        'total' => $item->total,
+                        'active' => $item->active ?? 0,
+                    ])
+                    ->toArray();
+
+                return Province::all()->map(function ($p) use ($counts, $provinceImages, $generalImages) {
+                    $cleanName = preg_replace('/^(Thành phố|Tỉnh|Tinh|TP\.?)\s+/iu', '', $p->name);
+                    $slug = \Illuminate\Support\Str::slug($cleanName);
+                    if ($slug === 'ho-chi-minh') {
+                        $slug = 'tp-ho-chi-minh';
+                    }
+                    $provinceData = $counts[$p->code] ?? ['total' => 0, 'active' => 0];
+                    $image = $provinceImages[$slug] ?? $generalImages[abs(crc32($slug)) % count($generalImages)];
+                    return [
+                        'code' => $p->code,
+                        'name' => $p->name,
+                        'clean_name' => $cleanName,
+                        'slug' => $slug,
+                        'full_slug' => \Illuminate\Support\Str::slug($p->name),
+                        'count' => number_format($provinceData['total'], 0, ',', '.'),
+                        'active_count' => number_format($provinceData['active'], 0, ',', '.'),
+                        'image' => $image,
+                    ];
+                })->sortBy('clean_name', SORT_LOCALE_STRING)->values()->toArray();
+            });
+        }
+
+        $queryTime = microtime(true) - $start;
 
         return view('auction.index', [
             'provinces' => $provinces,
@@ -127,8 +141,11 @@ class AuctionController extends Controller
      */
     public function province(Request $request, string $provinceSlug, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
-        // 1. Tìm tỉnh thành có slug khớp
-        $province = Province::all()->first(function ($p) use ($provinceSlug) {
+        // 1. Tìm tỉnh thành có slug khớp từ cache
+        $provinces = Cache::remember('all_provinces_cache_v3', 86400, function () {
+            return Province::all();
+        });
+        $province = $provinces->first(function ($p) use ($provinceSlug) {
             return \Illuminate\Support\Str::slug($p->name) === $provinceSlug;
         });
 
@@ -233,15 +250,10 @@ class AuctionController extends Controller
         if (! empty($kind)) {
             $kindIds = is_array($kind) ? array_map('intval', $kind) : array_filter(array_map('intval', explode(',', $kind)));
             if (! empty($kindIds)) {
-                $query->whereHas('kinds', function ($q) use ($kindIds) {
-                    $q->whereIn('plate_kinds.id', $kindIds)
-                        ->whereRaw('plate_kinds.priority = (
-                          SELECT MIN(pk2.priority)
-                          FROM license_plate_kinds lpk2
-                          JOIN plate_kinds pk2 ON pk2.id = lpk2.kind_id
-                          WHERE lpk2.plate_id = license_plate_kinds.plate_id
-                      )');
+                $kindPriorities = Cache::remember('kinds_priorities_cache_v3_' . implode('_', $kindIds), 86400, function() use ($kindIds) {
+                    return PlateKind::whereIn('id', $kindIds)->pluck('priority')->toArray();
                 });
+                $query->whereIn('min_kind_priority', $kindPriorities);
             }
         }
 
@@ -285,7 +297,11 @@ class AuctionController extends Controller
             return $query->count();
         });
 
-        $items = $query->forPage($page, $limit)->get();
+        // Cache danh sách biển số theo trang và filter trong 5 phút (300 giây)
+        $itemsCacheKey = 'province_plates_items_v3_' . $province->code . '_' . $activeTab . '_' . $page . '_' . $limit . '_' . $cacheHash;
+        $items = Cache::remember($itemsCacheKey, 300, function() use ($query, $page, $limit) {
+            return $query->forPage($page, $limit)->get();
+        });
 
         // Loại bỏ param 'vehicle' khỏi link phân trang vì loại xe đã được
         // phân biệt qua URL path (/dau-gia-bien-so-o-to-... vs /dau-gia-bien-so-xe-may-...)
@@ -353,35 +369,27 @@ class AuctionController extends Controller
         $tableDescription = 'Danh sách biển số ' . $vehicleLabelLower . ' được cập nhật trực tiếp từ Cục CSGT.';
 
         $provinceStats = Cache::remember('province_stats_v2_' . $province->code . '_' . $vehicle, 3600, function () use ($province, $vehicle) {
-            $baseQuery = LicensePlate::where('province_code', $province->code)
+            $stats = \Illuminate\Support\Facades\DB::table('license_plates')
+                ->where('province_code', $province->code)
                 ->where('vehicle_type', $vehicle)
-                ->where('color', 0);
-
-            $total = $baseQuery->count();
-            
-            $announced = (clone $baseQuery)->where('status', 'announced')->count();
-            
-            $waiting = (clone $baseQuery)->where('status', 'waiting_auction')
-                ->where('auction_start_time', '>=', today())
-                ->count();
-                
-            $completed = (clone $baseQuery)->where('status', 'completed')->count();
-            
-            $avgPrice = (clone $baseQuery)->where('status', 'completed')
-                ->where('winning_price', '>', 0)
-                ->avg('winning_price') ?? 0;
-                
-            $maxPrice = (clone $baseQuery)->where('status', 'completed')
-                ->where('winning_price', '>', 0)
-                ->max('winning_price') ?? 0;
+                ->where('color', 0)
+                ->selectRaw('
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = "announced" THEN 1 ELSE 0 END) as announced,
+                    SUM(CASE WHEN status = "waiting_auction" AND auction_start_time >= ? THEN 1 ELSE 0 END) as waiting,
+                    SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed,
+                    AVG(CASE WHEN status = "completed" AND winning_price > 0 THEN winning_price ELSE NULL END) as avg_price,
+                    MAX(CASE WHEN status = "completed" AND winning_price > 0 THEN winning_price ELSE 0 END) as max_price
+                ', [today()])
+                ->first();
 
             return [
-                'total' => $total,
-                'announced' => $announced,
-                'waiting' => $waiting,
-                'completed' => $completed,
-                'avg_price' => (float) $avgPrice,
-                'max_price' => (float) $maxPrice,
+                'total' => $stats->total ?? 0,
+                'announced' => $stats->announced ?? 0,
+                'waiting' => $stats->waiting ?? 0,
+                'completed' => $stats->completed ?? 0,
+                'avg_price' => (float) ($stats->avg_price ?? 0),
+                'max_price' => (float) ($stats->max_price ?? 0),
             ];
         });
 
@@ -410,14 +418,18 @@ class AuctionController extends Controller
             'provinceSlug' => $canonicalFullSlug,
             'paginator' => $paginated,
             'plates' => $plates,
-            'provinces' => Province::select('code', 'name')->get()->map(function ($p) {
-                return [
-                    'code' => $p->code,
-                    'name' => $p->name,
-                    'full_slug' => \Illuminate\Support\Str::slug($p->name),
-                ];
-            })->toArray(),
-            'kinds' => PlateKind::select('id', 'name')->get()->toArray(),
+            'provinces' => Cache::remember('provinces_dropdown_slug_cache_v3', 86400, function() {
+                return Province::select('code', 'name')->get()->map(function ($p) {
+                    return [
+                        'code' => $p->code,
+                        'name' => $p->name,
+                        'full_slug' => \Illuminate\Support\Str::slug($p->name),
+                    ];
+                })->toArray();
+            }),
+            'kinds' => Cache::remember('kinds_dropdown_cache_v3', 86400, function () {
+                return PlateKind::select('id', 'name')->get()->toArray();
+            }),
             'uniqueLetters' => $uniqueLetters,
             'trustStats' => $trustStats,
             'tableTitle' => $tableTitle,

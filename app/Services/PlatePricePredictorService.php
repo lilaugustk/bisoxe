@@ -390,10 +390,12 @@ class PlatePricePredictorService
         }
 
         $multiplier = Cache::remember("province_multiplier_{$provinceCode}", 86400, function () use ($provinceCode) {
-            // Lấy giá trị trúng đấu giá trung bình toàn quốc (của các biển đã hoàn thành)
-            $nationalAvg = LicensePlate::where('status', 'completed')
-                ->where('winning_price', '>', 0)
-                ->avg('winning_price');
+            // Lấy giá trị trúng đấu giá trung bình toàn quốc (của các biển đã hoàn thành) từ cache độc lập 24h
+            $nationalAvg = Cache::remember('national_winning_price_avg', 86400, function() {
+                return LicensePlate::where('status', 'completed')
+                    ->where('winning_price', '>', 0)
+                    ->avg('winning_price') ?? 0;
+            });
 
             if (!$nationalAvg || $nationalAvg == 0) {
                 return 1.0;
