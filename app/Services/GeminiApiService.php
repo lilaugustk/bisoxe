@@ -582,7 +582,7 @@ Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên
         foreach ($this->fallbackModels as $model) {
             $url = "{$this->baseUrl}/{$model}:generateContent?key={$this->apiKey}";
 
-            $maxRetries = 3;
+            $maxRetries = 2;
             $retryDelay = 2; // Giây
 
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
@@ -599,7 +599,7 @@ Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên
                         ];
                     }
 
-                    $response = Http::timeout(120)
+                    $response = Http::timeout(60)
                         ->withoutVerifying()
                         ->withHeaders(['Content-Type' => 'application/json'])
                         ->post($url, [

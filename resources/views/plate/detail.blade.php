@@ -378,8 +378,8 @@
     
         initPendingPoll() {
             if (this.isPending && this.plateId) {
-                // Bảo vệ chống vòng lặp reload vô hạn:
-                // Nếu đã reload quá 2 lần trong 30 giây, hiển thị lỗi thay vì tiếp tục reload.
+                // Bảo vệ chống vòng lặp reload:
+                // Nếu đã reload 1 lần mà vẫn pending, nghĩa là bài viết không lưu thành công → hiện lỗi ngay.
                 const reloadKey = `plate_reload_${this.plateId}`;
                 const now = Date.now();
                 let reloadData = null;
@@ -387,14 +387,14 @@
                     reloadData = JSON.parse(sessionStorage.getItem(reloadKey));
                 } catch (e) {}
                 if (reloadData && (now - reloadData.firstTime) < 30000) {
-                    if (reloadData.count >= 2) {
+                    if (reloadData.count >= 1) {
                         this.errorGenerating = true;
-                        console.error('Đã phát hiện vòng lặp reload. Dừng tự động tải lại.');
+                        console.error('Trang đã reload sau khi generate nhưng bài viết vẫn chưa có. Dừng tự động.');
                         sessionStorage.removeItem(reloadKey);
                         return;
                     }
                 } else {
-                    reloadData = null; // Reset nếu đã quá 30 giây
+                    reloadData = null;
                 }
 
                 this.errorGenerating = false;

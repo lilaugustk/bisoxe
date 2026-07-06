@@ -673,6 +673,11 @@ class LicensePlateController extends Controller
         }
 
         try {
+            // Tăng thời gian thực thi PHP cho route này vì Gemini API có thể mất 30-120 giây
+            // (production mặc định max_execution_time = 30-60s, không đủ khi có retry/fallback)
+            set_time_limit(180);
+            ignore_user_abort(true);
+
             // Sử dụng dispatchSync để sinh bài viết đồng bộ ngay trong API request này
             GenerateSeoArticleJob::dispatchSync($plate);
 
