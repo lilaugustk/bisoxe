@@ -452,14 +452,8 @@
             <div class="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
                 <!-- Left: License Plate simulation card -->
                 <div
-                    class="group relative flex min-h-[300px] flex-col items-center justify-between overflow-hidden rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white p-3 sm:p-6 shadow-none sm:shadow-sm lg:col-span-7">
-                    <!-- Decor background lights -->
-                    <div
-                        class="absolute -top-20 -left-20 h-48 w-48 rounded-full bg-red-50 blur-3xl transition-all duration-700 group-hover:bg-red-100/70">
-                    </div>
-                    <div
-                        class="absolute -right-20 -bottom-20 h-48 w-48 rounded-full bg-amber-50 blur-3xl transition-all duration-700 group-hover:bg-amber-100/70">
-                    </div>
+                    class="group relative flex min-h-[300px] flex-col items-center justify-between overflow-hidden p-3 sm:p-6 lg:col-span-7">
+
 
                     <!-- Label plate type -->
                     <div class="relative z-10 mb-4 flex gap-2">
@@ -483,7 +477,7 @@
                                 class="transform transition-all duration-500 hover:rotate-x-6 hover:rotate-y-6 w-full flex justify-center">
                                 <!-- 1. Long Plate Style (Biển dài tiêu chuẩn 1 dòng) -->
                                 <div x-show="plateStyle === 'long'"
-                                    class="relative flex aspect-[520/110] w-full max-w-[480px] items-center justify-center rounded-lg border p-1 shadow-[0_8px_25px_-3px_rgba(0,0,0,0.15),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all duration-300 hover:shadow-[0_12px_30px_-3px_rgba(0,0,0,0.2)] {{ $plate['color'] === 1 ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}">
+                                    class="relative flex aspect-[520/110] w-full max-w-[480px] items-center justify-center rounded-lg border p-1 transition-all duration-300 {{ $plate['color'] === 1 ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}">
                                     <!-- Acrylic shine layer -->
                                     <div
                                         class="pointer-events-none absolute inset-0 rounded bg-gradient-to-tr from-transparent via-white/10 to-transparent">
@@ -511,7 +505,7 @@
 
                                 <!-- 2. Square Plate Style (Biển vuông 2 dòng) -->
                                 <div x-show="plateStyle === 'square'" x-cloak
-                                    class="relative flex aspect-[280/200] w-full max-w-[195px] min-[360px]:max-w-[210px] min-[400px]:max-w-[230px] md:max-w-[260px] items-center justify-center rounded-xl border p-1 shadow-[0_8px_25px_-3px_rgba(0,0,0,0.15),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all duration-300 hover:shadow-[0_12px_30px_-3px_rgba(0,0,0,0.2)] {{ $plate['color'] === 1 ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}">
+                                    class="relative flex aspect-[280/200] w-full max-w-[195px] min-[360px]:max-w-[210px] min-[400px]:max-w-[230px] md:max-w-[260px] items-center justify-center rounded-xl border p-1 transition-all duration-300 {{ $plate['color'] === 1 ? 'border-2 border-black/85 bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500 text-black' : 'border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 text-black' }}">
                                     <!-- Acrylic shine layer -->
                                     <div
                                         class="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-tr from-transparent via-white/10 to-transparent">
@@ -567,20 +561,20 @@
 
                 <!-- Right: Summary Dashboard Info -->
                 <div
-                    class="rounded-none sm:rounded-2xl border-0 sm:border border-gray-200 bg-white shadow-none sm:shadow-sm lg:col-span-5 flex flex-col justify-between">
-                    <div class="space-y-4 divide-y divide-gray-100 flex-1">
+                    class="py-4 sm:p-4 lg:col-span-5 flex flex-col justify-between">
+                    <div class="flex flex-col gap-3 sm:gap-3.5 lg:gap-0 lg:justify-between flex-1">
                         <!-- Row 1: Giá khởi điểm / Giá trúng -->
-                        <div class="flex items-center justify-between pb-3.5">
-                            <span class="text-[13px] sm:text-sm font-semibold text-gray-900">
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm font-medium text-gray-600">
                                 {{ ($plate['status'] ?? '') === 'completed' ? 'Giá trúng đấu giá' : 'Giá khởi điểm' }}
                             </span>
                             <div class="text-right">
-                                <span class="text-sm sm:text-base font-black text-gray-950 whitespace-nowrap">
+                                <span class="text-sm font-normal text-gray-900 whitespace-nowrap">
                                     {{ ($plate['status'] ?? '') === 'completed' ? $formatMoney($plate['winning_price']) : $formatMoney($plate['starting_price']) }}
                                 </span>
                                 @if ($valuationComparison)
                                     <span
-                                        class="block text-[10px] sm:text-[11px] font-bold {{ $valuationComparison['colorClass'] === 'border-green-200 bg-green-50 text-green-700' ? 'text-green-700' : ($valuationComparison['colorClass'] === 'border-red-200 bg-red-50 text-red-700' ? 'text-red-700' : 'text-gray-900') }}">
+                                        class="block text-xs font-normal {{ $valuationComparison['colorClass'] === 'border-green-200 bg-green-50 text-green-700' ? 'text-green-700' : ($valuationComparison['colorClass'] === 'border-red-200 bg-red-50 text-red-700' ? 'text-red-700' : 'text-gray-900') }}">
                                         {{ $valuationComparison['text'] }}
                                     </span>
                                 @endif
@@ -588,16 +582,16 @@
                         </div>
 
                         <!-- Row 2: Trạng thái đấu giá -->
-                        <div class="flex items-center justify-between pt-3.5 pb-3.5">
-                            <span class="text-[13px] sm:text-sm font-semibold text-gray-900">Trạng thái đấu giá</span>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm font-medium text-gray-600">Trạng thái đấu giá</span>
                             <span
-                                class="text-xs sm:text-sm font-bold text-gray-950 whitespace-nowrap">{{ $statusLabel }}</span>
+                                class="text-sm font-normal text-gray-900 whitespace-nowrap">{{ $statusLabel }}</span>
                         </div>
 
                         <!-- Row 3: Định giá đề xuất -->
-                        <div class="flex items-center justify-between pt-3.5 pb-3.5">
+                        <div class="flex items-center justify-between py-2">
                             <button @click="showPriceGuide = true" type="button"
-                                class="flex items-center gap-1 text-xs sm:text-sm font-semibold text-gray-900 hover:text-[#8C1E1E] hover:underline cursor-pointer whitespace-nowrap text-left group">
+                                class="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-[#8C1E1E] hover:underline cursor-pointer whitespace-nowrap text-left group">
                                 <span>Định giá đề xuất</span>
                                 <svg class="w-3.5 h-3.5 text-[#8C1E1E] shrink-0" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -605,15 +599,15 @@
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </button>
-                            <span class="text-sm sm:text-base font-black text-[#8C1E1E] whitespace-nowrap">
+                            <span class="text-sm font-normal text-[#8C1E1E] whitespace-nowrap">
                                 {{ $formatMoney($price_prediction['expected']) }}
                             </span>
                         </div>
 
                         <!-- Row 4: Điểm số phong thủy -->
-                        <div class="flex items-center justify-between pt-3.5 pb-3.5">
+                        <div class="flex items-center justify-between py-2">
                             <button @click="showScoringGuide = true" type="button"
-                                class="flex items-center gap-1 text-xs sm:text-sm font-semibold text-gray-900 hover:text-[#8C1E1E] hover:underline cursor-pointer whitespace-nowrap text-left group">
+                                class="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-[#8C1E1E] hover:underline cursor-pointer whitespace-nowrap text-left group">
                                 <span>Điểm</span>
                                 <svg class="w-3.5 h-3.5 text-[#8C1E1E] shrink-0" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -621,24 +615,24 @@
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </button>
-                            <span class="text-sm sm:text-base font-black whitespace-nowrap"
+                            <span class="text-sm font-normal whitespace-nowrap"
                                 style="color: {{ $scoreColor }}">
                                 {{ $plate_score['score'] }}
                             </span>
                         </div>
 
                         <!-- Row 5: Loại xe -->
-                        <div class="flex items-center justify-between pt-3.5 pb-3.5">
-                            <span class="text-[13px] sm:text-sm font-semibold text-gray-900">Loại xe</span>
-                            <span class="text-xs sm:text-sm font-bold text-gray-950 whitespace-nowrap">
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm font-medium text-gray-600">Loại xe</span>
+                            <span class="text-sm font-normal text-gray-900 whitespace-nowrap">
                                 {{ $plate['vehicle_type'] === 'car' ? 'Xe ô tô' : 'Xe máy' }}
                             </span>
                         </div>
 
                         <!-- Row 6: Thời gian đấu giá -->
-                        <div class="flex items-center justify-between pt-3.5">
-                            <span class="text-[13px] sm:text-sm font-semibold text-gray-900">Thời gian đấu giá</span>
-                            <span class="text-xs sm:text-sm font-bold text-gray-950 whitespace-nowrap">
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm font-medium text-gray-600">Thời gian đấu giá</span>
+                            <span class="text-sm font-normal text-gray-900 whitespace-nowrap">
                                 {{ $plate['auction_start_time'] ? $formatDate($plate['auction_start_time']) : 'Chưa cập nhật' }}
                             </span>
                         </div>
@@ -648,7 +642,7 @@
 
             <!-- Middle Section: Price Trend Chart -->
             <div class="mb-8" x-show="Object.keys(priceTrend).length > 0" x-cloak>
-                <div class="bg-white shadow-none sm:shadow-sm">
+                <div>
                     <header class="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
                         <div class="text-center sm:text-left">
                             <h3 class="text-base sm:text-lg font-extrabold tracking-tight text-gray-900 leading-snug">
@@ -670,22 +664,22 @@
                                         <span class="text-xs font-bold text-gray-700">Giá trúng gần đây</span>
                                     </div>
                                     <div
-                                        class="max-h-[320px] overflow-y-auto divide-y divide-gray-100 pr-1 scrollbar-none">
+                                        class="max-h-[320px] overflow-y-auto flex flex-col gap-2 pr-1 scrollbar-none">
                                         <template x-for="(item, i) in getSelectedPlates().slice().reverse()"
                                             :key="'mobile-plate-' + i">
-                                            <div class="flex items-center justify-between py-3">
+                                            <div class="flex items-center justify-between py-1.5">
                                                 <div class="flex flex-col gap-1 min-w-0">
                                                     <span
-                                                        class="inline-flex items-center justify-center rounded border border-gray-300 bg-white px-2 py-0.5 font-sans text-xs font-black tracking-tight text-gray-900 select-none shadow-sm w-max"
+                                                        class="inline-flex items-center justify-center rounded border border-gray-300 bg-white px-2 py-0.5 font-sans text-xs font-medium tracking-tight text-gray-900 select-none shadow-sm w-max"
                                                         x-text="item.plate_number"></span>
                                                     <span
-                                                        class="text-[10px] font-bold text-gray-500 truncate max-w-[130px] pl-0.5"
+                                                        class="text-xs font-normal text-gray-500 truncate max-w-[150px] pl-0.5"
                                                         x-text="item.province_name"></span>
                                                 </div>
                                                 <div class="flex flex-col items-end gap-0.5 shrink-0 pl-3">
-                                                    <span class="text-[13px] font-black text-[#8C1E1E] whitespace-nowrap"
+                                                    <span class="text-sm font-normal text-[#8C1E1E] whitespace-nowrap"
                                                         x-text="formatMoney(item.winning_price)"></span>
-                                                    <span class="text-[9px] font-medium text-gray-400"
+                                                    <span class="text-xs font-normal text-gray-400"
                                                         x-text="item.auction_date"></span>
                                                 </div>
                                             </div>
@@ -696,7 +690,7 @@
 
                             <!-- SVG Price Chart (Desktop only) -->
                             <div
-                                class="hidden lg:block border-gray-200 relative overflow-hidden rounded-2xl border bg-gray-50 p-4 shadow-inner md:p-6">
+                                class="hidden lg:block border-gray-200 relative overflow-hidden rounded-2xl border bg-gray-50 shadow-inner md:p-6">
                                 <svg viewBox="0 0 500 216" class="h-auto w-full overflow-visible"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <defs>
@@ -770,7 +764,7 @@
                                     :style="'left: ' + (hoveredIndex !== null ? getXCoordinate(hoveredIndex, getSelectedPlates()
                                         .length) / 500 * 100 : 0) + '%; top: 40px; transform: translateX(-50%);'">
                                     <div
-                                        class="min-w-[170px] rounded-lg border border-gray-200/80 bg-white text-[11px] text-gray-800 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.15)]">
+                                        class=" p-4 min-w-[170px] rounded-lg border border-gray-200/80 bg-white text-[11px] text-gray-800 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.15)]">
                                         <div
                                             class="flex items-center gap-1.5 rounded-t-lg border-b border-gray-100 bg-gray-50 px-3 py-1.5">
                                             <span class="h-2 w-2 shrink-0 rounded-full bg-[#8C1E1E]"></span>
@@ -799,7 +793,7 @@
                             </div>
 
                             <!-- Legend / Selection tabs below chart -->
-                            <div class="border-gray-200">
+                            <div class="p-4 border-gray-200">
                                 <p
                                     class="mb-3 text-center text-xs font-bold tracking-wider text-gray-500 uppercase sm:text-left">
                                     Xem lịch sử giá của các tỉnh/thành phố khác:
