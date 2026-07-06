@@ -377,7 +377,7 @@ class LicensePlateController extends Controller
     /**
      * Hiển thị trang chi tiết biển số xe và bài viết giải mã ý nghĩa tự động.
      */
-    public function show(string $slug, PlatePricePredictorService $predictorService): View|RedirectResponse
+    public function show(string $slug, PlatePricePredictorService $predictorService): View|RedirectResponse|\Illuminate\Http\Response
     {
         // 1. Tìm theo slug bài viết
         $article = SeoArticle::where('slug', $slug)
@@ -504,7 +504,9 @@ class LicensePlateController extends Controller
 
         // Trở lại cách cũ là KHÔNG sinh bài viết đồng bộ ngay khi load trang,
         // Mà trả về is_pending => true lập tức, việc sinh bài viết sẽ do JS gửi request AJAX chạy ngầm lên.
-        return view('plate.detail', [
+        // Sử dụng no-cache headers để trình duyệt không cache trang pending,
+        // tránh vòng lặp reload vô hạn khi JS gọi window.location.reload() sau khi sinh bài viết xong.
+        return response()->view('plate.detail', [
             'article' => [
                 'title' => "Giải mã ý nghĩa biển số {$plate->display_number}",
                 'meta_title' => "Ý nghĩa biển số {$plate->display_number} - Định giá biển số xe",
@@ -520,7 +522,9 @@ class LicensePlateController extends Controller
             'price_trend' => $trend,
             'plate_score' => $score,
             'related_plates' => $relatedPlates,
-        ]);
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+          ->header('Pragma', 'no-cache')
+          ->header('Expires', '0');
     }
 
     /**
@@ -659,26 +663,19 @@ class LicensePlateController extends Controller
 
         // Nếu bài viết đã tồn tại rồi thì trả về success luôn
         if ($plate->seoArticle) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Bài viết đã tồn tại.',
-                'slug' => $plate->seoArticle->slug,
-            ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-              ->header('Pragma', 'no-cache')
-              ->header('Expires', '0');
+            return response()->json(['status' => 'success', 'message' => 'Bài viết đã tồn tại.'])
+                ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
         }
 
         try {
             // Sử dụng dispatchSync để sinh bài viết đồng bộ ngay trong API request này
             GenerateSeoArticleJob::dispatchSync($plate);
 
-            // Tải lại quan hệ để lấy slug bài viết vừa tạo
-            $plate->load('seoArticle');
-
             return response()->json([
                 'status' => 'success',
-                'message' => 'Đã sinh bài viết thành công.',
-                'slug' => $plate->seoArticle?->slug,
+                'message' => 'Đã sinh bài viết thành công.'
             ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
               ->header('Pragma', 'no-cache')
               ->header('Expires', '0');
