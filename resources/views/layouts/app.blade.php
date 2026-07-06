@@ -45,11 +45,18 @@
             font-weight: 100 900;
             font-display: swap;
             src: url('/fonts/InterVariable.woff2') format('woff2-variations'),
-                 url('/fonts/InterVariable.woff2') format('woff2');
+                url('/fonts/InterVariable.woff2') format('woff2');
         }
 
         /* Prevent early paint FOUT/serif style flash before main CSS loads */
-        html, body, h1, h2, h3, h4, h5, h6 {
+        html,
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
         }
 
