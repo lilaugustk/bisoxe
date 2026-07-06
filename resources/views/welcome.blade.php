@@ -227,11 +227,6 @@
             "@type": "WebSite",
             "name": "BISOXE.COM",
             "url": "https://bisoxe.com",
-            "potentialAction": {
-                "@type": "SearchAction",
-                "target": "https://bisoxe.com/?search={search_term_string}",
-                "query-input": "required name=search_term_string"
-            },
             "description": "Cổng tra cứu kết quả danh sách biển số xe và công cụ giải mã ý nghĩa biển số xe tự động chính xác nhất."
         }
     </script>
