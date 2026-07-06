@@ -458,12 +458,15 @@ class LicensePlateController extends Controller
             });
         }
 
-        $relatedPlates = $relatedQuery
-            ->inRandomOrder()
-            ->limit(6)
-            ->get()
-            ->map(fn ($p) => $this->transformPlate($p))
-            ->toArray();
+        // Lấy 100 biển số mới nhất phù hợp làm ứng viên để tránh chạy truy vấn inRandomOrder() chậm chạp
+        $candidates = $relatedQuery
+            ->latest()
+            ->limit(100)
+            ->get();
+
+        $relatedPlates = $candidates->isNotEmpty()
+            ? $candidates->random(min(6, $candidates->count()))->map(fn ($p) => $this->transformPlate($p))->toArray()
+            : [];
 
         // Kiểm tra xem thực ra có bài viết chưa (phòng hờ tìm theo số biển nhưng bài viết đã có)
         if (! $article) {

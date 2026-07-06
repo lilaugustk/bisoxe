@@ -381,16 +381,21 @@
                 this.errorGenerating = false;
                 fetch(`/api/bien-so/${this.plateId}/generate-article?t=${Date.now()}`)
                     .then(res => {
-                        if (res.ok) {
+                        if (!res.ok) {
+                            throw new Error('Server returned error status');
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data && data.status === 'success') {
                             window.location.reload();
                         } else {
-                            this.errorGenerating = true;
-                            console.error('Failed to generate article');
+                            throw new Error(data.error || 'Failed to generate article');
                         }
                     })
                     .catch(err => {
                         this.errorGenerating = true;
-                        console.error(err);
+                        console.error('Error during article generation:', err);
                     });
             }
         },

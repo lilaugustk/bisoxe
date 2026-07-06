@@ -642,13 +642,20 @@ Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên
                         throw new \Exception("Gemini API [{$model}] returned an empty response.");
                     }
 
-                    $decoded = json_decode($textResult, true);
+                    // Loại bỏ các ký tự điều khiển (control characters) thô chưa được escape trong chuỗi JSON (như xuống dòng, tab...)
+                    $cleanTextResult = preg_replace('/[\x00-\x1F\x7F]/', ' ', $textResult);
+                    $decoded = json_decode($cleanTextResult, true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        // Thử decode chuỗi gốc nếu preg_replace làm sai lệch cấu trúc JSON
+                        $decoded = json_decode($textResult, true);
+                    }
+
                     if (json_last_error() !== JSON_ERROR_NONE) {
                         Log::error("Failed to decode Gemini JSON response from model [{$model}]", [
                             'raw_text' => $textResult,
                             'error' => json_last_error_msg(),
                         ]);
-                        throw new \Exception("Gemini API [{$model}] response was not a valid JSON structure.");
+                        throw new \Exception("Gemini API [{$model}] response was not a valid JSON structure: " . json_last_error_msg());
                     }
 
                     if ($model !== $this->model) {
