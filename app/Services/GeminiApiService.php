@@ -75,13 +75,17 @@ class GeminiApiService
         // Lấy danh sách biển số liên quan đã có bài viết để chèn liên kết nội bộ tự nhiên (chỉ lấy cùng địa phương, không dùng fallback tỉnh khác)
         $relatedPlates = collect();
         if (!empty($plate->local_symbol)) {
-            $relatedPlates = LicensePlate::has('seoArticle')
+            $candidates = LicensePlate::has('seoArticle')
                 ->where('id', '!=', $plate->id)
                 ->where('local_symbol', $plate->local_symbol)
                 ->where('vehicle_type', $plate->vehicle_type)
-                ->inRandomOrder()
-                ->limit(3)
+                ->latest()
+                ->limit(30)
                 ->get();
+
+            $relatedPlates = $candidates->isNotEmpty()
+                ? $candidates->random(min(3, $candidates->count()))
+                : collect();
         }
 
         $internalLinksPrompt = '';
@@ -89,7 +93,7 @@ class GeminiApiService
             $internalLinksPrompt = "\nYÊU CẦU CHÈN LIÊN KẾT NỘI BỘ (SEO INTERNAL LINKING):\n";
             $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 2 liên kết từ danh sách dưới đây vào nội dung bài viết dưới dạng thẻ HTML <a href=\"/bien-so-slug\">biển số [display_number]</a>. Chỉ chèn link khi ngữ cảnh thực sự phù hợp (ví dụ: khi so sánh thế số, giá trị hoặc ý nghĩa của các con số tương tự):\n";
             foreach ($relatedPlates as $rp) {
-                $rpSlug = $rp->seoArticle ? $rp->seoArticle->slug : \Illuminate\Support\Str::slug($rp->local_symbol.$rp->serial_letter.'-'.$rp->serial_number);
+                $rpSlug = $rp->full_number;
                 $internalLinksPrompt .= "- Biển số: {$rp->display_number} (Đường dẫn: /bien-so-{$rpSlug})\n";
             }
             $internalLinksPrompt .= "\nQuy tắc chèn link bắt buộc:\n";
@@ -194,7 +198,7 @@ Yêu cầu quan trọng:
             $internalLinksPrompt = "\nYÊU CẦU CHÈN LIÊN KẾT NỘI BỘ (SEO INTERNAL LINKING):\n";
             $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 3 liên kết từ danh sách các biển số xe nổi bật dưới đây vào nội dung bài viết dưới dạng thẻ HTML <a href=\"/bien-so-slug\">biển số [display_number]</a>. Chỉ chèn link khi ngữ cảnh thực sự phù hợp (ví dụ: khi so sánh thế số, giá trị hoặc ý nghĩa của các con số tương tự hoặc khi lấy ví dụ cụ thể):\n";
             foreach ($featuredPlates as $fp) {
-                $fpSlug = $fp->seoArticle ? $fp->seoArticle->slug : \Illuminate\Support\Str::slug($fp->local_symbol.$fp->serial_letter.'-'.$fp->serial_number);
+                $fpSlug = $fp->full_number;
                 $internalLinksPrompt .= "- Biển số: {$fp->display_number} (Đường dẫn: /bien-so-{$fpSlug})\n";
             }
             $internalLinksPrompt .= "\nQuy tắc chèn link bắt buộc:\n";
@@ -366,7 +370,7 @@ Yêu cầu quan trọng:
             $internalLinksPrompt = "\nYÊU CẦU CHÈN LIÊN KẾT NỘI BỘ (SEO INTERNAL LINKING):\n";
             $internalLinksPrompt .= "Hãy lồng ghép tự nhiên từ 1 đến 3 liên kết từ danh sách dưới đây vào bài viết dưới dạng thẻ HTML <a href=\"/bien-so-slug\">biển số [display_number]</a>. Chỉ chèn link khi phù hợp:\n";
             foreach ($internalPlates as $ip) {
-                $ipSlug = $ip->seoArticle ? $ip->seoArticle->slug : \Illuminate\Support\Str::slug($ip->local_symbol.$ip->serial_letter.'-'.$ip->serial_number);
+                $ipSlug = $ip->full_number;
                 $internalLinksPrompt .= "- Biển số: {$ip->display_number} (Đường dẫn: /bien-so-{$ipSlug})\n";
             }
             $internalLinksPrompt .= "\nQuy tắc chèn link bắt buộc:\n";

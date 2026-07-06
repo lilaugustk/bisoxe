@@ -60,13 +60,10 @@ class GenerateSeoArticleJob implements ShouldQueue
             $title = preg_replace('/\s+/', ' ', $title);
             $title = trim($title);
 
-            // Tạo slug chuẩn SEO cho trang chi tiết biển số dựa trên tiêu đề bài viết
-            $slug = Str::slug($title);
-            if (empty($slug)) {
-                $slug = Str::slug($this->plate->local_symbol.$this->plate->serial_letter.'-'.$this->plate->serial_number);
-            }
+            // Tạo slug chuẩn SEO dạng: phan-tich-bien-so-{full_number}
+            $slug = 'phan-tich-bien-so-' . strtolower($this->plate->full_number);
 
-            // Đảm bảo slug là duy nhất
+            // Đảm bảo slug là duy nhất (nếu có trùng lặp)
             $originalSlug = $slug;
             $counter = 1;
             while (SeoArticle::where('slug', $slug)->exists()) {

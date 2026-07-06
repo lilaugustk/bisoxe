@@ -443,7 +443,7 @@ class AuctionController extends Controller
     {
         return [
             'id' => $plate->id,
-            'slug' => $plate->seoArticle ? $plate->seoArticle->slug : $plate->full_number,
+            'slug' => $plate->full_number,
             'full_number' => $plate->full_number,
             'display_number' => $plate->display_number,
             'vehicle_type' => $plate->vehicle_type,

@@ -474,9 +474,9 @@ class LicensePlateController extends Controller
         }
 
         if ($article) {
-            // Chuyển hướng 301 nếu slug yêu cầu khác với slug bài viết chuẩn
-            if ($slug !== $article->slug) {
-                return redirect()->to('/bien-so-' . $article->slug, 301);
+            // Nếu slug yêu cầu khác với số biển gốc (full_number), chuyển hướng 301 về URL biển gốc
+            if (strtoupper($slug) !== strtoupper($plate->full_number)) {
+                return redirect()->to('/bien-so-' . $plate->full_number, 301);
             }
 
             return view('plate.detail', [
@@ -486,7 +486,7 @@ class LicensePlateController extends Controller
                     'meta_description' => $article->meta_description,
                     'content' => $article->content,
                     'video_script' => $article->video_script,
-                    'slug' => $article->slug,
+                    'slug' => $plate->full_number,
                     'generation_model' => $article->generation_model,
                     'generated_at' => $article->generated_at ? $article->generated_at->toIso8601String() : null,
                     'image_url' => $article->image_path ? asset($article->image_path) : null,
@@ -699,7 +699,7 @@ class LicensePlateController extends Controller
     {
         return [
             'id' => $plate->id,
-            'slug' => $plate->seoArticle ? $plate->seoArticle->slug : $plate->full_number,
+            'slug' => $plate->full_number,
             'full_number' => $plate->full_number,
             'display_number' => $plate->display_number,
             'vehicle_type' => $plate->vehicle_type,
