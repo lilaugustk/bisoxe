@@ -676,6 +676,15 @@ class LicensePlateController extends Controller
             // Sử dụng dispatchSync để sinh bài viết đồng bộ ngay trong API request này
             GenerateSeoArticleJob::dispatchSync($plate);
 
+            // Xác nhận bài viết thực sự đã được lưu vào DB để tránh vòng lặp reload
+            $plate->load('seoArticle');
+            if (!$plate->seoArticle) {
+                \Illuminate\Support\Facades\Log::error("Sinh bài viết thành công nhưng không tìm thấy bài viết trong DB cho biển {$plate->full_number}");
+                return response()->json([
+                    'error' => 'Bài viết được sinh nhưng không lưu thành công. Vui lòng thử lại.'
+                ], 500)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Đã sinh bài viết thành công.'

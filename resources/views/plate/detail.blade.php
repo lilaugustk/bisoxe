@@ -378,24 +378,64 @@
     
         initPendingPoll() {
             if (this.isPending && this.plateId) {
+                // Bảo vệ chống vòng lặp reload vô hạn:
+                // Nếu đã reload quá 2 lần trong 30 giây, hiển thị lỗi thay vì tiếp tục reload.
+                const reloadKey = `plate_reload_${this.plateId}`;
+                const now = Date.now();
+                let reloadData = null;
+                try {
+                    reloadData = JSON.parse(sessionStorage.getItem(reloadKey));
+                } catch (e) {}
+                if (reloadData && (now - reloadData.firstTime) < 30000) {
+                    if (reloadData.count >= 2) {
+                        this.errorGenerating = true;
+                        console.error('Đã phát hiện vòng lặp reload. Dừng tự động tải lại.');
+                        sessionStorage.removeItem(reloadKey);
+                        return;
+                    }
+                } else {
+                    reloadData = null; // Reset nếu đã quá 30 giây
+                }
+
                 this.errorGenerating = false;
-                fetch(`/api/bien-so/${this.plateId}/generate-article?t=${Date.now()}`)
+
+                // Thêm timeout 120 giây cho fetch request
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+                fetch(`/api/bien-so/${this.plateId}/generate-article?t=${now}`, {
+                    signal: controller.signal
+                })
                     .then(res => {
+                        clearTimeout(timeoutId);
                         if (!res.ok) {
-                            throw new Error('Server returned error status');
+                            throw new Error('Server returned error status: ' + res.status);
                         }
                         return res.json();
                     })
                     .then(data => {
                         if (data && data.status === 'success') {
-                            window.location.reload();
+                            // Ghi nhận số lần reload vào sessionStorage
+                            const newCount = reloadData ? reloadData.count + 1 : 1;
+                            const firstTime = reloadData ? reloadData.firstTime : now;
+                            sessionStorage.setItem(reloadKey, JSON.stringify({
+                                count: newCount,
+                                firstTime: firstTime
+                            }));
+                            // Dùng replace() thay vì reload() để tránh pollute browser history
+                            window.location.replace(window.location.href);
                         } else {
                             throw new Error(data.error || 'Failed to generate article');
                         }
                     })
                     .catch(err => {
+                        clearTimeout(timeoutId);
                         this.errorGenerating = true;
-                        console.error('Error during article generation:', err);
+                        if (err.name === 'AbortError') {
+                            console.error('API generate-article đã hết thời gian chờ (timeout 120s).');
+                        } else {
+                            console.error('Error during article generation:', err);
+                        }
                     });
             }
         },
@@ -443,7 +483,11 @@
         }
     }"
         x-init="generateToc();
-        initPendingPoll();">
+        initPendingPoll();
+        // Xóa reload counter khi trang load thành công (bài viết đã có)
+        if (!isPending && plateId) {
+            try { sessionStorage.removeItem(`plate_reload_${plateId}`); } catch(e) {}
+        }">
 
         <!-- Main Content Layout -->
         <main class="mx-auto max-w-[1440px] px-2.5 py-6 sm:px-6 lg:px-8 lg:py-8">
