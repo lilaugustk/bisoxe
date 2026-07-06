@@ -64,6 +64,11 @@
         html.fouc-active body {
             opacity: 0 !important;
         }
+
+        /* Alpine.js cloak - ẩn các phần tử x-cloak ngay lập tức trước khi CSS chính và JS tải xong */
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 
     <script>

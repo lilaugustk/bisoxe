@@ -27,6 +27,11 @@
             html, body, h1, h2, h3, h4, h5, h6 {
                 font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
             }
+
+            /* Alpine.js cloak - ẩn các phần tử x-cloak ngay lập tức trước khi CSS chính và JS tải xong */
+            [x-cloak] {
+                display: none !important;
+            }
         </style>
 
         <!-- Vite CSS -->
