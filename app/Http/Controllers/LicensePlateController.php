@@ -505,10 +505,8 @@ class LicensePlateController extends Controller
             return redirect()->route('valuation.index')->with('error', 'Biển số tự định giá không có trang chi tiết.');
         }
 
-        // Trở lại cách cũ là KHÔNG sinh bài viết đồng bộ ngay khi load trang,
-        // Mà trả về is_pending => true lập tức, việc sinh bài viết sẽ do JS gửi request AJAX chạy ngầm lên.
-        // Sử dụng no-cache headers để trình duyệt không cache trang pending,
-        // tránh vòng lặp reload vô hạn khi JS gọi window.location.reload() sau khi sinh bài viết xong.
+        // TẠM THỜI VÔ HIỆU HÓA: Thay vì trả về is_pending => true để frontend gọi API sinh bài viết,
+        // chúng ta đặt is_pending => false để không hiển thị màn hình loading và không gọi API sinh bài viết.
         return response()->view('plate.detail', [
             'article' => [
                 'title' => "Giải mã ý nghĩa biển số {$plate->display_number}",
@@ -520,7 +518,7 @@ class LicensePlateController extends Controller
                 'image_url' => null,
             ],
             'plate' => $this->transformPlate($plate),
-            'is_pending' => true,
+            'is_pending' => false,
             'price_prediction' => $prediction,
             'price_trend' => $trend,
             'plate_score' => $score,
@@ -664,44 +662,12 @@ class LicensePlateController extends Controller
             return response()->json(['error' => 'Biển số tự định giá không có trang chi tiết.'], 400);
         }
 
-        // Nếu bài viết đã tồn tại rồi thì trả về success luôn
-        if ($plate->seoArticle) {
-            return response()->json(['status' => 'success', 'message' => 'Bài viết đã tồn tại.'])
-                ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-                ->header('Pragma', 'no-cache')
-                ->header('Expires', '0');
-        }
-
-        try {
-            // Tăng thời gian thực thi PHP cho route này vì Gemini API có thể mất 30-120 giây
-            // (production mặc định max_execution_time = 30-60s, không đủ khi có retry/fallback)
-            set_time_limit(180);
-            ignore_user_abort(true);
-
-            // Sử dụng dispatchSync để sinh bài viết đồng bộ ngay trong API request này
-            GenerateSeoArticleJob::dispatchSync($plate);
-
-            // Xác nhận bài viết thực sự đã được lưu vào DB để tránh vòng lặp reload
-            $plate->load('seoArticle');
-            if (!$plate->seoArticle) {
-                \Illuminate\Support\Facades\Log::error("Sinh bài viết thành công nhưng không tìm thấy bài viết trong DB cho biển {$plate->full_number}");
-                return response()->json([
-                    'error' => 'Bài viết được sinh nhưng không lưu thành công. Vui lòng thử lại.'
-                ], 500)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-            }
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Đã sinh bài viết thành công.'
-            ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-              ->header('Pragma', 'no-cache')
-              ->header('Expires', '0');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Sinh bài viết từ API thất bại cho biển {$plate->full_number}: " . $e->getMessage());
-            return response()->json([
-                'error' => 'Sinh bài viết thất bại: ' . $e->getMessage()
-            ], 500)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-        }
+        // TẠM THỜI VÔ HIỆU HÓA: Chặn sinh bài viết bằng AI
+        return response()->json([
+            'error' => 'Tính năng sinh bài viết bằng AI tạm thời bị khóa.'
+        ], 403)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+               ->header('Pragma', 'no-cache')
+               ->header('Expires', '0');
     }
 
     /**

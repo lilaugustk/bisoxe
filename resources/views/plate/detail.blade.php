@@ -378,64 +378,24 @@
     
         initPendingPoll() {
             if (this.isPending && this.plateId) {
-                // Bảo vệ chống vòng lặp reload:
-                // Nếu đã reload 1 lần mà vẫn pending, nghĩa là bài viết không lưu thành công → hiện lỗi ngay.
-                const reloadKey = `plate_reload_${this.plateId}`;
-                const now = Date.now();
-                let reloadData = null;
-                try {
-                    reloadData = JSON.parse(sessionStorage.getItem(reloadKey));
-                } catch (e) {}
-                if (reloadData && (now - reloadData.firstTime) < 30000) {
-                    if (reloadData.count >= 1) {
-                        this.errorGenerating = true;
-                        console.error('Trang đã reload sau khi generate nhưng bài viết vẫn chưa có. Dừng tự động.');
-                        sessionStorage.removeItem(reloadKey);
-                        return;
-                    }
-                } else {
-                    reloadData = null;
-                }
-
                 this.errorGenerating = false;
-
-                // Thêm timeout 120 giây cho fetch request
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 120000);
-
-                fetch(`/api/bien-so/${this.plateId}/generate-article?t=${now}`, {
-                    signal: controller.signal
-                })
+                fetch(`/api/bien-so/${this.plateId}/generate-article?t=${Date.now()}`)
                     .then(res => {
-                        clearTimeout(timeoutId);
                         if (!res.ok) {
-                            throw new Error('Server returned error status: ' + res.status);
+                            throw new Error('Server returned error status');
                         }
                         return res.json();
                     })
                     .then(data => {
                         if (data && data.status === 'success') {
-                            // Ghi nhận số lần reload vào sessionStorage
-                            const newCount = reloadData ? reloadData.count + 1 : 1;
-                            const firstTime = reloadData ? reloadData.firstTime : now;
-                            sessionStorage.setItem(reloadKey, JSON.stringify({
-                                count: newCount,
-                                firstTime: firstTime
-                            }));
-                            // Dùng replace() thay vì reload() để tránh pollute browser history
-                            window.location.replace(window.location.href);
+                            window.location.reload();
                         } else {
                             throw new Error(data.error || 'Failed to generate article');
                         }
                     })
                     .catch(err => {
-                        clearTimeout(timeoutId);
                         this.errorGenerating = true;
-                        if (err.name === 'AbortError') {
-                            console.error('API generate-article đã hết thời gian chờ (timeout 120s).');
-                        } else {
-                            console.error('Error during article generation:', err);
-                        }
+                        console.error('Error during article generation:', err);
                     });
             }
         },
@@ -483,11 +443,7 @@
         }
     }"
         x-init="generateToc();
-        initPendingPoll();
-        // Xóa reload counter khi trang load thành công (bài viết đã có)
-        if (!isPending && plateId) {
-            try { sessionStorage.removeItem(`plate_reload_${plateId}`); } catch(e) {}
-        }">
+        initPendingPoll();">
 
         <!-- Main Content Layout -->
         <main class="mx-auto max-w-[1440px] px-2.5 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -615,8 +571,7 @@
                 </div>
 
                 <!-- Right: Summary Dashboard Info -->
-                <div
-                    class="py-4 sm:p-4 lg:col-span-5 flex flex-col justify-between">
+                <div class="py-4 sm:p-4 lg:col-span-5 flex flex-col justify-between">
                     <div class="flex flex-col gap-3 sm:gap-3.5 lg:gap-0 lg:justify-between flex-1">
                         <!-- Row 1: Giá khởi điểm / Giá trúng -->
                         <div class="flex items-center justify-between py-2">
@@ -639,8 +594,7 @@
                         <!-- Row 2: Trạng thái đấu giá -->
                         <div class="flex items-center justify-between py-2">
                             <span class="text-sm font-medium text-gray-600">Trạng thái đấu giá</span>
-                            <span
-                                class="text-sm font-normal text-gray-900 whitespace-nowrap">{{ $statusLabel }}</span>
+                            <span class="text-sm font-normal text-gray-900 whitespace-nowrap">{{ $statusLabel }}</span>
                         </div>
 
                         <!-- Row 3: Định giá đề xuất -->
@@ -670,8 +624,7 @@
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </button>
-                            <span class="text-sm font-normal whitespace-nowrap"
-                                style="color: {{ $scoreColor }}">
+                            <span class="text-sm font-normal whitespace-nowrap" style="color: {{ $scoreColor }}">
                                 {{ $plate_score['score'] }}
                             </span>
                         </div>
@@ -718,8 +671,7 @@
                                     <div class="mb-3 flex items-center justify-between select-none">
                                         <span class="text-xs font-bold text-gray-700">Giá trúng gần đây</span>
                                     </div>
-                                    <div
-                                        class="max-h-[320px] overflow-y-auto flex flex-col gap-2 pr-1 scrollbar-none">
+                                    <div class="max-h-[320px] overflow-y-auto flex flex-col gap-2 pr-1 scrollbar-none">
                                         <template x-for="(item, i) in getSelectedPlates().slice().reverse()"
                                             :key="'mobile-plate-' + i">
                                             <div class="flex items-center justify-between py-1.5">
@@ -947,7 +899,8 @@
 
             <!-- Loading state: If content is still generating (Ẩn nếu là biển tự định giá) -->
             @if ($is_pending && ($plate['status'] ?? '') !== 'custom_valuation')
-                <div id="pending-loader-desktop" class="flex flex-col items-center justify-center py-16 text-center" x-show="isPending">
+                <div id="pending-loader-desktop" class="flex flex-col items-center justify-center py-16 text-center"
+                    x-show="isPending">
                     <!-- Spinner shown if no error -->
                     <div x-show="!errorGenerating" class="flex flex-col items-center space-y-6">
                         <div class="relative h-16 w-16">
@@ -959,7 +912,8 @@
                         </div>
                         <h3 class="text-xl font-bold text-gray-900">Đang tổng hợp dữ liệu...</h3>
                         <p class="max-w-md text-sm text-gray-500">
-                            Hệ thống đang tiến hành tra cứu ý nghĩa thế số, đối chiếu lịch sử giá trúng đấu giá và lập báo cáo
+                            Hệ thống đang tiến hành tra cứu ý nghĩa thế số, đối chiếu lịch sử giá trúng đấu giá và lập báo
+                            cáo
                             chi tiết. Vui lòng đợi trong giây lát!
                         </p>
                     </div>
@@ -967,21 +921,25 @@
                     <!-- Error state shown if errorGenerating is true -->
                     <div x-show="errorGenerating" class="flex flex-col items-center space-y-4" style="display: none;">
                         <div class="rounded-full bg-red-50 p-3 text-[#8C1E1E]">
-                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900">Không thể tải thông tin chi tiết</h3>
                         <p class="max-w-md text-sm text-gray-500 font-semibold">
-                            Đã xảy ra lỗi trong quá trình phân tích ý nghĩa biển số bằng AI. Vui lòng bấm thử lại hoặc tải lại trang sau.
+                            Đã xảy ra lỗi trong quá trình phân tích ý nghĩa biển số bằng AI. Vui lòng bấm thử lại hoặc tải
+                            lại trang sau.
                         </p>
-                        <button @click="initPendingPoll()" type="button" class="inline-flex items-center justify-center rounded-xl bg-[#8C1E1E] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#701818] transition cursor-pointer">
+                        <button @click="initPendingPoll()" type="button"
+                            class="inline-flex items-center justify-center rounded-xl bg-[#8C1E1E] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#701818] transition cursor-pointer">
                             Thử lại
                         </button>
                     </div>
                 </div>
-            @elseif(($plate['status'] ?? '') !== 'custom_valuation')
-                <!-- Main Article Content (Ẩn nếu là biển tự định giá) -->
+            @elseif(($plate['status'] ?? '') !== 'custom_valuation' && !empty($article['content']))
+                <!-- Main Article Content (Ẩn nếu là biển tự định giá hoặc không có nội dung) -->
                 <div
                     class="prose prose-sm sm:prose-base max-w-none prose-headings:font-bold sm:prose-headings:font-extrabold prose-h2:text-base sm:prose-h2:text-xl prose-h3:text-sm sm:prose-h3:text-lg prose-p:text-sm sm:prose-p:text-base prose-p:leading-relaxed text-gray-800">
                     <h1
@@ -1085,7 +1043,8 @@
                     <div class="mt-4 overflow-x-auto">
                         <table class="w-full text-left border-collapse min-w-[500px] sm:min-w-0">
                             <thead>
-                                <tr class="bg-gray-50 border-t border-b border-gray-200 text-xs font-bold uppercase tracking-wider select-none">
+                                <tr
+                                    class="bg-gray-50 border-t border-b border-gray-200 text-xs font-bold uppercase tracking-wider select-none">
                                     <th class="w-16 px-4 py-2.5 text-center whitespace-nowrap">STT</th>
                                     <th class="px-4 py-2.5 whitespace-nowrap">Biển số</th>
                                     <th class="px-4 py-2.5 whitespace-nowrap">Giá trúng / khởi điểm</th>
@@ -1105,8 +1064,7 @@
                                             class="px-4 py-3 text-sm font-bold whitespace-nowrap {{ $relPlate['color'] === 1 ? 'text-amber-600' : 'text-gray-800' }}">
                                             {{ $relPlate['display_number'] }}
                                         </td>
-                                        <td
-                                            class="px-4 py-3 text-sm whitespace-nowrap font-bold text-[#8C1E1E]">
+                                        <td class="px-4 py-3 text-sm whitespace-nowrap font-bold text-[#8C1E1E]">
                                             {{ $relPlate['winning_price'] > 0 ? $formatMoney($relPlate['winning_price']) : $formatMoney($relPlate['starting_price']) }}
                                         </td>
                                         <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
