@@ -12,4 +12,4 @@ Artisan::command('inspire', function () {
 Schedule::command('app:sync-vpa-data')->everySixHours();
 
 // Tự động đề xuất chủ đề và sinh bài viết SEO bằng AI mỗi ngày lúc 08:00 sáng
-Schedule::command('app:generate-general-article')->dailyAt('08:00');
+// Schedule::command('app:generate-general-article')->dailyAt('08:00');
