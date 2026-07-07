@@ -541,7 +541,7 @@ class LicensePlateController extends Controller
                 'image_url' => null,
             ],
             'plate' => $data['plate'],
-            'is_pending' => false,
+            'is_pending' => true,
             'price_prediction' => $data['price_prediction'],
             'price_trend' => $data['price_trend'],
             'plate_score' => $data['plate_score'],
@@ -685,12 +685,63 @@ class LicensePlateController extends Controller
             return response()->json(['error' => 'Biển số tự định giá không có trang chi tiết.'], 400);
         }
 
-        // TẠM THỜI VÔ HIỆU HÓA: Chặn sinh bài viết bằng AI
-        return response()->json([
-            'error' => 'Tính năng sinh bài viết bằng AI tạm thời bị khóa.'
-        ], 403)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-               ->header('Pragma', 'no-cache')
-               ->header('Expires', '0');
+        // Nếu bài viết đã tồn tại rồi thì trả về success luôn
+        if ($plate->seoArticle) {
+            // Giải phóng cache chi tiết biển số phòng hờ cache cũ vẫn giữ trạng thái empty
+            $slugCandidates = [
+                $plate->full_number,
+                strtolower($plate->full_number),
+                'phan-tich-bien-so-' . strtolower($plate->full_number)
+            ];
+            foreach ($slugCandidates as $slugCandidate) {
+                \Illuminate\Support\Facades\Cache::forget("plate_detail_data_v4_" . md5($slugCandidate));
+            }
+
+            return response()->json(['status' => 'success', 'message' => 'Bài viết đã tồn tại.'])
+                ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
+        }
+
+        try {
+            // Tăng thời gian thực thi PHP cho route này vì Gemini API có thể mất 30-120 giây
+            set_time_limit(180);
+            ignore_user_abort(true);
+
+            // Sử dụng dispatchSync để sinh bài viết đồng bộ ngay trong API request này
+            GenerateSeoArticleJob::dispatchSync($plate);
+
+            // Xác nhận bài viết thực sự đã được lưu vào DB để tránh vòng lặp reload
+            $plate->load('seoArticle');
+            if (!$plate->seoArticle) {
+                \Illuminate\Support\Facades\Log::error("Sinh bài viết thành công nhưng không tìm thấy bài viết trong DB cho biển {$plate->full_number}");
+                return response()->json([
+                    'error' => 'Bài viết được sinh nhưng không lưu thành công. Vui lòng thử lại.'
+                ], 500)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+            }
+
+            // Giải phóng cache chi tiết biển số sau khi sinh thành công
+            $slugCandidates = [
+                $plate->full_number,
+                strtolower($plate->full_number),
+                'phan-tich-bien-so-' . strtolower($plate->full_number)
+            ];
+            foreach ($slugCandidates as $slugCandidate) {
+                \Illuminate\Support\Facades\Cache::forget("plate_detail_data_v4_" . md5($slugCandidate));
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Đã sinh bài viết thành công.'
+            ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+              ->header('Pragma', 'no-cache')
+              ->header('Expires', '0');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Sinh bài viết từ API thất bại cho biển {$plate->full_number}: " . $e->getMessage());
+            return response()->json([
+                'error' => 'Sinh bài viết thất bại: ' . $e->getMessage()
+            ], 500)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        }
     }
 
     /**

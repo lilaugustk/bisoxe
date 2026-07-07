@@ -103,7 +103,7 @@ class GeminiApiService
         }
 
         // Thiết lập prompt
-        $prompt = "Bạn là một chuyên gia phân tích biển số xe và chuyên gia tối ưu hóa SEO. Hãy phân tích biển số xe sau đây và tạo nội dung phân tích ý nghĩa, định giá độc bản, hấp dẫn để thu hút traffic cho website.
+        $prompt = "Bạn là một chuyên gia phân tích biển số xe và chuyên gia tối ưu hóa SEO. Hãy phân tích biển số xe sau đây và tạo nội dung phân tích ngắn gọn xem biển số này đẹp hay xấu để thu hút traffic cho website.
         
 Thông tin biển số xe:
 - Biển số: {$plate->full_number} (Hiển thị dạng: {$plate->display_number})
@@ -114,23 +114,24 @@ Thông tin biển số xe:
 - Thông tin tài chính: {$priceStr}
 
 Nhiệm vụ của bạn là trả về một đối tượng JSON chứa chính xác các trường sau:
-1. 'title': Tiêu đề bài viết hấp dẫn, chứa biển số xe (Ví dụ: 'Ý nghĩa biển số ngũ quý 9 {$plate->display_number} và đánh giá giá trị đấu giá thực tế'). Tiêu đề nên dài khoảng 50-70 ký tự. Tuyệt đối không sử dụng dấu hai chấm (:) hoặc dấu gạch ngang (-) trong tiêu đề bài viết.
+1. 'title': Tiêu đề bài viết ngắn gọn, chứa biển số xe (Ví dụ: 'Đánh giá biển số xe {$plate->display_number} đẹp hay xấu'). Tiêu đề nên dài khoảng 40-60 ký tự. Tuyệt đối không sử dụng dấu hai chấm (:) hoặc dấu gạch ngang (-) trong tiêu đề bài viết.
 2. 'meta_title': Tiêu đề meta tối ưu SEO cho kết quả tìm kiếm Google (dưới 60 ký tự).
 3. 'meta_description': Mô tả ngắn meta description thu hút người đọc click từ Google (dưới 160 ký tự).
-4. 'content': Bài viết chi tiết định dạng HTML (sử dụng các thẻ h2, h3, p, strong, ul, li, và thẻ a để chèn liên kết nội bộ). Bài viết cần ngắn gọn khoảng 300 đến 400 từ, chia làm các phần hợp lý, lồng ghép tự nhiên các liên kết nội bộ (SEO Internal Linking) được cung cấp ở mục bên dưới vào nội dung:
-   - Giới thiệu về biển số {$plate->display_number} và thông tin đấu giá nổi bật.
-   - Phân tích thế số và tổng số nút chi tiết (phân tích sự cân đối, dễ nhớ, dễ đọc của các con số trong {$plate->serial_number}, sự kết hợp các số, đầu số {$plate->local_symbol} và ký tự seri {$plate->serial_letter}, xác định biển số này là biển đẹp hay biển số bình thường/biển xấu).
-   - Luận giải ý nghĩa các con số theo quan niệm dân gian truyền thống (như các cặp số lộc phát 68/86, thần tài 39/79, ông địa 38/78 hoặc các số cần tránh theo dân gian như 49, 53, 4, 7).
-   - Đánh giá giá trị thực tế, độ độc lạ và cơ hội đầu tư của biển số này trên thị trường xe.
-   - Đánh giá chấm điểm biển số: Đưa ra nhận định chấm điểm cụ thể cho biển số này trên thang điểm 10 (Ví dụ: Chấm điểm: 8.5/10 hoặc 9.0/10) kèm theo tóm tắt ngắn gọn các ưu điểm/nhược điểm chính của biển số để người đọc dễ theo dõi.
-5. 'video_script': Kịch bản video ngắn (TikTok/Reels/Shorts) dài khoảng 30-45 giây để giới thiệu về biển số này, bao gồm: Lời thoại thuyết minh (Voiceover) tiếng Việt và gợi ý hình ảnh/video minh họa tương ứng. Viết dưới dạng văn bản thuần (plain text), không dùng định dạng JSON hay cấu trúc mảng lồng nhau.
+4. 'content': Đoạn phân tích ngắn định dạng HTML (sử dụng các thẻ h2, h3, p, strong, và thẻ a để chèn liên kết nội bộ). Đoạn phân tích cần ngắn gọn khoảng 120 đến 180 từ, được thiết kế theo cấu trúc phân cấp tiêu đề SEO nghiêm ngặt như sau:
+   - Bắt đầu trực tiếp bằng 1 đoạn mở đầu ngắn (thẻ <p>, không có heading nào phía trước) để giới thiệu biển số xe.
+   - Tiếp theo là đúng 01 tiêu đề cấp 2 (thẻ <h2>) do bạn tự sáng tạo tiêu đề một cách tự nhiên và lôi cuốn (liên quan đến việc phân tích thế số, cấu trúc biển).
+   - Bên dưới tiêu đề <h2> bắt buộc phải có đúng 02 tiêu đề cấp 3 (thẻ <h3>) do bạn tự sáng tạo tiêu đề tương ứng một cách đa dạng, tránh lặp lại từ ngữ rập khuôn giữa các bài viết:
+     + <h3> số 1: Phân tích chi tiết sự sắp xếp, đối xứng, lặp lại hoặc liên kết của các con số.
+     + <h3> số 2: Nhận định tổng quát về mức độ đẹp xấu, tính dễ đọc dễ nhớ của biển số.
+   - TUYỆT ĐỐI KHÔNG luận giải ý nghĩa các con số theo quan niệm dân gian truyền thống (như lộc phát 68/86, thần tài 39/79, ông địa, số 49, 53...).
+   - TUYỆT ĐỐI KHÔNG tính tổng số nút, không luận bàn về giá trị tài chính thị trường, không đánh giá độ hiếm hay cơ hội đầu tư kinh doanh.
 
 {$internalLinksPrompt}
 
 Yêu cầu quan trọng:
-- TUYỆT ĐỐI KHÔNG sử dụng thẻ h1 trong nội dung bài viết (trường 'content'). Tiêu đề bài viết đã được hệ thống hiển thị bằng thẻ h1 ở ngoài. Việc lặp lại thẻ h1 trong content là lỗi cấu trúc SEO nghiêm trọng. Hãy bắt đầu trực tiếp bằng đoạn mở đầu (<p>) hoặc thẻ h2.
-- TUYỆT ĐỐI KHÔNG sử dụng từ khóa 'phong thủy' hoặc các cụm từ tương tự liên quan đến 'phong thủy' trong toàn bộ tiêu đề, mô tả và nội dung bài viết. Hãy thay thế bằng các diễn đạt trung tính hơn như 'ý nghĩa con số', 'theo quan niệm dân gian', 'thế số đẹp/xấu', 'phân tích thế số', 'tổng nút'.
-- TUYỆT ĐỐI CẤM đề cập tên các trang web, đơn vị tổ chức đấu giá bên thứ ba hoặc các thương hiệu khác như: 'VPA', 'vpa.com.vn', 'Công ty Đấu giá hợp danh Việt Nam', 'Cục Cảnh sát giao thông' hay bất kỳ tên ứng dụng/website đấu giá nào khác trong toàn bộ bài viết (bao gồm cả tiêu đề, mô tả, nội dung bài viết và kịch bản video). Hãy sử dụng các cụm từ chung chung như 'trang thông tin đấu giá trực tuyến', 'hệ thống đấu giá biển số xe', 'cơ quan chức năng', 'đơn vị tổ chức'.
+- TUYỆT ĐỐI KHÔNG sử dụng thẻ h1 trong nội dung bài viết (trường 'content'). Tiêu đề bài viết đã được hệ thống hiển thị bằng thẻ h1 ở ngoài. Việc lặp lại thẻ h1 trong content là lỗi cấu trúc SEO nghiêm trọng. Hãy bắt đầu trực tiếp bằng đoạn mở đầu (<p>) rồi sau đó mới đến thẻ h2 và h3.
+- TUYỆT ĐỐI KHÔNG sử dụng từ khóa 'phong thủy' hoặc các cụm từ tương tự liên quan đến 'phong thủy' trong toàn bộ tiêu đề, mô tả và nội dung bài viết. Hãy thay thế bằng các diễn đạt trung tính hơn như 'thế số đẹp/xấu', 'phân tích thế số', 'thế số cân đối'.
+- TUYỆT ĐỐI CẤM đề cập tên các trang web, đơn vị tổ chức đấu giá bên thứ ba hoặc các thương hiệu khác như: 'VPA', 'vpa.com.vn', 'Công ty Đấu giá hợp danh Việt Nam', 'Cục Cảnh sát giao thông' hay bất kỳ tên ứng dụng/website đấu giá nào khác trong toàn bộ bài viết (bao gồm cả tiêu đề, mô tả, nội dung bài viết). Hãy sử dụng các cụm từ chung chung như 'trang thông tin đấu giá trực tuyến', 'hệ thống đấu giá biển số xe', 'cơ quan chức năng', 'đơn vị tổ chức'.
 - Nội dung hoàn toàn bằng tiếng Việt, phong cách hành văn chuyên nghiệp, mạch lạc, lôi cuốn.
 - Trả về kết quả CHỈ là chuỗi JSON hợp lệ với cấu trúc trên. Không thêm bất kỳ văn bản giải thích nào ngoài JSON.";
 
@@ -141,9 +142,8 @@ Yêu cầu quan trọng:
                 'meta_title' => ['type' => 'STRING'],
                 'meta_description' => ['type' => 'STRING'],
                 'content' => ['type' => 'STRING'],
-                'video_script' => ['type' => 'STRING'],
             ],
-            'required' => ['title', 'meta_title', 'meta_description', 'content', 'video_script'],
+            'required' => ['title', 'meta_title', 'meta_description', 'content'],
         ];
 
         try {
@@ -154,7 +154,7 @@ Yêu cầu quan trọng:
                 'meta_title' => $result['meta_title'] ?? '',
                 'meta_description' => $result['meta_description'] ?? '',
                 'content' => $result['content'] ?? '',
-                'video_script' => $result['video_script'] ?? '',
+                'video_script' => '', // Trả về chuỗi rỗng vì không tạo video script nữa
             ];
 
         } catch (\Exception $e) {

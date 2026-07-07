@@ -88,6 +88,16 @@ class GenerateSeoArticleJob implements ShouldQueue
             // Giải phóng cache lock khi thành công
             Cache::forget("generating_article_{$this->plate->id}");
 
+            // Giải phóng cache chi tiết biển số sau khi sinh thành công
+            $slugCandidates = [
+                $this->plate->full_number,
+                strtolower($this->plate->full_number),
+                'phan-tich-bien-so-' . strtolower($this->plate->full_number)
+            ];
+            foreach ($slugCandidates as $slugCandidate) {
+                Cache::forget("plate_detail_data_v4_" . md5($slugCandidate));
+            }
+
             // Tạm thời bỏ qua việc gửi index lên Google
             // SubmitToGoogleIndexingJob::dispatch($article);
 
