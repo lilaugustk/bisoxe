@@ -28,6 +28,7 @@
         showValuationModal: false,
         loadingValuation: false,
         selectedValuation: null,
+        valuationError: '',
         modalPlateStyle: 'long',
         
         provinceMap: {
@@ -129,9 +130,10 @@
             this.showValuationModal = true;
             this.loadingValuation = true;
             this.selectedValuation = null;
+            this.valuationError = '';
             this.modalPlateStyle = 'long';
             try {
-                const response = await fetch(`/api/bien-so/${recent.full_number}/dinh-gia`);
+                const response = await fetch(`/api/bien-so/${encodeURIComponent(recent.full_number)}/dinh-gia`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch valuation');
                 }
@@ -139,6 +141,7 @@
                 this.selectedValuation = data;
             } catch (error) {
                 console.error(error);
+                this.valuationError = 'Không tải được kết quả định giá. Vui lòng thử lại sau ít phút.';
             } finally {
                 this.loadingValuation = false;
             }
@@ -147,6 +150,7 @@
         closeValuationModal() {
             this.showValuationModal = false;
             this.selectedValuation = null;
+            this.valuationError = '';
         }
      }">
     
@@ -451,7 +455,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-3 text-center whitespace-nowrap">
-                                            <button @click="openValuationModal({{ json_encode($recent) }})" type="button" class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 px-2.5 py-1 text-[11px] font-bold text-[#8C1E1E] hover:bg-[#8C1E1E] hover:text-white shadow-sm transition cursor-pointer">
+                                            <button @click="openValuationModal({{ \Illuminate\Support\Js::from($recent) }})" data-valuation-full-number="{{ $recent['full_number'] }}" type="button" class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 px-2.5 py-1 text-[11px] font-bold text-[#8C1E1E] hover:bg-[#8C1E1E] hover:text-white shadow-sm transition cursor-pointer">
                                                 Xem kết quả
                                             </button>
                                         </td>
@@ -469,7 +473,7 @@
     </main>
 
     <!-- Modal hiển thị kết quả định giá chi tiết -->
-    <div x-show="showValuationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" @click.self="closeValuationModal" style="display: none;">
+    <div id="valuation-modal" x-show="showValuationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" @click.self="closeValuationModal" style="display: none;">
         <div class="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl transition-all border border-gray-200 flex flex-col max-h-[90vh]">
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
@@ -477,7 +481,7 @@
                     <h3 class="text-lg font-bold text-gray-900">Chi tiết định giá biển số</h3>
                     <p class="text-xs text-gray-500">Thông tin phân tích và ước lượng giá trị từ hệ thống</p>
                 </div>
-                <button @click="closeValuationModal" class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer">
+                <button @click="closeValuationModal" data-valuation-close type="button" class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -485,7 +489,7 @@
             </div>
 
             <!-- Body -->
-            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <div id="valuation-modal-body" class="flex-1 overflow-y-auto p-6 space-y-6">
                 <!-- Loading State -->
                 <div x-show="loadingValuation" class="flex flex-col items-center justify-center py-12 space-y-4">
                     <div class="relative h-12 w-12">
@@ -495,11 +499,15 @@
                     <span class="text-sm font-medium text-gray-500">Đang tải kết quả định giá...</span>
                 </div>
 
+                <div x-show="!loadingValuation && valuationError" class="rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-700" style="display: none;">
+                    <p class="font-bold">Chưa thể hiển thị kết quả</p>
+                    <p class="mt-1 text-xs leading-relaxed" x-text="valuationError"></p>
+                </div>
                 <!-- Data Loaded State -->
                 <div x-show="!loadingValuation && selectedValuation" class="space-y-6">
                     
                     <!-- Top: Plate Simulation -->
-                    <div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-6 border border-gray-100" x-data="{}" x-show="selectedValuation && selectedValuation.plate">
+                    <div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-6 border border-gray-100" x-show="selectedValuation && selectedValuation.plate">
                         <div class="perspective-1000 w-full flex justify-center">
                             <div class="transform transition-transform duration-500 hover:scale-102 w-full flex justify-center">
                                 <!-- 1. Biển dài -->
@@ -636,7 +644,7 @@
 
             <!-- Footer -->
             <div class="flex items-center justify-end border-t border-gray-100 px-6 py-4 bg-gray-50/50">
-                <button @click="closeValuationModal" type="button" class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition cursor-pointer">
+                <button @click="closeValuationModal" data-valuation-close type="button" class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition cursor-pointer">
                     Đóng
                 </button>
             </div>
@@ -644,4 +652,124 @@
     </div>
 
 </div>
+@endsection
+@section('scripts')
+<script>
+    (() => {
+        const initValuationFallback = () => {
+        const modal = document.getElementById('valuation-modal');
+        const modalBody = document.getElementById('valuation-modal-body');
+        if (!modal || !modalBody) return;
+
+        const formatMoney = (value) => {
+            const amount = Number(value || 0);
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+                maximumFractionDigits: 0
+            }).format(amount);
+        };
+
+        const showFallbackModal = () => {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeFallbackModal = () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        };
+
+        const renderLoading = () => {
+            modalBody.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 space-y-4">
+                    <div class="relative h-12 w-12">
+                        <div class="absolute inset-0 animate-ping rounded-full border-4 border-[#8C1E1E]/20"></div>
+                        <div class="absolute inset-0 animate-spin rounded-full border-4 border-t-[#8C1E1E] border-r-transparent border-b-transparent border-l-transparent"></div>
+                    </div>
+                    <span class="text-sm font-medium text-gray-500">Đang tải kết quả định giá...</span>
+                </div>
+            `;
+        };
+
+        const renderError = () => {
+            modalBody.innerHTML = `
+                <div class="rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+                    <p class="font-bold">Chưa thể hiển thị kết quả</p>
+                    <p class="mt-1 text-xs leading-relaxed">Không tải được kết quả định giá. Vui lòng thử lại sau ít phút.</p>
+                </div>
+            `;
+        };
+
+        const renderResult = (data) => {
+            const plate = data.plate || {};
+            const score = data.plate_score || {};
+            const prediction = data.price_prediction || {};
+            const serial = plate.serial_number || '';
+            const formattedSerial = serial.length > 3 ? `${serial.slice(0, 3)}.${serial.slice(3)}` : serial;
+            const kinds = Array.isArray(plate.kinds) && plate.kinds.length > 0 ? plate.kinds[0].name : 'Biển thường';
+
+            modalBody.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-6 border border-gray-100">
+                        <div class="relative flex aspect-[520/110] w-full max-w-[380px] items-center justify-center rounded-lg border-2 border-gray-300 bg-gradient-to-b from-white via-white to-gray-50 p-1 shadow-[0_6px_12px_-2px_rgba(0,0,0,0.08)]">
+                            <div class="flex h-full w-full items-center justify-center rounded border border-gray-200 px-6 select-none">
+                                <div class="flex items-center justify-center text-center font-sans font-black tracking-tight text-black">
+                                    <span class="text-[1.6rem] min-[400px]:text-[1.9rem] leading-none uppercase">${plate.local_symbol || ''}${plate.serial_letter || ''}</span>
+                                    <span class="mx-2 text-[1.4rem] min-[400px]:text-[1.7rem] leading-none text-black/75">-</span>
+                                    <span class="text-[1.6rem] min-[400px]:text-[1.9rem] leading-none">${formattedSerial}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-3">
+                            <div class="flex justify-between border-b border-gray-100 pb-2"><span class="text-xs text-gray-500">Tỉnh/Thành phố:</span><span class="text-xs font-bold text-gray-800">${plate.province?.name || 'Chưa rõ'}</span></div>
+                            <div class="flex justify-between border-b border-gray-100 pb-2"><span class="text-xs text-gray-500">Loại phương tiện:</span><span class="text-xs font-bold text-gray-800">${plate.vehicle_type === 'car' ? 'Xe Ô tô' : 'Xe Máy'}</span></div>
+                            <div class="flex justify-between border-b border-gray-100 pb-2"><span class="text-xs text-gray-500">Nút số / Thế số:</span><span class="text-xs font-bold text-gray-800">${score.nut ?? ''} nút / ${kinds}</span></div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between border-b border-gray-100 pb-2"><span class="text-xs text-gray-500">Thành viên định giá:</span><span class="text-xs font-black text-[#8C1E1E]">${plate.winning_price > 0 ? formatMoney(plate.winning_price) : 'Chưa định giá'}</span></div>
+                            <div class="flex justify-between border-b border-gray-100 pb-2"><span class="text-xs text-gray-500">Hệ thống định giá:</span><span class="text-xs font-black text-gray-900">${formatMoney(prediction.expected)}</span></div>
+                            <div class="flex justify-between border-b border-gray-100 pb-2"><span class="text-xs text-gray-500">Điểm số:</span><span class="text-xs font-bold text-green-700">${score.score ?? 0} / 100 điểm</span></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        document.addEventListener('click', async (event) => {
+            const closeButton = event.target.closest('[data-valuation-close]');
+            if (closeButton) {
+                event.preventDefault();
+                closeFallbackModal();
+                return;
+            }
+
+            const button = event.target.closest('[data-valuation-full-number]');
+            if (!button) return;
+
+            event.preventDefault();
+            showFallbackModal();
+            renderLoading();
+
+            try {
+                const fullNumber = button.getAttribute('data-valuation-full-number');
+                const response = await fetch(`/api/bien-so/${encodeURIComponent(fullNumber)}/dinh-gia`);
+                if (!response.ok) throw new Error('Failed to fetch valuation');
+                renderResult(await response.json());
+            } catch (error) {
+                console.error(error);
+                renderError();
+            }
+        });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initValuationFallback, { once: true });
+        } else {
+            initValuationFallback();
+        }
+    })();
+</script>
 @endsection

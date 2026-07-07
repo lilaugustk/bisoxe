@@ -95,9 +95,11 @@
 
     <!-- Event snippet for Onsite 5 Minutes conversion page -->
     <script>
-        gtag('event', 'conversion', {
-            'send_to': 'AW-16670995979/hWC9CJHak8oZEIvsrI0-'
-        });
+        if (typeof gtag === 'function') {
+            gtag('event', 'conversion', {
+                'send_to': 'AW-16670995979/hWC9CJHak8oZEIvsrI0-'
+            });
+        }
     </script>
     @yield('style')
 </head>
