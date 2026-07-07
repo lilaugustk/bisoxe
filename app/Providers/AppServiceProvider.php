@@ -5,6 +5,7 @@ namespace App\Providers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -23,7 +24,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->configureVite();
         $this->configureDefaults();
+    }
+
+    /**
+     * Keep non-local assets on the built manifest even if a local Vite hot file
+     * is accidentally deployed.
+     */
+    protected function configureVite(): void
+    {
+        if (! app()->environment('local')) {
+            Vite::useHotFile(storage_path('framework/vite.hot'));
+        }
     }
 
     /**
