@@ -2,24 +2,15 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
-    <!-- Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LDRY98TCCW"></script>
     <script>
-        (function(w, d, s, l, i) {
-            w[l] = w[l] || [];
-            w[l].push({
-                'gtm.start': new Date().getTime(),
-                event: 'gtm.js'
-            });
-            var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s),
-                dl = l != 'dataLayer' ? '&l=' + l : '';
-            j.async = true;
-            j.src =
-                'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-            f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-WQRF5573');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-LDRY98TCCW');
     </script>
-    <!-- End Google Tag Manager -->
     <!-- Meta -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -92,23 +83,10 @@
             setTimeout(showPage, 1500);
         })();
     </script>
-
-    <!-- Event snippet for Onsite 5 Minutes conversion page -->
-    <script>
-        if (typeof gtag === 'function') {
-            gtag('event', 'conversion', {
-                'send_to': 'AW-16670995979/hWC9CJHak8oZEIvsrI0-'
-            });
-        }
-    </script>
     @yield('style')
 </head>
 
 <body class="font-sans antialiased text-gray-900 bg-gray-50 flex flex-col min-h-screen">
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WQRF5573" height="0" width="0"
-            style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
     <x-header />
 
     <main class="flex-grow">
