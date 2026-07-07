@@ -377,7 +377,19 @@
         },
     
         initPendingPoll() {
+            // Kiểm tra xem URL đã có tham số refresh chưa
+            const urlParams = new URLSearchParams(window.location.search);
+            const isRefreshed = urlParams.has('refresh');
+
             if (this.isPending && this.plateId) {
+                if (isRefreshed) {
+                    // Nếu đã tải lại trang bằng refresh mà vẫn pending, có thể do cache CDN hoặc database trễ.
+                    // Chúng ta không gọi API tiếp nữa để tránh lặp vô hạn, hiển thị trạng thái lỗi.
+                    this.errorGenerating = true;
+                    console.warn('Page was refreshed but content is still pending. Stopping poll to prevent loop.');
+                    return;
+                }
+
                 this.errorGenerating = false;
                 fetch(`/api/bien-so/${this.plateId}/generate-article?t=${Date.now()}`)
                     .then(res => {
@@ -388,7 +400,8 @@
                     })
                     .then(data => {
                         if (data && data.status === 'success') {
-                            window.location.reload();
+                            // Tải lại kèm query param refresh để bypass mọi tầng cache (browser, CDN, Cloudflare)
+                            window.location.href = window.location.pathname + '?refresh=' + Date.now();
                         } else {
                             throw new Error(data.error || 'Failed to generate article');
                         }
