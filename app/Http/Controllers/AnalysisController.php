@@ -36,9 +36,12 @@ class AnalysisController extends Controller
      */
     private function getAllProvinces()
     {
-        return Cache::remember('all_provinces_cache_v3', 86400, function () {
-            return Province::all();
-        });
+        return collect(Cache::remember('all_provinces_cache_v4', 86400, function () {
+            return Province::select('code', 'name')->get()->map(fn ($province) => [
+                'code' => $province->code,
+                'name' => $province->name,
+            ])->toArray();
+        }))->map(fn ($province) => (object) $province);
     }
 
     /**

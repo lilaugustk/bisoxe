@@ -64,17 +64,22 @@ class LicensePlateController extends Controller
     public function provinceIndex(Request $request, string $provinceSlug, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         // Lấy tất cả các tỉnh thành từ cache và tìm tỉnh thành có slug khớp với $provinceSlug
-        $provinces = Cache::remember('all_provinces_cache_v3', 86400, function () {
-            return Province::all();
-        });
-        $province = $provinces->first(function ($p) use ($provinceSlug) {
-            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p->name);
+        $provinces = collect(Cache::remember('all_provinces_cache_v4', 86400, function () {
+            return Province::select('code', 'name')->get()->map(fn ($province) => [
+                'code' => $province->code,
+                'name' => $province->name,
+            ])->toArray();
+        }));
+        $provinceData = $provinces->first(function ($p) use ($provinceSlug) {
+            $cleanName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $p['name']);
             return \Illuminate\Support\Str::slug($cleanName) === $provinceSlug;
         });
 
-        if (!$province) {
+        if (!$provinceData) {
             abort(404, 'Tỉnh thành không tồn tại.');
         }
+
+        $province = Province::where('code', $provinceData['code'])->firstOrFail();
 
         // Nếu URL vẫn chứa province dạng query string, redirect 301 về URL sạch
         if ($request->has('province')) {

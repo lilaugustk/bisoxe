@@ -142,17 +142,21 @@ class AuctionController extends Controller
     public function province(Request $request, string $provinceSlug, ?string $tab = null): View|\Illuminate\Http\RedirectResponse
     {
         // 1. Tìm tỉnh thành có slug khớp từ cache
-        $provinces = Cache::remember('all_provinces_cache_v3', 86400, function () {
-            return Province::all();
-        });
-        $province = $provinces->first(function ($p) use ($provinceSlug) {
-            return \Illuminate\Support\Str::slug($p->name) === $provinceSlug;
+        $provinces = collect(Cache::remember('all_provinces_cache_v4', 86400, function () {
+            return Province::select('code', 'name')->get()->map(fn ($province) => [
+                'code' => $province->code,
+                'name' => $province->name,
+            ])->toArray();
+        }));
+        $provinceData = $provinces->first(function ($p) use ($provinceSlug) {
+            return \Illuminate\Support\Str::slug($p['name']) === $provinceSlug;
         });
 
-        if (!$province) {
+        if (!$provinceData) {
             abort(404, 'Tỉnh thành không tồn tại.');
         }
 
+        $province = Province::where('code', $provinceData['code'])->firstOrFail();
         $cleanProvinceName = preg_replace('/^(Thành phố|Tỉnh)\s+/iu', '', $province->name);
         $canonicalFullSlug = \Illuminate\Support\Str::slug($province->name);
 
@@ -297,11 +301,7 @@ class AuctionController extends Controller
             return $query->count();
         });
 
-        // Cache danh sách biển số theo trang và filter trong 5 phút (300 giây)
-        $itemsCacheKey = 'province_plates_items_v3_' . $province->code . '_' . $activeTab . '_' . $page . '_' . $limit . '_' . $cacheHash;
-        $items = Cache::remember($itemsCacheKey, 300, function() use ($query, $page, $limit) {
-            return $query->forPage($page, $limit)->get();
-        });
+        $items = $query->forPage($page, $limit)->get();
 
         // Loại bỏ param 'vehicle' khỏi link phân trang vì loại xe đã được
         // phân biệt qua URL path (/dau-gia-bien-so-o-to-... vs /dau-gia-bien-so-xe-may-...)
