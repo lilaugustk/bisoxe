@@ -383,7 +383,9 @@ class LicensePlateController extends Controller
     {
         $cacheKey = "plate_detail_data_v4_" . md5($slug);
         
-        $data = Cache::remember($cacheKey, 3600, function() use ($slug, $predictorService) {
+        $bypassCache = request()->has('t') || request()->ajax();
+
+        $getData = function() use ($slug, $predictorService) {
             // 1. Tìm theo slug bài viết
             $article = SeoArticle::where('slug', $slug)
                 ->with(['licensePlate.province', 'licensePlate.kinds'])
@@ -502,7 +504,16 @@ class LicensePlateController extends Controller
                 'province_name' => $plate->province ? $plate->province->name : 'Chưa xác định',
                 'display_number' => $plate->display_number,
             ];
-        });
+        };
+
+        if ($bypassCache) {
+            $data = $getData();
+            if (!isset($data['not_found']) && isset($data['status']) && $data['status'] !== 'custom_valuation') {
+                Cache::put($cacheKey, $data, 3600);
+            }
+        } else {
+            $data = Cache::remember($cacheKey, 3600, $getData);
+        }
 
         if (isset($data['not_found'])) {
             abort(404, 'Biển số xe không tồn tại.');
