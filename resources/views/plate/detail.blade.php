@@ -409,10 +409,7 @@
                                     
                                     // Khởi tạo lại các tài nguyên/tác vụ nếu cần
                                     if (window.Alpine) {
-                                        // Alpine sẽ tự động nhận diện cây DOM mới
-                                        window.Alpine.discoverUninitializedComponents(
-                                            el => el && el.dispatchEvent(new CustomEvent('alpine:init'))
-                                        );
+                                        window.Alpine.initTree(newMain);
                                     }
                                 }
 
