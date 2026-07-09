@@ -557,9 +557,22 @@ class AnalysisController extends Controller
         $highestPlateOverall = $highestPlateOverallData ? (object) $highestPlateOverallData : null;
         
         // Eager loading với cache 1 giờ (3600s)
-        $plates = Cache::remember("analysis_plates_{$slug}_v3", 3600, function() use ($config) {
-            return $config['query']()->with(['province', 'kinds', 'seoArticle'])->get();
-        });
+        // Sử dụng try-catch để fallback khi cache bị corrupted (lỗi unserialize sau deploy)
+        $cacheKey = "analysis_plates_{$slug}_v4";
+        try {
+            $plates = Cache::remember($cacheKey, 3600, function() use ($config) {
+                return $config['query']()->with(['province', 'kinds', 'seoArticle'])->get();
+            });
+            // Kiểm tra nếu cache trả về array (data cũ không hợp lệ) thì xóa và query lại
+            if (!($plates instanceof \Illuminate\Database\Eloquent\Collection)) {
+                Cache::forget($cacheKey);
+                $plates = $config['query']()->with(['province', 'kinds', 'seoArticle'])->get();
+            }
+        } catch (\Throwable $e) {
+            // Cache bị corrupted (lỗi unserialize) → xóa cache và query lại từ DB
+            Cache::forget($cacheKey);
+            $plates = $config['query']()->with(['province', 'kinds', 'seoArticle'])->get();
+        }
 
         // 1. Gom nhóm giá trúng để vẽ biểu đồ Phân bổ mức giá (Bar Chart)
         $priceGroups = [
