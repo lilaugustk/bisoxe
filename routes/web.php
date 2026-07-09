@@ -87,8 +87,14 @@ Route::view('/lien-he', 'pages.contact')->name('contact');
 Route::view('/chinh-sach', 'pages.policy')->name('policy');
 
 Route::get('/sitemap.xml', function () {
-    $plates = \App\Models\LicensePlate::has('seoArticle')->with('seoArticle')->get();
-    $posts = \App\Models\Post::published()->get();
+    $plates = \Illuminate\Support\Facades\DB::table('seo_articles')
+        ->select('slug', 'updated_at', 'generated_at')
+        ->get();
+
+    $posts = \Illuminate\Support\Facades\DB::table('posts')
+        ->where('is_published', true)
+        ->select('slug', 'updated_at', 'created_at')
+        ->get();
 
     $xml = '<?xml version="1.0" encoding="UTF-8"?>';
     $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
@@ -164,9 +170,23 @@ Route::get('/sitemap.xml', function () {
 
     // Trang chi tiết biển số đã phân tích
     foreach ($plates as $plate) {
+        if (empty($plate->slug)) {
+            continue;
+        }
         $xml .= '<url>';
-        $xml .= '<loc>https://bisoxe.com/bien-so-' . $plate->seoArticle->slug . '</loc>';
-        $xml .= '<lastmod>' . ($plate->seoArticle->updated_at ?? $plate->seoArticle->generated_at ?? now())->toAtomString() . '</lastmod>';
+        $xml .= '<loc>https://bisoxe.com/bien-so-' . htmlspecialchars($plate->slug) . '</loc>';
+        
+        $lastmod = $plate->updated_at ?? $plate->generated_at ?? null;
+        if ($lastmod) {
+            try {
+                $lastmodStr = \Illuminate\Support\Carbon::parse($lastmod)->toAtomString();
+            } catch (\Exception $e) {
+                $lastmodStr = now()->toAtomString();
+            }
+        } else {
+            $lastmodStr = now()->toAtomString();
+        }
+        $xml .= '<lastmod>' . $lastmodStr . '</lastmod>';
         $xml .= '<priority>0.6</priority>';
         $xml .= '<changefreq>monthly</changefreq>';
         $xml .= '</url>';
@@ -174,9 +194,23 @@ Route::get('/sitemap.xml', function () {
 
     // Trang chi tiết bài viết/tin tức
     foreach ($posts as $post) {
+        if (empty($post->slug)) {
+            continue;
+        }
         $xml .= '<url>';
-        $xml .= '<loc>https://bisoxe.com/b/' . $post->slug . '</loc>';
-        $xml .= '<lastmod>' . ($post->updated_at ?? $post->created_at)->toAtomString() . '</lastmod>';
+        $xml .= '<loc>https://bisoxe.com/b/' . htmlspecialchars($post->slug) . '</loc>';
+        
+        $lastmod = $post->updated_at ?? $post->created_at ?? null;
+        if ($lastmod) {
+            try {
+                $lastmodStr = \Illuminate\Support\Carbon::parse($lastmod)->toAtomString();
+            } catch (\Exception $e) {
+                $lastmodStr = now()->toAtomString();
+            }
+        } else {
+            $lastmodStr = now()->toAtomString();
+        }
+        $xml .= '<lastmod>' . $lastmodStr . '</lastmod>';
         $xml .= '<priority>0.6</priority>';
         $xml .= '<changefreq>weekly</changefreq>';
         $xml .= '</url>';
